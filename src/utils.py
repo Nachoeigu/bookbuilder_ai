@@ -24,9 +24,16 @@ class DocumentationReady(TypedDict):
     total_pages: int = Field(description = "Number of total pages the book should contain")
     chapter_length: Literal['long','medium','short'] = Field(description = "The length of each chapter in the book.")
 
+class ApprovedBrainstormingIdea(TypedDict):
+    is_approved: bool = Field(description = "It defines if the writer idea is approved or not by the critique.")
+
 class State(TypedDict):
     content: Annotated[List[str], operator.add]
     user_instructor_messages: Annotated[List[AnyMessage], operator.add]
+    writer_brainstorming_messages: Annotated[List[AnyMessage], operator.add]
+    critique_brainstorming_messages: Annotated[List[AnyMessage], operator.add]
+    final_brainstorming_idea: str
+    is_approved_brainstorming: bool
     instructor_documents: DocumentationReady
     prologue: str
     title: str
