@@ -12,9 +12,9 @@ from src.utils import State
 
 def should_go_to_brainstorming_writer(state: State):
     if state.get('instructor_documents', '') == '':
-        return "read_human_feedback"
+        return "human_feedback"
     else:
-        return "making_writer_brainstorming"
+        return "brainstorming_writer"
     
 def should_continue_with_critique(state: State):
     if state['critique_brainstorming_messages'] == []: 

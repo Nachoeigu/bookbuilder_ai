@@ -14,39 +14,30 @@ from src.utils import State, GraphInput, GraphOutput
 from src.nodes import get_clear_instructions, read_human_feedback, brainstorming_critique, making_writer_brainstorming
 from src.routers import should_go_to_brainstorming_writer, should_continue_with_critique
 
-# model = ChatGoogleGenerativeAI(model = 'gemini-1.5-pro-exp-0801', temperature = 0.8)
-# model_with_structured_output = model.with_structured_output(WriterStructuredOutput)
-# messages = [
-#     SystemMessage(content = ""),
-# ]
-# def generate_content(state: State):
-#     if state['content'] == []:
-#         model_with_structured_output
-#     else:
 
 workflow = StateGraph(State, input = GraphInput)
-workflow.add_node("get_clear_instructions", get_clear_instructions)
-workflow.add_node("read_human_feedback", read_human_feedback)
-workflow.add_node("making_writer_brainstorming", making_writer_brainstorming)
+workflow.add_node("instructor", get_clear_instructions)
+workflow.set_entry_point("instructor")
+workflow.add_node("human_feedback", read_human_feedback)
+workflow.add_node("brainstorming_writer", making_writer_brainstorming)
 workflow.add_node("brainstorming_critique", brainstorming_critique)
 workflow.add_conditional_edges(
-    "get_clear_instructions",
+    "instructor",
     should_go_to_brainstorming_writer
 )
-workflow.add_edge("read_human_feedback","get_clear_instructions")
-workflow.add_edge("brainstorming_critique","making_writer_brainstorming")
+workflow.add_edge("human_feedback","instructor")
 workflow.add_conditional_edges(
-    "making_writer_brainstorming",
+    "brainstorming_writer",
     should_continue_with_critique
 )
-
-workflow.set_entry_point("get_clear_instructions")
+workflow.add_edge("brainstorming_critique","brainstorming_writer")
 
 app = workflow.compile(
     )
 
 if __name__ == '__main__':
     from langchain_core.messages import HumanMessage
+
     final_state = app.invoke(
         {"user_instructor_messages": [
             HumanMessage(content="An unexpected crime story centered around an assassination, featuring various suspects throughout the narrative, with a final plot twist where the guilty party is not recognized until the end. The book targets young adults and emphasizes themes of suspense and unpredictability, written in a style similar to Stephen King.")
