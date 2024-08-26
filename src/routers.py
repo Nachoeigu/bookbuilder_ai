@@ -9,14 +9,15 @@ sys.path.append(WORKDIR)
 
 from langgraph.graph import END
 from src.utils import State
+from typing import Literal
 
-def should_go_to_brainstorming_writer(state: State):
+def should_go_to_brainstorming_writer(state: State) -> Literal['human_feedback','brainstorming_writer']:
     if state.get('instructor_documents', '') == '':
         return "human_feedback"
     else:
         return "brainstorming_writer"
     
-def should_continue_with_critique(state: State):
+def should_continue_with_critique(state: State) -> Literal['brainstorming_critique','writer']:
     if state.get('is_plan_approved', None) is None: 
         return "brainstorming_critique"
     elif state['is_plan_approved'] == True:
@@ -24,7 +25,7 @@ def should_continue_with_critique(state: State):
     else:
         return "brainstorming_critique"
     
-def has_writer_ended_book(state: State):
+def has_writer_ended_book(state: State) -> Literal[END, 'writer']:
     if state['current_chapter'] == len(state['chapters_summaries']):
         return END
     else:

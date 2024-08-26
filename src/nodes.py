@@ -10,7 +10,7 @@ sys.path.append(WORKDIR)
 from src.constants import *
 from src.utils import State, DocumentationReady, ApprovedBrainstormingIdea, WriterStructuredOutput, BrainstormingStructuredOutput
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
-from src.utils import GraphConfig, _get_model, _get_language, check_chapter
+from src.utils import GraphConfig, _get_model, _get_language, check_chapter, adding_delay_for_rate_limits
 
 
 def get_clear_instructions(state: State, config: GraphConfig):
@@ -20,7 +20,7 @@ def get_clear_instructions(state: State, config: GraphConfig):
                                   prompt_case = "INSTRUCTOR_PROMPT"
                                   )
     messages = [SystemMessage(content = system_prompt)] + state['user_instructor_messages']
-    
+    adding_delay_for_rate_limits(model)
     reply = model.invoke(messages)
 
     if len(reply.tool_calls) == 0:
@@ -35,7 +35,7 @@ def read_human_feedback(state: State):
 
 def brainstorming_critique(state: State, config: GraphConfig):
     model = _get_model(config, default = "openai", key = "brainstormer_model", temperature = 0.5)
-    model = model.with_structured_output(ApprovedBrainstormingIdea)
+    model_with_structured_output = model.with_structured_output(ApprovedBrainstormingIdea)
     
     if state['critique_brainstorming_messages'] == []:
         user_requirements = "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()])
@@ -46,12 +46,13 @@ def brainstorming_critique(state: State, config: GraphConfig):
          SystemMessage(content = system_prompt.format(user_requirements=user_requirements)),
          HumanMessage(content = state['plannified_messages'][-1].content)
         ]
-
-        output = model.invoke(messages)
+        adding_delay_for_rate_limits(model)
+        output = model_with_structured_output.invoke(messages)
 
     else:
         messages = state['critique_brainstorming_messages'] + [HumanMessage(content = state['plannified_messages'][-1].content)]
-        output = model.invoke(messages)
+        adding_delay_for_rate_limits(model)
+        output = model_with_structured_output.invoke(messages)
 
     if int(output.grade) < 9:
         return {'is_plan_approved': False,
@@ -67,21 +68,25 @@ def making_writer_brainstorming(state: State, config: GraphConfig):
     system_prompt = _get_language(config = config,
                                   prompt_case = "BRAINSTORMING_PROMPT"
                                   )
+    
     system_prompt = SystemMessage(content = system_prompt.format(user_requirements=user_requirements))
     if state['is_plan_approved'] is None:
+        adding_delay_for_rate_limits(model)
         output = model.invoke([system_prompt] + [HumanMessage(content = "Start it...")])
         return {'plannified_messages': [output]}
     
     else:
         if state['is_plan_approved'] == False:
+            adding_delay_for_rate_limits(model)
             output = model.invoke(state['plannified_messages'] + [HumanMessage(content=f"Based on this critique, adjust your entire idea and return it again with the adjustments: {state['critique_brainstorming_messages'][-1]}")])
 
             return {'plannified_messages': [output]}
 
         else:
             model = _get_model(config, default = "openai", key = "brainstormer_model", temperature = 0)
-            model = model.with_structured_output(BrainstormingStructuredOutput)
-            output = model.invoke(state['plannified_messages'] + [HumanMessage(content="Based on the improvements, structure the final structure:")])
+            model_with_structured_output = model.with_structured_output(BrainstormingStructuredOutput)
+            adding_delay_for_rate_limits(model)
+            output = model_with_structured_output.invoke(state['plannified_messages'] + [HumanMessage(content="Based on the improvements, structure the final structure:")])
 
             return {
                 'plannified_intro': output.introduction,
@@ -99,7 +104,7 @@ def making_writer_brainstorming(state: State, config: GraphConfig):
 
 def generate_content(state: State, config: GraphConfig):
     model = _get_model(config = config, default = "openai", key = "writer_model", temperature = 0.95)
-    model = model.with_structured_output(WriterStructuredOutput)
+    model_with_structured_output = model.with_structured_output(WriterStructuredOutput)
     system_prompt = _get_language(config = config,
                                 prompt_case = "WRITER_PROMPT"
                                 )
@@ -116,29 +121,32 @@ def generate_content(state: State, config: GraphConfig):
                 )
             )
         ]
-        
-        output = model.invoke(messages + [HumanMessage(content=f"Start with the first chapter: {state['chapters_summaries'][0]}.")])
+        adding_delay_for_rate_limits(model)
+        output = model_with_structured_output.invoke(messages + [HumanMessage(content=f"Start with the first chapter: {state['chapters_summaries'][0]}.")])
         messages.append(AIMessage(content = output.content))
         
         if check_chapter(msg_content = output.content) == False:
-            output = model.invoke(messages + [HumanMessage(content=f"The chapter should contains at least 5 paragraphs. Adjust it again!")])
+            adding_delay_for_rate_limits(model)
+            output = model_with_structured_output.invoke(messages + [HumanMessage(content=f"The chapter should contains at least 5 paragraphs. Adjust it again!")])
 
         return {'content': [output.content],
-                'chapter_titles': [output.chapter_name],
+                'chapter_names': [output.chapter_name],
                 'current_chapter': 1,
                 'writer_memory': messages}
 
     else:
         new_message = [HumanMessage(content = f"Continue with the chapter {state['current_chapter'] + 1}, which is about: {state['chapters_summaries'][state['current_chapter']]}")]
+        adding_delay_for_rate_limits(model)
         output = model.invoke(state['writer_memory'] + new_message)
         new_messages = new_message + [AIMessage(content = output.content)]
     
         if check_chapter(msg_content = output.content) == False:
+            adding_delay_for_rate_limits(model)
             output = model.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least 5 paragraphs. Adjust it again!")])
 
         return {
                 'content': [output.content],
-                'chapter_titles': [output.chapter_name],
+                'chapter_names': [output.chapter_name],
                 'current_chapter': state['current_chapter'] + 1,
                 'writer_memory': new_messages
                 }
