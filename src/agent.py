@@ -7,20 +7,23 @@ WORKDIR=os.getenv("WORKDIR")
 os.chdir(WORKDIR)
 sys.path.append(WORKDIR)
 
-from langchain_google_genai.chat_models import ChatGoogleGenerativeAI
-from langchain_openai.chat_models import ChatOpenAI
 from langgraph.graph import StateGraph
-from src.utils import State, GraphInput, GraphOutput
-from src.nodes import get_clear_instructions, read_human_feedback, brainstorming_critique, making_writer_brainstorming
-from src.routers import should_go_to_brainstorming_writer, should_continue_with_critique
+from src.utils import State, GraphInput, GraphOutput, GraphConfig
+from src.nodes import *
+from src.routers import *
 
 
-workflow = StateGraph(State, input = GraphInput)
+workflow = StateGraph(State, 
+                      input = GraphInput,
+                      output = GraphOutput,
+                      config_schema = GraphConfig)
+
 workflow.add_node("instructor", get_clear_instructions)
 workflow.set_entry_point("instructor")
 workflow.add_node("human_feedback", read_human_feedback)
 workflow.add_node("brainstorming_writer", making_writer_brainstorming)
 workflow.add_node("brainstorming_critique", brainstorming_critique)
+workflow.add_node("writer", generate_content)
 workflow.add_conditional_edges(
     "instructor",
     should_go_to_brainstorming_writer
@@ -30,9 +33,15 @@ workflow.add_conditional_edges(
     "brainstorming_writer",
     should_continue_with_critique
 )
+
 workflow.add_edge("brainstorming_critique","brainstorming_writer")
+workflow.add_conditional_edges(
+    "writer",
+    has_writer_ended_book
+)
 
 app = workflow.compile(
+    interrupt_before=['human_feedback']
     )
 
 if __name__ == '__main__':
@@ -44,4 +53,4 @@ if __name__ == '__main__':
             ]},
         config={"configurable": {"thread_id": 42}}
     )
-    print(final_state["writer_brainstorming_messages"][-1].content)
+    print(final_state)

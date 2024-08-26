@@ -1,2 +1,6 @@
 .env
 venv/
+book.py
+book.txt
+output.yaml
+__pycache__/
