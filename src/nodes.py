@@ -137,7 +137,7 @@ def generate_content(state: State, config: GraphConfig):
     else:
         new_message = [HumanMessage(content = f"Continue with the chapter {state['current_chapter'] + 1}, which is about: {state['chapters_summaries'][state['current_chapter']]}")]
         adding_delay_for_rate_limits(model)
-        output = model.invoke(state['writer_memory'] + new_message)
+        output = model_with_structured_output.invoke(state['writer_memory'] + new_message)
         new_messages = new_message + [AIMessage(content = output.content)]
     
         if check_chapter(msg_content = output.content) == False:

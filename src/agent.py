@@ -44,13 +44,57 @@ app = workflow.compile(
     interrupt_before=['human_feedback']
     )
 
+
 if __name__ == '__main__':
     from langchain_core.messages import HumanMessage
-
-    final_state = app.invoke(
-        {"user_instructor_messages": [
-            HumanMessage(content="An unexpected crime story centered around an assassination, featuring various suspects throughout the narrative, with a final plot twist where the guilty party is not recognized until the end. The book targets young adults and emphasizes themes of suspense and unpredictability, written in a style similar to Stephen King.")
-            ]},
-        config={"configurable": {"thread_id": 42}}
+    from langgraph.checkpoint.memory import MemorySaver
+    app = workflow.compile(
+        interrupt_before=['human_feedback'],
+        checkpointer=MemorySaver()
     )
-    print(final_state)
+
+    human_input_msg = "An unexpected crime story centered around an assassination, featuring various suspects throughout the narrative, with a final plot twist where the guilty party is not recognized until the end. The book targets young adults and emphasizes themes of suspense and unpredictability, written in a style similar to Stephen King."
+    
+    configuration = {
+        "configurable": {
+            "thread_id": 42,
+            "language":"spanish",
+            "instructor_model":"meta",
+            "brainstormer_model":"meta",
+            "critique_model":"openai",
+            "writer_model":"openai"
+        }
+    }
+
+    for event in app.stream(
+            input = {'user_instructor_messages': [HumanMessage(content=human_input_msg)]},
+            config = configuration,
+            stream_mode='values'):
+        
+
+        event['user_instructor_messages'][-1].pretty_print()
+
+    
+    while True:
+        new_human_input_msg = input("Provide your answer: ")
+        new_human_input_msg = HumanMessage(content = new_human_input_msg)
+        app.update_state(configuration, {'user_instructor_messages': [new_human_input_msg]}, as_node = 'human_feedback')
+        new_human_input_msg.pretty_print()
+        current_node = 'human_feedback'
+        app.get_state(config = configuration).next
+        for event in app.stream(
+                input = None,
+                config = configuration,
+                stream_mode='values'):
+            print('---')
+            if (current_node == 'human_feedback'):
+                event['user_instructor_messages'][-1].pretty_print()
+            if (current_node == 'instructor'):
+                if event['user_instructor_messages'][-1].type == 'human':
+                    AIMessage(content = str(event['instructor_documents'])).pretty_print()
+                else:
+                    event['user_instructor_messages'][-1].pretty_print()
+
+            #PEDING FOR ALL THE COMBINATIONS
+            current_node = app.get_state(config = configuration).next[0]
+            print('---')
