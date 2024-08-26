@@ -142,7 +142,7 @@ def generate_content(state: State, config: GraphConfig):
     
         if check_chapter(msg_content = output.content) == False:
             adding_delay_for_rate_limits(model)
-            output = model.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least 5 paragraphs. Adjust it again!")])
+            output = model_with_structured_output.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least 5 paragraphs. Adjust it again!")])
 
         return {
                 'content': [output.content],
