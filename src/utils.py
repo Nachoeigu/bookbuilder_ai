@@ -20,7 +20,20 @@ import time
 import re
 
 class GraphConfig(TypedDict):
+    """
+    Initial configuration to trigger the AI system.
+
+    Attributes:
+    - language: The language in which the system prompts will be generated. Options are 'english' or 'spanish'.
+    - critiques_in_loop: Set to False if you only want a single critique per writing. Set to True if you want multiple critique iterations until the writing is approved.
+    - instructor_model: Select the model for the instructor node. Options include 'openai', 'google', 'meta', or 'amazon'.
+    - brainstormer_model: Select the model for the brainstormer node. Options include 'openai', 'google', 'meta', or 'amazon'.
+    - critique_model: Select the model for the critique node. Options include 'openai', 'google', 'meta', or 'amazon'.
+    - writer_model: Select the model for the writer node. Options include 'openai', 'google', 'meta', or 'amazon'.
+    - writing_reviewer_model: Select the model for the writing reviewer node. Options include 'openai', 'google', 'meta', or 'amazon'.
+    """
     language: Literal['english', 'spanish']
+    critiques_in_loop: bool
     instructor_model: Literal['openai', 'google','meta','amazon']
     brainstormer_model: Literal['openai','google','meta', 'amazon']
     critique_model: Literal['openai', 'google','meta','amazon']
@@ -28,6 +41,9 @@ class GraphConfig(TypedDict):
     writing_reviewer_model: Literal['openai', 'google','meta','amazon']
 
 class BrainstormingStructuredOutput(BaseModel):
+    """
+    This tool defines and structures the proposed idea in detailed sections.  
+    """
     story_overview: str = Field(description = "Provide a highly detailed overview of the narrative that includes a strong introduction, a well-developed middle, and a satisfying conclusion.")
     characters: str = Field(description = "Describe the characters of the story, in one paragraph each one.")
     writing_style: str = Field(description = "The style and tone the writer should consider while developing the book.")
@@ -41,19 +57,34 @@ class BrainstormingStructuredOutput(BaseModel):
 
 
 class WriterStructuredOutput(BaseModel):
-    """The way the writer should answer a request"""
+    """This tool structures the way the writer invention"""
     content: str = Field(description = "The content inside the developed chapter.")
     chapter_name: str = Field(description = "The name of the developed chapter.")
 
 class DocumentationReady(TypedDict):
+    """
+    This tool confirms that the Instructor has the necessary information to pass to the writer
+    """
     requirements: str = Field(description = "A highly detailed description to the writer about the requirements should consider while developing the book")
 
 class ApprovedWriterChapter(TypedDict):
-    is_approved: bool = Field(description = 'This tool should be invoke only if the chapter is very well based on your analysis.')
+    """
+    This tool approves the chapter and its content based on your analysis.
+    """
+    is_approved: bool = Field(description = 'This tool should be invoke only if the chapter is quite well  and it could be defined as MVP, based on your analysis.')
+
+class CritiqueWriterChapter(TypedDict):
+    """
+    This tool retrieves critiques and highlight improvements over the developed chapter.
+    """
+    feedback: str = Field(description = 'Provide highly detailed suggestions and points of improvements based on your analysis.')
 
 class ApprovedBrainstormingIdea(BaseModel):
-    feedback: str = Field(description = "If the grade is below 9, provide feedback of improvements. Otherwise, empty string.")
-    grade: int = Field(ge=0, le=10, description = "The overall grade assigned to the draft idea based on the criterias. It should be allign with the feedback.")
+    """
+    This tool evaluates if the brainstormed idea is quite good or need further improvements
+    """
+    grade: int = Field(description = "The overall grade (in scale from 0 to 10) assigned to the draft idea based on the criterias. It should be allign with the feedback.")
+    feedback: str = Field(description = "Provide highly detailed feedback and improvements in case it is not approved.")
 
 class State(TypedDict):
     content: Annotated[List[str], operator.add]
@@ -81,9 +112,15 @@ class State(TypedDict):
 
 
 class GraphInput(TypedDict):
+    """
+    The initial message that starts the AI system
+    """
     user_instructor_messages: List[HumanMessage]
 
 class GraphOutput(TypedDict):
+    """
+    The output of the AI System
+    """
     book_title: str
     book_prologue: str
     content: Annotated[List[str], operator.add]
