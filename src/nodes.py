@@ -53,24 +53,23 @@ def brainstorming_critique(state: State, config: GraphConfig):
         ]
         adding_delay_for_rate_limits(model)
         output = model_with_tools.invoke(messages)
+        output = output.tool_calls[0]['args']
 
     else:
-        messages = state['critique_brainstorming_messages'] + [HumanMessage(content = state['plannified_messages'][-1])]
-        adding_delay_for_rate_limits(model)
-        output = model_with_tools.invoke(messages)
-
-    output = output.tool_calls[0]['args']
-    if int(output['grade']) <= 9:
         if (critiques_in_loop == False)&((state['is_plan_approved'] == False)|(state['critique_brainstorming_messages'] != [])):
-            feedback = 'Perfect'
-            is_plan_approved = True
+            output = {'grade': 10}
         else:
-            feedback = output['feedback']
-            is_plan_approved = False
+            messages = state['critique_brainstorming_messages'] + [HumanMessage(content = state['plannified_messages'][-1])]
+            adding_delay_for_rate_limits(model)
+            output = model_with_tools.invoke(messages)
+            output = output.tool_calls[0]['args']
+
+    if int(output['grade']) <= 9:
+        feedback = output['feedback']
+        is_plan_approved = False
 
         return {'is_plan_approved': is_plan_approved,
                 'critique_brainstorming_messages': [feedback]}
-    
     else:
         return {'is_plan_approved': True,
                 'critique_brainstorming_messages': ["Perfect!!"]}
@@ -135,28 +134,31 @@ def evaluate_chapter(state: State, config: GraphConfig):
         new_message = [SystemMessage(content = system_prompt.format(draft=draft))]
         adding_delay_for_rate_limits(model)
         output = model_with_tools.invoke(new_message + [HumanMessage(content=f"Start with the first chapter: {state['content'][-1]}.")])
+        try:
+            is_chapter_approved = [1 for tool in output.tool_calls if (tool['name'] == 'ApprovedWriterChapter')&(tool['args']['is_approved']==True)] == [1]
+        except:
+            is_chapter_approved = False
     else:
-        new_message = [HumanMessage(content = f"\n{state['content'][-1]}")]
-        adding_delay_for_rate_limits(model)
-        output = model_with_tools.invoke(state['writing_reviewer_memory'] + new_message)
-    
-    try:
-        is_approved = [1 for tool in output.tool_calls if (tool['name'] == 'ApprovedWriterChapter')&(tool['args']['is_approved']==True)] == [1]
-    except:
-        is_approved = False
+        if (critiques_in_loop == False)&(state['is_chapter_approved'] == False):
+            new_message = [HumanMessage(content = f"\n{state['content'][-1]}")]
+            feedback = 'Perfect!'
+            is_chapter_approved = True
+        else:
+            new_message = [HumanMessage(content = f"\n{state['content'][-1]}")]
+            adding_delay_for_rate_limits(model)
+            output = model_with_tools.invoke(state['writing_reviewer_memory'] + new_message)    
+            try:
+                is_chapter_approved = [1 for tool in output.tool_calls if (tool['name'] == 'ApprovedWriterChapter')&(tool['args']['is_approved']==True)] == [1]
+            except:
+                is_chapter_approved = False
 
-    if is_approved:
+    if is_chapter_approved:
         new_messages = new_message + [AIMessage(content = 'Perfect')]
         return {'is_chapter_approved': True,
                 'writing_reviewer_memory': new_messages}
     else:
-        if (critiques_in_loop == False)&(state['is_chapter_approved'] == False):
-            feedback = 'Perfect!'
-            is_chapter_approved = True
-        else:
-            feedback = [tool['args']['feedback'] for tool in output.tool_calls if (tool['name'] == 'CritiqueWriterChapter')][0]
-            is_chapter_approved = False
-
+        feedback = [tool['args']['feedback'] for tool in output.tool_calls if (tool['name'] == 'CritiqueWriterChapter')][0]
+        is_chapter_approved = False
         new_messages = new_message + [AIMessage(content = feedback)]
         return {'is_chapter_approved': is_chapter_approved,
                 'writing_reviewer_memory': new_messages}
