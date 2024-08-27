@@ -25,6 +25,7 @@ class GraphConfig(TypedDict):
     brainstormer_model: Literal['openai','google','meta', 'amazon']
     critique_model: Literal['openai', 'google','meta','amazon']
     writer_model: Literal['openai', 'google','meta','amazon']
+    writing_reviewer_model: Literal['openai', 'google','meta','amazon']
 
 class BrainstormingStructuredOutput(BaseModel):
     story_overview: str = Field(description = "Provide a highly detailed overview of the narrative that includes a strong introduction, a well-developed middle, and a satisfying conclusion.")
@@ -46,6 +47,9 @@ class WriterStructuredOutput(BaseModel):
 
 class DocumentationReady(TypedDict):
     requirements: str = Field(description = "A highly detailed description to the writer about the requirements should consider while developing the book")
+
+class ApprovedWriterChapter(TypedDict):
+    is_approved: bool = Field(description = 'This tool should be invoke only if the chapter is very well based on your analysis.')
 
 class ApprovedBrainstormingIdea(BaseModel):
     feedback: str = Field(description = "If the grade is below 9, provide feedback of improvements. Otherwise, empty string.")
@@ -71,6 +75,8 @@ class State(TypedDict):
     story_overview: str
     chapters_summaries: List[str]
     total_paragraphs_per_chapter: int
+    writing_reviewer_memory: Annotated[List[AnyMessage], operator.add]
+    is_chapter_approved: bool
 
 
 

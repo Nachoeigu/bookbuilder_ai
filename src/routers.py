@@ -24,9 +24,11 @@ def should_continue_with_critique(state: State) -> Literal['brainstorming_critiq
         return "writer"
     else:
         return "brainstorming_critique"
-    
+
+
 def has_writer_ended_book(state: State) -> Literal[END, 'writer']:
-    if state['current_chapter'] == len(state['chapters_summaries']):
+
+    if (state['current_chapter'] == len(state['chapters_summaries']))&(state['is_chapter_approved'] == True):
         return END
     else:
         return "writer"

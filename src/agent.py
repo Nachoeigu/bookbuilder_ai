@@ -24,6 +24,7 @@ workflow.add_node("human_feedback", read_human_feedback)
 workflow.add_node("brainstorming_writer", making_writer_brainstorming)
 workflow.add_node("brainstorming_critique", brainstorming_critique)
 workflow.add_node("writer", generate_content)
+workflow.add_node("writing_reviewer", evaluate_chapter)
 workflow.add_conditional_edges(
     "instructor",
     should_go_to_brainstorming_writer
@@ -35,8 +36,11 @@ workflow.add_conditional_edges(
 )
 
 workflow.add_edge("brainstorming_critique","brainstorming_writer")
+workflow.add_edge("writer","writing_reviewer")
+
+
 workflow.add_conditional_edges(
-    "writer",
+    "writing_reviewer",
     has_writer_ended_book
 )
 
@@ -59,8 +63,8 @@ if __name__ == '__main__':
         "configurable": {
             "thread_id": 42,
             "language":"spanish",
-            "instructor_model":"meta",
-            "brainstormer_model":"meta",
+            "instructor_model":"openai",
+            "brainstormer_model":"openai",
             "critique_model":"openai",
             "writer_model":"openai"
         }
@@ -87,14 +91,5 @@ if __name__ == '__main__':
                 config = configuration,
                 stream_mode='values'):
             print('---')
-            if (current_node == 'human_feedback'):
-                event['user_instructor_messages'][-1].pretty_print()
-            if (current_node == 'instructor'):
-                if event['user_instructor_messages'][-1].type == 'human':
-                    AIMessage(content = str(event['instructor_documents'])).pretty_print()
-                else:
-                    event['user_instructor_messages'][-1].pretty_print()
-
-            #PEDING FOR ALL THE COMBINATIONS
-            current_node = app.get_state(config = configuration).next[0]
+            print(event)
             print('---')
