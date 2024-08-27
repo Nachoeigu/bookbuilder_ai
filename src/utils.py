@@ -14,30 +14,29 @@ from langchain_core.pydantic_v1 import BaseModel, Field
 from langchain_openai.chat_models import ChatOpenAI
 from langchain_google_genai.chat_models import ChatGoogleGenerativeAI
 from langchain_groq import ChatGroq
+from langchain_aws.chat_models import ChatBedrock
 from src.constants import *
 import time
 import re
 
 class GraphConfig(TypedDict):
     language: Literal['english', 'spanish']
-    instructor_model: Literal['openai', 'google','meta']
-    brainstormer_model: Literal['openai','google','meta']
-    critique_model: Literal['openai', 'google','meta']
-    writer_model: Literal['openai', 'google','meta']
-    
-
+    instructor_model: Literal['openai', 'google','meta','amazon']
+    brainstormer_model: Literal['openai','google','meta', 'amazon']
+    critique_model: Literal['openai', 'google','meta','amazon']
+    writer_model: Literal['openai', 'google','meta','amazon']
 
 class BrainstormingStructuredOutput(BaseModel):
-    story_overview: str = Field(description = "Provide a highly detailed overview of the story that highlight the introduction, development and ending.")
-    characters: str = Field(description = "Enumerate the main characters in the story and a description of each of them.")
-    writing_style: str = Field(description = "The style and way the writter should write")
-    introduction: str = Field(description = "Display how will be the introduction shown.")
-    development: str = Field(description = "The well developed middle of the story with its conflict and resolution.")
-    ending: str = Field(description = "Explain how you will end the story and provide the excellent join you make between development into ending.")
-    chapters_summaries: List[str] = Field(description = "Each element in the list is each chapter of the book with a highly detailed summary of what happen on it. Each summary MUST HAVE a length of 5 sentences minimum.")
+    story_overview: str = Field(description = "Provide a highly detailed overview of the narrative that includes a strong introduction, a well-developed middle, and a satisfying conclusion.")
+    characters: str = Field(description = "Describe the characters of the story, in one paragraph each one.")
+    writing_style: str = Field(description = "The style and tone the writer should consider while developing the book.")
+    introduction: str = Field(description="Introduces the story by setting up the first key events, main characters, and important themes or conflicts. This part should smoothly lead into the middle of the story.")
+    development: str = Field(description="Continues from the introduction by exploring more events, growing the conflicts, and deepening the characters and themes. This middle part should build up and naturally move towards the ending.")
+    ending: str = Field(description="Wraps up the story by resolving conflicts, finishing the main events, and completing the characters' journeys. This part should connect back to the introduction and development to give a complete ending.")
+    chapters_summaries: List[str] = Field(description = "Provide a list where each element is the summary of each chapter. Each one should contain a detailed description of what happen on it. Each summary MUST HAVE a length of 5 sentences minimum.")
     total_paragraphs_per_chapter: int = Field(description = "The number of paragraphs in each chapter. Assuming each paragraph is around 5 sentences.")
-    book_name: str = Field(description = "The name of the book")
-    book_prologue: str = Field(description = "The prologue of the book. It should catch the attention of the audience heavily.")
+    book_name: str = Field(description="The title of the book. It should be unique, creative, and original.")
+    book_prologue: str = Field(description="The opening section of the book. It should be engaging and designed to strongly capture the audience's attention.")
 
 
 class WriterStructuredOutput(BaseModel):
@@ -91,7 +90,7 @@ def _get_language(config: GraphConfig, prompt_case:Literal['INSTRUCTOR_PROMPT', 
     elif language == 'english':
         return globals()[prompt_case]
 
-def _get_model(config: GraphConfig, key:Literal['instructor_model','brainstormer_model','critique_model','writer_model'], temperature:float, default:Literal['openai', 'google','meta']='openai'):
+def _get_model(config: GraphConfig, key:Literal['instructor_model','brainstormer_model','critique_model','writer_model'], temperature:float, default:Literal['openai', 'google','meta','amazon']='openai'):
     model = config['configurable'].get(key, default)
     if model == "openai":
         return ChatOpenAI(temperature=temperature, model="gpt-4o-mini")
@@ -99,6 +98,8 @@ def _get_model(config: GraphConfig, key:Literal['instructor_model','brainstormer
         return ChatGoogleGenerativeAI(temperature=temperature, model="gemini-1.5-pro-exp-0801")
     elif model == 'meta':
         return ChatGroq(temperature=temperature, model="llama-3.1-70b-versatile")
+    elif model == 'amazon':
+        return ChatBedrock(model_id = 'anthropic.claude-3-sonnet-20240229-v1:0', model_kwargs = {'temperature':temperature})
     else:
         raise ValueError
     
@@ -119,6 +120,9 @@ def adding_delay_for_rate_limits(model):
     try:
         model_name = model.model_name
     except:
-        model_name = model.model
+        try:
+            model_name = model.model
+        except:
+            model_name = model.model_id
     if re.search('gemini|llama', model_name) is not None:
         time.sleep(6)

@@ -5,3 +5,4 @@ langchain-google-genai
 python-dotenv
 langchain_groq
 pyyaml
+langchain-aws
