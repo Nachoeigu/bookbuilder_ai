@@ -146,11 +146,11 @@ def evaluate_chapter(state: State, config: GraphConfig):
         is_approved = False
 
     if is_approved:
-        new_messages = new_message + [AIMessage(content = 'Perfect!')]
+        new_messages = new_message + [AIMessage(content = 'Perfect')]
         return {'is_chapter_approved': True,
                 'writing_reviewer_memory': new_messages}
     else:
-        if (critiques_in_loop == False)&((state['is_chapter_approved'] == False)|(state['is_chapter_approved'] is not None)):
+        if (critiques_in_loop == False)&(state['is_chapter_approved'] == False):
             feedback = 'Perfect!'
             is_chapter_approved = True
         else:
