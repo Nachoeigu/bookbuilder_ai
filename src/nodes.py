@@ -155,13 +155,22 @@ def evaluate_chapter(state: State, config: GraphConfig):
     if is_chapter_approved:
         new_messages = new_message + [AIMessage(content = 'Perfect')]
         return {'is_chapter_approved': True,
+                'content_of_approved_chapters': [state['content'][-1]],
+                'chapter_names_of_approved_chapters': [state['chapter_names'][-1]],
                 'writing_reviewer_memory': new_messages}
     else:
         feedback = [tool['args']['feedback'] for tool in output.tool_calls if (tool['name'] == 'CritiqueWriterChapter')][0]
         is_chapter_approved = False
         new_messages = new_message + [AIMessage(content = feedback)]
-        return {'is_chapter_approved': is_chapter_approved,
+        if is_chapter_approved == True:
+            return {
+                'is_chapter_approved': is_chapter_approved,
+                'content_of_approved_chapters': [state['content'][-1]],
+                'chapter_names_of_approved_chapters': [state['chapter_names'][-1]],
                 'writing_reviewer_memory': new_messages}
+        else:
+            return {'is_chapter_approved': is_chapter_approved,
+                    'writing_reviewer_memory': new_messages}
 
 def generate_content(state: State, config: GraphConfig):
     model = _get_model(config = config, default = "openai", key = "writer_model", temperature = 0.70)

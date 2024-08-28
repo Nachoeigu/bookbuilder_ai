@@ -88,6 +88,8 @@ class ApprovedBrainstormingIdea(BaseModel):
 
 class State(TypedDict):
     content: Annotated[List[str], operator.add]
+    content_of_approved_chapters: Annotated[List[str], operator.add]
+    chapter_names_of_approved_chapters: Annotated[List[str], operator.add]
     chapter_names: Annotated[List[str], operator.add]
     writer_memory: Annotated[List[AnyMessage], operator.add]
     user_instructor_messages: Annotated[List[AnyMessage], operator.add]
