@@ -57,7 +57,7 @@ if __name__ == '__main__':
         checkpointer=MemorySaver()
     )
 
-    human_input_msg = "An unexpected crime story centered around an assassination, featuring various suspects throughout the narrative, with a final plot twist where the guilty party is not recognized until the end. The book targets young adults and emphasizes themes of suspense and unpredictability, written in a style similar to Stephen King."
+    human_input_msg = "An unexpected crime story centered around an assassination, featuring various suspects throughout the narrative, with a final plot twist where the guilty party is not recognized until the end. The book targets young adults and emphasizes themes of suspense and unpredictability."
     
     configuration = {
         "configurable": {
