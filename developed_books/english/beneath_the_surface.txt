@@ -4,6 +4,14 @@ Beneath the Surface
 Book prologue:
 The water was cold, a sharp reminder of the depths I was willing to explore, and I felt alive. As I descended deeper into the blue abyss, the world above faded into a distant memory. I had always been drawn to the ocean, its mysteries calling to me like a siren's song. Little did I know that today would not just test my limits, but redefine them. This dive was supposed to be exhilarating, but I couldn't shake the feeling that it was more than just an adventure; it was a reckoning.
 
+Used models:
+- instructor_model: anthropic.claude-3-5-sonnet-20240620-v1:0
+- brainstorming_writer_model: gpt-4o-mini
+- brainstorming_critique_model: gpt-4o-mini
+- writer_model: gpt-4o-mini
+- translator_model: gpt-4o-mini
+
+
 1) The Call of the Deep
 
 Chapter 1: The Call of the Deep

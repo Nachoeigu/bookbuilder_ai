@@ -68,7 +68,7 @@ class TranslatorSpecialCaseStructuredOutput(BaseModel):
 
 class WriterStructuredOutput(BaseModel):
     """This tool structures the way the writer invention"""
-    content: str = Field(description = "The content inside the developed chapter.")
+    content: str = Field(description = "The content inside the developed chapter, avoid putting the name of the chapter here.")
     chapter_name: str = Field(description = "The name of the developed chapter.")
 
 class DocumentationReady(TypedDict):
@@ -114,7 +114,12 @@ class State(TypedDict):
     plannified_messages: Annotated[List[AnyMessage], operator.add]
     critique_brainstorming_messages: Annotated[List[AnyMessage], operator.add]
     is_plan_approved: bool
-
+    instructor_model: str
+    brainstorming_writer_model: str
+    brainstorming_critique_model: str
+    writer_model: str
+    reviewer_model: str
+    translator_model: str
     translated_book_prologue: str
     translation_language: str
     translated_book_name: str
@@ -173,11 +178,7 @@ def check_chapter(msg_content:str):
     else:
         return False
     
-
-def adding_delay_for_rate_limits(model):
-    """
-    Google API and Groq API free plans has limit rates so we avoid reaching them
-    """
+def retrieve_model_name(model):
     try:
         model_name = model.model_name
     except:
@@ -185,5 +186,13 @@ def adding_delay_for_rate_limits(model):
             model_name = model.model
         except:
             model_name = model.model_id
+
+    return model_name
+
+def adding_delay_for_rate_limits(model):
+    """
+    Google API and Groq API free plans has limit rates so we avoid reaching them
+    """
+    model_name = retrieve_model_name(model)
     if re.search('gemini|llama', model_name) is not None:
         time.sleep(6)

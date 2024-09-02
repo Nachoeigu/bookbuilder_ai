@@ -4,6 +4,13 @@ Bajo la Superficie
 Book prologue:
 El agua estaba fría, un recordatorio agudo de las profundidades que estaba dispuesto a explorar, y me sentía vivo. A medida que descendía más profundo en el abismo azul, el mundo de arriba se desvanecía en un recuerdo distante. Siempre me había sentido atraído por el océano, sus misterios llamándome como el canto de una sirena. Poco sabía que hoy no solo pondría a prueba mis límites, sino que los redefiniría. Esta inmersión se suponía que sería emocionante, pero no podía sacudirme la sensación de que era más que solo una aventura; era un ajuste de cuentas.
 
+Used models:
+- instructor_model: anthropic.claude-3-5-sonnet-20240620-v1:0
+- brainstorming_writer_model: gpt-4o-mini
+- brainstorming_critique_model: gpt-4o-mini
+- writer_model: gpt-4o-mini
+- translator_model: gpt-4o-mini
+
 1) El Llamado de las Profundidades
 
 El sol colgaba alto en el cielo, sus rayos brillando en la superficie del agua mientras me preparaba para mi inmersión. Siempre había amado el océano: la forma en que me envolvía, la sensación de libertad que me brindaba. Pero hoy, un nudo de ansiedad se retorcía en mi estómago, una sensación de que algo no estaba bien. Respiré hondo, ajustando mi equipo mientras Maya me animaba desde el barco, su risa danzando en la brisa, un sonido reconfortante en medio de mis pensamientos descontrolados. Poco sabía que la emoción de la inmersión pronto se convertiría en una pesadilla, llevándome a enfrentar no solo las profundidades del océano, sino las profundidades de mi propia alma—y el amor que temía perder.
