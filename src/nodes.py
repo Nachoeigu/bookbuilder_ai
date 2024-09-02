@@ -36,7 +36,7 @@ def read_human_feedback(state: State):
 
 
 def brainstorming_critique(state: State, config: GraphConfig):
-    model = _get_model(config, default = "openai", key = "brainstormer_model", temperature = 0.15)
+    model = _get_model(config, default = "openai", key = "brainstormer_critique_model", temperature = 0.15)
     model_with_tools = model.with_structured_output(ApprovedBrainstormingIdea)
     critiques_in_loop = config['configurable'].get('critiques_in_loop', False)
 
@@ -74,7 +74,7 @@ def brainstorming_critique(state: State, config: GraphConfig):
 
 
 def making_writer_brainstorming(state: State, config: GraphConfig):
-    model = _get_model(config, default = "openai", key = "brainstormer_model", temperature = 0.7)
+    model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0.7)
     user_requirements = "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()])
     model_with_structured_output = model.with_structured_output(BrainstormingStructuredOutput)
     system_prompt = BRAINSTORMING_PROMPT
@@ -101,7 +101,7 @@ def making_writer_brainstorming(state: State, config: GraphConfig):
             }
 
         else:
-            model = _get_model(config, default = "openai", key = "brainstormer_model", temperature = 0)
+            model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0)
             adding_delay_for_rate_limits(model)
             output = model_with_structured_output.invoke(state['plannified_messages'] + [HumanMessage(content="Based on the improvements, structure the final structure:")])
             return {
@@ -119,7 +119,7 @@ def making_writer_brainstorming(state: State, config: GraphConfig):
             }
 
 def evaluate_chapter(state: State, config: GraphConfig):
-    model = _get_model(config = config, default = "openai", key = "writer_model", temperature = 0)
+    model = _get_model(config = config, default = "openai", key = "writing_reviewer_model", temperature = 0)
     model_with_tools = model.bind_tools([ApprovedWriterChapter, CritiqueWriterChapter], strict = True, tool_choice = 'any')
     draft = f"Story overview: {state['story_overview']}\nIntroduction: {state['plannified_intro']}\nMiddle: {state['plannified_development']}\nEnding: {state['plannified_ending']}\nWriting Style: {state['writing_style']}\nSummary of each chapter: {state['chapters_summaries']}"
     critiques_in_loop = config['configurable'].get('critiques_in_loop', False)
@@ -243,7 +243,7 @@ def generate_translation(state: State, config: GraphConfig):
         ]
         adding_delay_for_rate_limits(model)
         output = model_with_structured_output.invoke(messages)
-        messages.append(AIMessage(content = f"content: {output.translated_content}"+f"\n name_chapter: {output.translated_chapter_name}" ))
+        messages.append(AIMessage(content = f"Here is the translation:\n{output.translated_content}"+f"\n. This is the chapter name:\n{output.translated_chapter_name}"))
 
         model_with_structured_output_for_translating_book_name_prologue = model.with_structured_output(TranslatorSpecialCaseStructuredOutput)
         special_case_output = model_with_structured_output_for_translating_book_name_prologue.invoke(messages + [HumanMessage(content=f"Also, translate the book title and the book prologue:\n title: {state['book_title']}\n prologue: {state['book_prologue']}")])

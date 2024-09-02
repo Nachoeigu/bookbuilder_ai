@@ -9,8 +9,8 @@ Dont´ ask unnecesary questions!
 
 BRAINSTORMING_PROMPT = """
 You are an expert novelist about to begin crafting a new story based on the requirements below. 
-Your task is to outline a clear and compelling narrative structure, which will later guide the full development of the novel. 
-Your goal is to create a detailed roadmap that will serve as the foundation for writing the entire book.
+Your task is to outline a clear, compelling and highly detailed narrative structure, which will later guide the full development of the novel. 
+Your goal is to create a well defined roadmap that will serve as the foundation for writing the entire book.
 
 USER REQUIREMENTS:
 `{user_requirements}`

@@ -24,19 +24,20 @@ class GraphConfig(TypedDict):
     Initial configuration to trigger the AI system.
 
     Attributes:
-    - language: The language in which the system prompts will be generated. Options are 'english' or 'spanish'.
+    - language: The language in which the system prompts will be generated. eg: 'english', 'spanish', etc...
     - critiques_in_loop: Set to False if you only want a single critique per writing. Set to True if you want multiple critique iterations until the writing is approved.
     - instructor_model: Select the model for the instructor node. Options include 'openai', 'google', 'meta', or 'amazon'.
-    - brainstormer_model: Select the model for the brainstormer node. Options include 'openai', 'google', 'meta', or 'amazon'.
-    - critique_model: Select the model for the critique node. Options include 'openai', 'google', 'meta', or 'amazon'.
+    - brainstormer_idea_model: Select the model for the brainstormer idea node. Options include 'openai', 'google', 'meta', or 'amazon'.
+    - brainstormer_critique_model: Select the model for the brainstormer critique node. Options include 'openai', 'google', 'meta', or 'amazon'.
+
     - writer_model: Select the model for the writer node. Options include 'openai', 'google', 'meta', or 'amazon'.
     - writing_reviewer_model: Select the model for the writing reviewer node. Options include 'openai', 'google', 'meta', or 'amazon'.
     """
-    language: Literal['english', 'spanish']
+    language: Literal['english', 'spanish', 'portuguese', 'poland', 'french', 'german', 'italian', 'dutch','swedish', 'norwegian', 'danish', 'finnish', 'russian', 'chinese', 'japanese', 'korean','arabic', 'turkish', 'greek', 'hebrew']
     critiques_in_loop: bool
     instructor_model: Literal['openai', 'google','meta','amazon']
-    brainstormer_model: Literal['openai','google','meta', 'amazon']
-    critique_model: Literal['openai', 'google','meta','amazon']
+    brainstormer_idea_model: Literal['openai','google','meta', 'amazon']
+    brainstormer_critique_model: Literal['openai','google','meta', 'amazon'] 
     writer_model: Literal['openai', 'google','meta','amazon']
     writing_reviewer_model: Literal['openai', 'google','meta','amazon']
     translator_model: Literal['openai', 'google','meta','amazon']
@@ -50,9 +51,9 @@ class BrainstormingStructuredOutput(BaseModel):
     total_paragraphs_per_chapter: int = Field(description = "The number of paragraphs in each chapter. Assuming each paragraph is around 5 sentences.")
     book_name: str = Field(description="The title of the book. It should be unique, creative, and original.")
     book_prologue: str = Field(description="The opening section of the book. It should be engaging and designed to strongly capture the audience's attention.")
-    characters: str = Field(description = "Describe the characters of the story, in one paragraph each one.  Describe their background, motivations, and situations along the at the story journey.")
-    introduction: str = Field(description="Establish the foundation of the story, including elements such as:\n- Context and Setting: A description of the time, place, and atmosphere where the story takes place. Include any necessary background information relevant to the story.\n- Inciting Incident: Describe the event that disrupts, e.g: the protagonist’s normal life and initiates the main plot. It should set up the central conflict or challenge.\n- Themes and Conflicts: Introduce the central themes and conflicts that will be explored in the story. Mention any internal or external conflicts.\n- Transition: Ensure a smooth transition from the Introduction to the Development stage.")
-    development: str = Field(description="Expand the plot and characters. Follow this approach:\n- Rising Action: Describe the key events that increase tension and advance the central conflict. Include challenges that force the protagonist to grow or change.\n- Subplots (if applicable): Outline any secondary storylines that complement the main plot. Describe how these subplots intersect with the main plot.\n - Midpoint: Identify a significant event that alters the direction of the story or escalates the conflict. It could be a turning point or a major revelation.\n- Climax Build-up: Detail the events leading up to the climax. Explain how these events escalate the conflict and set the stage for the story's peak moment. It should build up and naturally move towards the ending.")
+    characters: str = Field(description = "Describe the characters of the story, in one paragraph each one.  Describe their background, motivations, and situations along the at the story journey. Be as detailed as possible.")
+    introduction: str = Field(description="Establish the foundation of the story, including elements such as:\n- Context and Setting: A description of the time, place, and atmosphere where the story takes place. Include any necessary background information relevant to the story.\n- Inciting Incident: Describe the event that disrupts, e.g: the protagonist’s normal life and initiates the main plot. It should set up the central conflict or challenge.\n- Themes and Conflicts: Introduce the central themes and conflicts that will be explored in the story. Mention any internal or external conflicts.\n- Transition: Ensure a smooth transition from the Introduction to the Development stage. Be as detailed as possible.")
+    development: str = Field(description="Expand the plot and characters. Follow this approach:\n- Rising Action: Describe the key events that increase tension and advance the central conflict. Include challenges that force the protagonist to grow or change.\n- Subplots (if applicable): Outline any secondary storylines that complement the main plot. Describe how these subplots intersect with the main plot.\n - Midpoint: Identify a significant event that alters the direction of the story or escalates the conflict. It could be a turning point or a major revelation.\n- Climax Build-up: Detail the events leading up to the climax. Explain how these events escalate the conflict and set the stage for the story's peak moment. It should build up and naturally move towards the ending. Be as detailed as possible.")
     ending: str = Field(description="Resolve the story’s central conflicts and conclude the characters' arcs. Include the following elements:\n- Climax: Describe the decisive moment where the main conflict reaches its peak. Explain how the protagonist confronts the greatest challenge or opposition.\n- Falling Action: Outline the immediate aftermath of the climax. Describe how the resolution of the main conflict affects the characters and world.\n- Resolution: Tie up any remaining loose ends and conclude the story, reflecting on themes and character changes.\n- Epilogue (optional): Provide a final reflection or glimpse into the characters' future, showing the long-term impact of the story.")
     chapters_summaries: List[str] = Field(description = "A list where each element is the summary of each chapter. Each one should contain a detailed description of what happen on it. Each summary MUST HAVE a length of 5 sentences minimum.")
 
@@ -156,7 +157,7 @@ class GraphOutput(TypedDict):
     content: Annotated[List[str], operator.add]
     chapter_names: Annotated[List[str], operator.add]
 
-def _get_model(config: GraphConfig, key:Literal['instructor_model','brainstormer_model','critique_model','writer_model'], temperature:float, default:Literal['openai', 'google','meta','amazon']='openai'):
+def _get_model(config: GraphConfig, key:Literal['instructor_model','brainstormer_idea_model','brainstormer_critique_model','writer_model','writing_reviewer_model','translator_model'], temperature:float, default:Literal['openai', 'google','meta','amazon']='openai'):
     model = config['configurable'].get(key, default)
     if model == "openai":
         return ChatOpenAI(temperature=temperature, model="gpt-4o-mini")
