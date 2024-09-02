@@ -8,7 +8,7 @@ os.chdir(WORKDIR)
 sys.path.append(WORKDIR)
 
 from langgraph.graph import END
-from src.utils import State
+from src.utils import State, GraphConfig
 from typing import Literal
 
 def should_go_to_brainstorming_writer(state: State) -> Literal['human_feedback','brainstorming_writer']:
@@ -26,11 +26,19 @@ def should_continue_with_critique(state: State) -> Literal['brainstorming_critiq
         return "brainstorming_critique"
 
 
-def has_writer_ended_book(state: State) -> Literal[END, 'writer']:
+def has_writer_ended_book(state: State, config: GraphConfig) -> Literal["translator", END, 'writer']:
 
     if (state['current_chapter'] == len(state['chapters_summaries']))&(state['is_chapter_approved'] == True):
-        return END
+        if config['configurable'].get('language') == 'english':
+            return END
+        else:
+            return "translator"
     else:
         return "writer"
 
-    
+def has_translator_ended_book(state: State, config: GraphConfig) -> Literal[END, 'translator']:
+
+    if (state['translated_current_chapter'] == len(state['chapters_summaries'])):
+        return END
+    else:
+        return "translator"

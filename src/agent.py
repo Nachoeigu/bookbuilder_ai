@@ -25,6 +25,9 @@ workflow.add_node("brainstorming_writer", making_writer_brainstorming)
 workflow.add_node("brainstorming_critique", brainstorming_critique)
 workflow.add_node("writer", generate_content)
 workflow.add_node("writing_reviewer", evaluate_chapter)
+workflow.add_node("translator", generate_translation)
+
+
 workflow.add_conditional_edges(
     "instructor",
     should_go_to_brainstorming_writer
@@ -33,6 +36,10 @@ workflow.add_edge("human_feedback","instructor")
 workflow.add_conditional_edges(
     "brainstorming_writer",
     should_continue_with_critique
+)
+workflow.add_conditional_edges(
+    "translator",
+    has_translator_ended_book
 )
 
 workflow.add_edge("brainstorming_critique","brainstorming_writer")

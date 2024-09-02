@@ -39,22 +39,32 @@ class GraphConfig(TypedDict):
     critique_model: Literal['openai', 'google','meta','amazon']
     writer_model: Literal['openai', 'google','meta','amazon']
     writing_reviewer_model: Literal['openai', 'google','meta','amazon']
+    translator_model: Literal['openai', 'google','meta','amazon']
 
 class BrainstormingStructuredOutput(BaseModel):
     """
     This tool defines and structures the proposed idea in detailed sections.  
     """
-    story_overview: str = Field(description = "Provide a highly detailed overview of the narrative that includes a strong introduction, a well-developed middle, and a satisfying conclusion.")
-    characters: str = Field(description = "Describe the characters of the story, in one paragraph each one.")
+    story_overview: str = Field(description = "A highly detailed overview of the narrative that includes a strong introduction, a well-developed middle, and a satisfying conclusion.")
     writing_style: str = Field(description = "The style and tone the writer should consider while developing the book.")
-    introduction: str = Field(description="Introduces the story by setting up the first key events, main characters, and important themes or conflicts. This part should smoothly lead into the middle of the story.")
-    development: str = Field(description="Continues from the introduction by exploring more events, growing the conflicts, and deepening the characters and themes. This middle part should build up and naturally move towards the ending.")
-    ending: str = Field(description="Wraps up the story by resolving conflicts, finishing the main events, and completing the characters' journeys. This part should connect back to the introduction and development to give a complete ending.")
-    chapters_summaries: List[str] = Field(description = "Provide a list where each element is the summary of each chapter. Each one should contain a detailed description of what happen on it. Each summary MUST HAVE a length of 5 sentences minimum.")
     total_paragraphs_per_chapter: int = Field(description = "The number of paragraphs in each chapter. Assuming each paragraph is around 5 sentences.")
     book_name: str = Field(description="The title of the book. It should be unique, creative, and original.")
     book_prologue: str = Field(description="The opening section of the book. It should be engaging and designed to strongly capture the audience's attention.")
+    characters: str = Field(description = "Describe the characters of the story, in one paragraph each one.  Describe their background, motivations, and situations along the at the story journey.")
+    introduction: str = Field(description="Establish the foundation of the story, including elements such as:\n- Context and Setting: A description of the time, place, and atmosphere where the story takes place. Include any necessary background information relevant to the story.\n- Inciting Incident: Describe the event that disrupts, e.g: the protagonist’s normal life and initiates the main plot. It should set up the central conflict or challenge.\n- Themes and Conflicts: Introduce the central themes and conflicts that will be explored in the story. Mention any internal or external conflicts.\n- Transition: Ensure a smooth transition from the Introduction to the Development stage.")
+    development: str = Field(description="Expand the plot and characters. Follow this approach:\n- Rising Action: Describe the key events that increase tension and advance the central conflict. Include challenges that force the protagonist to grow or change.\n- Subplots (if applicable): Outline any secondary storylines that complement the main plot. Describe how these subplots intersect with the main plot.\n - Midpoint: Identify a significant event that alters the direction of the story or escalates the conflict. It could be a turning point or a major revelation.\n- Climax Build-up: Detail the events leading up to the climax. Explain how these events escalate the conflict and set the stage for the story's peak moment. It should build up and naturally move towards the ending.")
+    ending: str = Field(description="Resolve the story’s central conflicts and conclude the characters' arcs. Include the following elements:\n- Climax: Describe the decisive moment where the main conflict reaches its peak. Explain how the protagonist confronts the greatest challenge or opposition.\n- Falling Action: Outline the immediate aftermath of the climax. Describe how the resolution of the main conflict affects the characters and world.\n- Resolution: Tie up any remaining loose ends and conclude the story, reflecting on themes and character changes.\n- Epilogue (optional): Provide a final reflection or glimpse into the characters' future, showing the long-term impact of the story.")
+    chapters_summaries: List[str] = Field(description = "A list where each element is the summary of each chapter. Each one should contain a detailed description of what happen on it. Each summary MUST HAVE a length of 5 sentences minimum.")
 
+class TranslatorStructuredOutput(BaseModel):
+    """ This tool structures the way the translator should reply """
+    translated_content: str = Field(description = "Your final translation from the original content provided")
+    translated_chapter_name: str = Field(description = "Translation of the chapter name.")
+
+class TranslatorSpecialCaseStructuredOutput(BaseModel):
+    """ This tool structures the way the translator should reply """
+    translated_book_name: str = Field(description = "The translation of the book name")
+    translated_book_prologue: str = Field(description= "The translation of the prologue of the book")
 
 class WriterStructuredOutput(BaseModel):
     """This tool structures the way the writer invention"""
@@ -65,7 +75,12 @@ class DocumentationReady(TypedDict):
     """
     This tool confirms that the Instructor has the necessary information to pass to the writer
     """
-    requirements: str = Field(description = "A highly detailed description to the writer about the requirements should consider while developing the book")
+    topic: str = Field(description="The required topic defined for the user, with high details")
+    target_audience: str = Field(description = "The required target audience the book should point to,  with high details")
+    genre: str = Field(description="Genre of the book to develop,  with high details")
+    writing_style: str = Field(description="The desired tone, style or book reference the writing should respect, with high details")
+    additional_requirements: str = Field(description = "More requirements beyond topic, target audience, genre and writing style.")
+
 
 class ApprovedWriterChapter(TypedDict):
     """
@@ -88,15 +103,23 @@ class ApprovedBrainstormingIdea(BaseModel):
 
 class State(TypedDict):
     content: Annotated[List[str], operator.add]
+    translated_content: Annotated[List[str], operator.add]
+    translated_chapter_names: Annotated[List[str], operator.add]
     content_of_approved_chapters: Annotated[List[str], operator.add]
     chapter_names_of_approved_chapters: Annotated[List[str], operator.add]
     chapter_names: Annotated[List[str], operator.add]
     writer_memory: Annotated[List[AnyMessage], operator.add]
+    translator_memory: Annotated[List[AnyMessage], operator.add]
     user_instructor_messages: Annotated[List[AnyMessage], operator.add]
     plannified_messages: Annotated[List[AnyMessage], operator.add]
     critique_brainstorming_messages: Annotated[List[AnyMessage], operator.add]
     is_plan_approved: bool
+
+    translated_book_prologue: str
+    translation_language: str
+    translated_book_name: str
     current_chapter: int
+    translated_current_chapter: int    
     instructor_documents: DocumentationReady
     book_prologue: str
     book_title: str
@@ -128,13 +151,6 @@ class GraphOutput(TypedDict):
     content: Annotated[List[str], operator.add]
     chapter_names: Annotated[List[str], operator.add]
 
-def _get_language(config: GraphConfig, prompt_case:Literal['INSTRUCTOR_PROMPT', 'BRAINSTORMING_PROMPT','CRITIQUE_PROMPT','WRITER_PROMPT'], default:Literal['spanish','english']='english'):
-    language = config['configurable'].get('language', default)
-    if language == 'spanish':
-        return globals()[f"{prompt_case}_ES"]
-    elif language == 'english':
-        return globals()[prompt_case]
-
 def _get_model(config: GraphConfig, key:Literal['instructor_model','brainstormer_model','critique_model','writer_model'], temperature:float, default:Literal['openai', 'google','meta','amazon']='openai'):
     model = config['configurable'].get(key, default)
     if model == "openai":
@@ -144,7 +160,7 @@ def _get_model(config: GraphConfig, key:Literal['instructor_model','brainstormer
     elif model == 'meta':
         return ChatGroq(temperature=temperature, model="llama-3.1-70b-versatile")
     elif model == 'amazon':
-        return ChatBedrock(model_id = 'anthropic.claude-3-sonnet-20240229-v1:0', model_kwargs = {'temperature':temperature})
+        return ChatBedrock(model_id = 'anthropic.claude-3-5-sonnet-20240620-v1:0', model_kwargs = {'temperature':temperature})
     else:
         raise ValueError
     

@@ -9,7 +9,6 @@ This software empowers you to create an entire book tailored to your interests o
 ### Overview:
 Book Builder With AI follows a systematic, interactive workflow that guides you from your initial concept to a fully developed book. Here's how the process unfolds:
 
-<img width="593" alt="image" src="https://github.com/user-attachments/assets/7f8d4bd8-83bb-4ac5-a07d-13f6183143de">
 
 ### 1. **Initiation by the Human:**
 You kickstart the AI workflow by providing an initial message about your book idea. This could include a rough concept, genre, specific themes, or any other guidance you want to provide.
@@ -39,8 +38,11 @@ With the draft approved, the final version is passed to the Writer Agent. This a
 ### 6. **Chapter-by-Chapter Review:**
 As each chapter is completed, a Reviewer Agent analyzes it and provides feedback for improvements. The Writer adapts the chapter based on this feedback, and the process repeats until the Reviewer approves the chapter.
 
-### 7. **Completion:**
-Once all chapters are written and approved, the book is finalized. The finished product includes the book title, prologue, and the complete content of your story, ready for you to enjoy or share with others.
+### 7. **Translation if needed:**
+Once all chapters are written and approved, based on the initial configuration, the book is translated (or not) to a target language.
+
+### 8. **Completion:**
+We finally have the book ready to read. The finished product includes the book title, prologue, and the complete content of your story, ready for you to enjoy or share with others.
 
 ---
 

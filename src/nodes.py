@@ -8,17 +8,15 @@ os.chdir(WORKDIR)
 sys.path.append(WORKDIR)
 
 from src.constants import *
-from src.utils import State, DocumentationReady, ApprovedBrainstormingIdea, WriterStructuredOutput, BrainstormingStructuredOutput, ApprovedWriterChapter, CritiqueWriterChapter
+from src.utils import State, DocumentationReady, ApprovedBrainstormingIdea, WriterStructuredOutput, BrainstormingStructuredOutput, ApprovedWriterChapter, CritiqueWriterChapter, TranslatorStructuredOutput, TranslatorSpecialCaseStructuredOutput
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
-from src.utils import GraphConfig, _get_model, _get_language, check_chapter, adding_delay_for_rate_limits
+from src.utils import GraphConfig, _get_model, check_chapter, adding_delay_for_rate_limits
 
 
 def get_clear_instructions(state: State, config: GraphConfig):
     model = _get_model(config = config, default = "openai", key = "instructor_model", temperature = 0)
     model = model.bind_tools([DocumentationReady])
-    system_prompt = _get_language(config = config,
-                                  prompt_case = "INSTRUCTOR_PROMPT"
-                                  )
+    system_prompt = INSTRUCTOR_PROMPT
     messages = [SystemMessage(content = system_prompt)] + state['user_instructor_messages']
     adding_delay_for_rate_limits(model)
     reply = model.invoke(messages)
@@ -35,8 +33,6 @@ def read_human_feedback(state: State):
 
 
 
-
-
 def brainstorming_critique(state: State, config: GraphConfig):
     model = _get_model(config, default = "openai", key = "brainstormer_model", temperature = 0.15)
     model_with_tools = model.with_structured_output(ApprovedBrainstormingIdea)
@@ -44,9 +40,7 @@ def brainstorming_critique(state: State, config: GraphConfig):
 
     if state['critique_brainstorming_messages'] == []:
         user_requirements = "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()])
-        system_prompt = _get_language(config = config,
-                                  prompt_case = "BRAINSTORMING_PROMPT"
-                                  ) 
+        system_prompt = BRAINSTORMING_PROMPT
         messages = [
          SystemMessage(content = system_prompt.format(user_requirements=user_requirements)),
          HumanMessage(content = state['plannified_messages'][-1])
@@ -77,12 +71,10 @@ def making_writer_brainstorming(state: State, config: GraphConfig):
     model = _get_model(config, default = "openai", key = "brainstormer_model", temperature = 0.7)
     user_requirements = "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()])
     model_with_structured_output = model.with_structured_output(BrainstormingStructuredOutput)
-    system_prompt = _get_language(config = config,
-                                  prompt_case = "BRAINSTORMING_PROMPT"
-                                  )
+    system_prompt = BRAINSTORMING_PROMPT
     
     system_prompt = SystemMessage(content = system_prompt.format(user_requirements=user_requirements))
-    if state['is_plan_approved'] is None:
+    if state.get('is_plan_approved', None) is None:
         adding_delay_for_rate_limits(model)
         output = model_with_structured_output.invoke([system_prompt] + [HumanMessage(content = "Start it...")])
         output = "\n".join([f"{key}: {value}" for key, value in output.dict().items()])
@@ -120,10 +112,8 @@ def evaluate_chapter(state: State, config: GraphConfig):
     draft = f"Story overview: {state['story_overview']}\nIntroduction: {state['plannified_intro']}\nMiddle: {state['plannified_development']}\nEnding: {state['plannified_ending']}\nWriting Style: {state['writing_style']}\nSummary of each chapter: {state['chapters_summaries']}"
     critiques_in_loop = config['configurable'].get('critiques_in_loop', False)
 
-    if state['is_chapter_approved'] is None:
-        system_prompt = _get_language(config = config,
-                                    prompt_case = "WRITING_REVIEWER_PROMPT"
-                                    )
+    if state.get('is_chapter_approved', None) == None:
+        system_prompt = WRITING_REVIEWER_PROMPT
 
         new_message = [SystemMessage(content = system_prompt.format(draft=draft))]
         adding_delay_for_rate_limits(model)
@@ -170,12 +160,11 @@ def generate_content(state: State, config: GraphConfig):
     model = _get_model(config = config, default = "openai", key = "writer_model", temperature = 0.70)
     model_with_structured_output = model.with_structured_output(WriterStructuredOutput)
 
-    if state['current_chapter'] is None:
-        system_prompt = _get_language(config = config,
-                                    prompt_case = "WRITER_PROMPT"
-                                    )
+    if state.get('current_chapter', None) == None:
+        system_prompt = WRITER_PROMPT
         messages = [
             SystemMessage(content=system_prompt.format(
+                user_requirements= "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()]),
                 story_overview=state['story_overview'],
                 characters=state['characters'],
                 writing_style=state['writing_style'],
@@ -219,5 +208,50 @@ def generate_content(state: State, config: GraphConfig):
                 'current_chapter': state['current_chapter'] + 1 if state['is_chapter_approved'] == True else state['current_chapter'],
                 'writer_memory': new_messages
                 }
+
+
+def generate_translation(state: State, config: GraphConfig):
+    model = _get_model(config = config, default = "openai", key = "translator_model", temperature = 0)
+    model_with_structured_output = model.with_structured_output(TranslatorStructuredOutput)
+
+    if state.get("translated_current_chapter", None) == None:
+        system_prompt = TRANSLATOR_PROMPT
+        messages = [
+            SystemMessage(content=system_prompt.format(
+                target_language=config['configurable'].get("language"),
+                book_name=state['book_title'],
+                story_topic=state['instructor_documents']['topic']
+                )
+            )
+        ]
+        adding_delay_for_rate_limits(model)
+        output = model_with_structured_output.invoke(messages + [HumanMessage(content=f"Start with the first chapter: title: {state['chapter_names_of_approved_chapters'][0]}\n {state['content_of_approved_chapters'][0]}.")])
+        messages.append(AIMessage(content = f"content: {output.translated_content}"+f"\n name_chapter: {output.translated_chapter_name}" ))
+
+        model_with_structured_output_for_translating_book_name_prologue = model.with_structured_output(TranslatorSpecialCaseStructuredOutput)
+        special_case_output = model_with_structured_output_for_translating_book_name_prologue.invoke(messages + [HumanMessage(content=f"Also, translate the book title and the book prologue:\n title: {state['book_title']}\n prologue: {state['book_prologue']}")])
+        book_name = special_case_output.translated_book_name
+        book_prologue = special_case_output.translated_book_prologue
+        translation_language = config['configurable'].get("language")
+
+        return {'translated_content': [output.translated_content],
+                'translated_book_name': book_name,
+                'translation_language': translation_language,
+                'translated_book_prologue': book_prologue,
+                'translated_chapter_names': [output.translated_chapter_name],
+                'translated_current_chapter': 1,
+                'translator_memory': messages}
+    else:
+        new_message = [HumanMessage(content = f"Continue with chapter number {state['translated_current_chapter']}: title: {state['chapter_names_of_approved_chapters'][state['translated_current_chapter']]}\n {state['content_of_approved_chapters'][state['translated_current_chapter']]}.")]
+
+        adding_delay_for_rate_limits(model)
+        output = model_with_structured_output.invoke(state['translator_memory'] + new_message)
+        
+        new_messages = new_message + [AIMessage(content = f"content: {output.translated_content}"+f"\n name_chapter: {output.translated_chapter_name}")]
+
+        return {'translated_content': [output.translated_content],
+                'translated_chapter_names': [output.translated_chapter_name],
+                'translated_current_chapter': state['translated_current_chapter'] + 1,
+                'translator_memory': new_messages}
 
 
