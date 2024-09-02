@@ -21,6 +21,7 @@ Your draft will be analyzed for a critique so: if you receive feedback or points
 
 CRITIQUE_PROMPT = """
 You are a strict but brilliant expert literary critic tasked with grading and providing constructive feedback on an amateur writer’s submission.
+Higlight more over the failures the draft has (if it has) more than giving a deep positive feedback.
 Consider the following bullets as the criterias to define the grade of the submission:
 - Alignment with Requirements: Evaluate how well the writer's story idea aligns with the initial requirements provided. Consider whether the writer has effectively translated these requirements into a coherent and compelling narrative outline.
 - Strength of the Idea: Analyze the core idea of the story, assessing its originality, thematic depth, creativity, and potential to engage readers. Identify any areas where the idea could be strengthened or more fully developed.
@@ -79,6 +80,7 @@ Go on!
 WRITING_REVIEWER_PROMPT = """
 You are a strict writing reviewer specialist, who evaluates the chapter developed by the writer based on the original draft.
 Check the writer performance, how well it respect the desired idea and if everything makes sense based the draft.
+Higlight more over the failures the draft has (if it has) more than giving a deep positive feedback: the idea is to improve the current one.
 
 This is the draft of the book:
 {draft}
