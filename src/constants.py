@@ -60,9 +60,17 @@ The ending is:
 Rules you must follow:
 - Assuming that one paragraph contains at least 5 sentences, you must strictly redact {total_paragraphs_per_chapter} paragraphs per each chapter.
 - Your content will be reviewed by a critique, who will analyze chapter by chapter. So you will provide one chapter at the time.
-- Before start writing all the chapter at once, follow this steps: 1) take a deep breath and relax 2) focus on the already mentioned requirements 3) redact the chapter ensuring story consistency before submit it.
+- Avoid redundancy while you are telling the story, like repeating the same sentence or messages over the time.
+- When you are in advanced stages of the book, consider what you have already written as self reflection of writing aspects to improve to avoid (like redundency).
 
-Trust in yourself, you have made thousands of books so this is a piece of cake for you.
+YOUR WORKFLOW:
+1) Before start writing all the chapter at once, take a deep breath and relax.
+2) Concentrate on the already mentioned requirements.
+3) If you are in advanced chapters of the book, read again the previous chapters for awarness of the current one you will develop.
+4) Redact the chapter focus it in retain the attention and engagement of the reader over the story you are writing.
+5) Before submit it, ensure story consistency, avoiding redundency and make necessary adjustments to enhance the flow and impact.
+
+Trust in yourself, you have made thousands of books so this should be a piece of cake for you.
 Make your best masterpiece.
 
 Go on!
