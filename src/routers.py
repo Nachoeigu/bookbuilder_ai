@@ -26,19 +26,19 @@ def should_continue_with_critique(state: State) -> Literal['brainstorming_critiq
         return "brainstorming_critique"
 
 
-def has_writer_ended_book(state: State, config: GraphConfig) -> Literal["translator", END, 'writer']:
+def has_writer_ended_book(state: State, config: GraphConfig) -> Literal["translator", "assembler", 'writer']:
 
     if (state['current_chapter'] == len(state['chapters_summaries']))&(state['is_chapter_approved'] == True):
         if config['configurable'].get('language') == 'english':
-            return END
+            return "assembler"
         else:
             return "translator"
     else:
         return "writer"
 
-def has_translator_ended_book(state: State, config: GraphConfig) -> Literal[END, 'translator']:
+def has_translator_ended_book(state: State, config: GraphConfig) -> Literal["assembler", 'translator']:
 
     if (state['translated_current_chapter'] == len(state['chapters_summaries'])):
-        return END
+        return "assembler"
     else:
         return "translator"

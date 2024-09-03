@@ -26,7 +26,7 @@ workflow.add_node("brainstorming_critique", brainstorming_critique)
 workflow.add_node("writer", generate_content)
 workflow.add_node("writing_reviewer", evaluate_chapter)
 workflow.add_node("translator", generate_translation)
-
+workflow.add_node("assembler", assembling_book)
 
 workflow.add_conditional_edges(
     "instructor",
@@ -44,6 +44,8 @@ workflow.add_conditional_edges(
 
 workflow.add_edge("brainstorming_critique","brainstorming_writer")
 workflow.add_edge("writer","writing_reviewer")
+workflow.add_edge("assembler",END)
+
 
 
 workflow.add_conditional_edges(
@@ -70,9 +72,10 @@ if __name__ == '__main__':
         "configurable": {
             "thread_id": 42,
             "language":"spanish",
-            "instructor_model":"openai",
-            "brainstormer_model":"openai",
-            "critique_model":"openai",
+            "instructor_model":"amazon",
+            "brainstormer_idea_model":"amazon",
+            "brainstormer_critique_model":"amazon",
+            "reviewer_model":"amazon",
             "writer_model":"openai"
         }
     }
@@ -82,21 +85,22 @@ if __name__ == '__main__':
             config = configuration,
             stream_mode='values'):
         
+        type_msg = event['user_instructor_messages'][-1].type
+        msg = event['user_instructor_messages'][-1].content
+        print(type_msg.upper() + f": {msg}")
 
-        event['user_instructor_messages'][-1].pretty_print()
-
-    
     while True:
         new_human_input_msg = input("Provide your answer: ")
         new_human_input_msg = HumanMessage(content = new_human_input_msg)
         app.update_state(configuration, {'user_instructor_messages': [new_human_input_msg]}, as_node = 'human_feedback')
-        new_human_input_msg.pretty_print()
+        print("HUMAN" + f": {new_human_input_msg.content}")
         current_node = 'human_feedback'
         app.get_state(config = configuration).next
         for event in app.stream(
                 input = None,
                 config = configuration,
                 stream_mode='values'):
-            print('---')
-            print(event)
-            print('---')
+            type_msg = event['user_instructor_messages'][-1].type
+            msg = event['user_instructor_messages'][-1].content
+            print(type_msg.upper() + f": {msg}")
+

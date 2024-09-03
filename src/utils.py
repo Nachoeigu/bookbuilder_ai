@@ -139,6 +139,9 @@ class State(TypedDict):
     total_paragraphs_per_chapter: int
     writing_reviewer_memory: Annotated[List[AnyMessage], operator.add]
     is_chapter_approved: bool
+    english_version_book: str
+    translated_version_book: str
+
 
 
 

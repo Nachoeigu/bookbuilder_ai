@@ -33,8 +33,6 @@ def get_clear_instructions(state: State, config: GraphConfig):
 def read_human_feedback(state: State):
     pass
 
-
-
 def brainstorming_critique(state: State, config: GraphConfig):
     model = _get_model(config, default = "openai", key = "brainstormer_critique_model", temperature = 0.15)
     model_with_tools = model.with_structured_output(ApprovedBrainstormingIdea)
@@ -71,7 +69,6 @@ def brainstorming_critique(state: State, config: GraphConfig):
                 'critique_brainstorming_messages': ["Perfect!!"],
                 'brainstorming_critique_model': retrieve_model_name(model)
                 }
-
 
 def making_writer_brainstorming(state: State, config: GraphConfig):
     model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0.7)
@@ -236,7 +233,6 @@ def generate_content(state: State, config: GraphConfig):
                 'writer_model': retrieve_model_name(model)
                 }
 
-
 def generate_translation(state: State, config: GraphConfig):
     model = _get_model(config = config, default = "openai", key = "translator_model", temperature = 0)
     model_with_structured_output = model.with_structured_output(TranslatorStructuredOutput)
@@ -289,3 +285,20 @@ def generate_translation(state: State, config: GraphConfig):
         }
 
 
+def assembling_book(state: State, config: GraphConfig):
+    translation_language = config['configurable'].get("language")
+    english_content = "Book title:\n" + state['book_title'] + '\n\n' + "Book prologue:\n" + state['book_prologue'] + '\n\n' + 'Used models:'+'\n' + "\n".join(f"- {key}: {state[key]}" for key in ["instructor_model", "brainstorming_writer_model", "brainstorming_critique_model", "writer_model", "reviewer_model", "translator_model"] if key in state) + '\n\n'  + "Initial requirement:\n" + "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()]) + '\n\n'
+    for n_chapter, chapter in enumerate(state['content_of_approved_chapters']):
+        english_content += str(n_chapter + 1) + f') {state["chapter_names_of_approved_chapters"][n_chapter]}' + '\n\n' + chapter + '\n\n'
+
+    if translation_language == 'english':
+        translated_content = ''
+    else:
+        translated_content = "Book title:\n" + state['translated_book_name']  + '\n\n' + "Book prologue:\n" + state['translated_book_prologue'] + '\n\n' + 'Used models:'+'\n' + "\n".join(f"- {key}: {state[key]}" for key in ["instructor_model", "brainstorming_writer_model", "brainstorming_critique_model", "writer_model", "reviewer_model", "translator_model"] if key in state) + '\n\n' + "Initial requirement:\n" + "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()]) + '\n\n'
+        for n_chapter, chapter in enumerate(state['translated_content']):
+            translated_content += str(n_chapter + 1) + f') {state["translated_chapter_names"][n_chapter]}' + '\n\n' + chapter + '\n\n'
+
+    return {
+        "english_version_book": english_content,
+        "translated_version_book": translated_content
+    }
