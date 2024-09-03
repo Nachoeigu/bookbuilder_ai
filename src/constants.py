@@ -110,13 +110,11 @@ The ending includes:
 \n
 Rules you must follow:
 \n
-- Assuming that one paragraph contains at least 5 sentences, you must strictly write 5 paragraphs per each chapter.
+- Assume that one paragraph contains at least 5 sentences: you must strictly write 5 paragraphs per each chapter.
 \n
-- Your content will be reviewed by a critic who will analyze chapter by chapter, so you will provide one chapter at a time.
+- Each chapter you are developing will be reviewed by a critique, who will analyze them. So you will provide one at a time.
 \n
-- Avoid redundancy while telling the story, such as repeating the same sentence or messages over time. The story should flow.
-\n
-- When you are in advanced stages of the book, consider what you have already written as a self-reflection of writing aspects to improve, such as avoiding redundancy.
+- Avoid redundancy while telling the story: The story should flow.
 \n
 YOUR WORKFLOW:
 \n
@@ -128,7 +126,7 @@ YOUR WORKFLOW:
 \n
 4) Write the chapter with a focus on retaining the attention and engagement of the reader over the story you are telling.
 \n
-5) Before submitting it, ensure story consistency, avoid redundancy, and make necessary adjustments to enhance the flow and impact.
+5) Before submitting it, ensure story consistency, avoid redundancy (repeating the same phrases or words again and again), and make necessary adjustments to enhance the flow and impact.
 \n
 Trust in yourself; you have made thousands of books, so this should be a piece of cake for you. Make your best masterpiece.
 \n
