@@ -108,6 +108,9 @@ The ending includes:
 \n
 - Epilogue (optional): {epilogue}
 \n
+\n
+With all this information in mind, you should develop each of the chapters of the book.
+\n
 Rules you must follow:
 \n
 - Assume that one paragraph contains at least 5 sentences: you must strictly write 5 paragraphs per each chapter.
@@ -130,7 +133,7 @@ YOUR WORKFLOW:
 \n
 Trust in yourself; you have made thousands of books, so this should be a piece of cake for you. Make your best masterpiece.
 \n
-Go on!
+Go on, write your book!
 """
 
 WRITING_REVIEWER_PROMPT = """

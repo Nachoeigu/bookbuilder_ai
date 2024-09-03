@@ -18,24 +18,39 @@ You kickstart the AI workflow by providing an initial message about your book id
 ### 2. **Instructor Agent:**
 The Instructor Agent takes your initial input and begins documenting the requirements for your book. The agent might ask you further questions to refine the concept and ensure it fully understands your vision. This phase can involve multiple iterations until the Instructor has a clear and complete set of instructions.
 
-### 3. **Brainstorming Writer:**
-Once the instructions are finalized, they are handed over to the Brainstorming Writer Agent. This agent is responsible for drafting a detailed outline of your book, considering the following key elements:
-   - **Story Overview:** A comprehensive narrative overview with a strong introduction, well-developed middle, and satisfying conclusion.
-   - **Characters:** Descriptions of each character, highlighting their roles and traits.
-   - **Writing Style:** The tone and style that should be reflected in the writing.
-   - **Introduction:** Setting up the key events, main characters, and themes at the beginning.
-   - **Development:** Expanding on events, conflicts, and character development throughout the middle.
-   - **Ending:** Concluding the story by resolving conflicts and completing the characters' journeys.
-   - **Chapter Summaries:** A detailed summary for each chapter, with a minimum of five sentences per summary.
-   - **Total Paragraphs per Chapter:** The specified number of paragraphs for each chapter, assuming five sentences per paragraph.
-   - **Book Name:** A unique, creative title for your book.
-   - **Book Prologue:** An engaging opening section designed to captivate your audience.
+### 3. **Brainstorming Idea Writer:**
+Once the instructions are finalized, they are handed over to the Brainstorming Idea Writer Agent. This agent is responsible for drafting a detailed outline of your book, considering the following key elements:
+- **Story Overview:** A highly detailed overview of the narrative that includes a strong introduction, a well-developed middle, and a satisfying conclusion.
+- **Characters:**  Characters of the story descriptions: background, motivations, and situations along the story journey.
+- **Writing Style:**  The style and tone the writer should consider while developing the book.
+- **Book Name:** The title of the book. 
+- **Book Prologue:** The opening section of the book.
+- **Context Setting:**  The time, place, and atmosphere where the story takes place. 
+- **Inciting Incident:** The event that disrupts the protagonist’s normal life and initiates the main plot.
+- **Themes Conflict Intro:**  The central themes and conflicts that will be explored in the story. 
+- **Transition to Development:**  A transition from the Introduction to the Development stage. 
+- **Rising Action:**  The key events that increase tension and advance the central conflict.
+- **SubPlots:** Any secondary storylines that complement the main plot. 
+- **Midpoint:** A significant event that alters the direction of the story or escalates the conflict. 
+- **Climax Build Up:** The events leading up to the climax. 
+- **Climax:** The decisive moment where the main conflict reaches its peak. 
+- **Falling Action:** The immediate aftermath of the climax.
+- **Resolution:** Conclusion fo the story.
+- **Epilogue:** A final reflection or glimpse into the characters' future, showing the long-term impact of the story.
+
 
 ### 4. **Critique and Refinement:**
-After the initial draft is developed, a Critique Agent reviews it and suggests adjustments. The Brainstorming Writer then revises the draft based on this feedback. This cycle continues until the Critique Agent approves the draft.
+After the initial draft is developed, a Critique Agent reviews it and suggests adjustments. The Brainstorming Idea Writer then revises the draft based on this feedback. This cycle continues until the Critique Agent approves the draft.
 
-### 5. **Writing the Book:**
-With the draft approved, the final version is passed to the Writer Agent. This agent writes the full book, chapter by chapter, following the established requirements.
+### 5. **Developing Deeply Narratives:**
+With the draft approved, the final version is passed to the Brainstorming Narrative Writer Agent. This agent will generate a summary of each of the chapter the book will have.
+
+
+### 5. **New Critiques and Refinements:**
+When the narrative is developed, it will be reviewed by the Brainstorming Narrative Critique Agent. It will make a review of the narrative and provide feedback. Then the Brainstorming Narrator Writer will make the adjustments. This cycle continues until the Critique Agent approves the draft.
+
+### 6. **Writing the Book:**
+When it is approved the draft of the Brainstorming Narrative Writer, it is time to start writing the entire book. This Writer agent develops the full book, chapter by chapter, following the established requirements.
 
 ### 6. **Chapter-by-Chapter Review:**
 As each chapter is completed, a Reviewer Agent analyzes it and provides feedback for improvements. The Writer adapts the chapter based on this feedback, and the process repeats until the Reviewer approves the chapter.
