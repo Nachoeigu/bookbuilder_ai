@@ -9,7 +9,7 @@ This software empowers you to create an entire book tailored to your interests o
 ### Overview:
 Book Builder With AI follows a systematic, interactive workflow that guides you from your initial concept to a fully developed book. Here's how the process unfolds:
 
-<img width="656" alt="image" src="https://github.com/user-attachments/assets/64b7d8b2-42bf-47d5-b289-d78fde1e8679">
+<img width="810" alt="image" src="https://github.com/user-attachments/assets/195d8085-1c67-4e67-b686-f09caf319415">
 
 
 ### 1. **Initiation by the Human:**
