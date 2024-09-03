@@ -40,7 +40,7 @@ def brainstorming_idea_critique(state: State, config: GraphConfig):
 
     if state['critique_brainstorming_messages'] == []:
         user_requirements = "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()])
-        system_prompt = CRITIQUE_PROMPT
+        system_prompt = CRITIQUE_IDEA_PROMPT
         messages = [
          SystemMessage(content = system_prompt.format(user_requirements=user_requirements)),
          HumanMessage(content = state['plannified_messages'][-1].content)
@@ -78,7 +78,7 @@ def brainstorming_narrative_critique(state: State, config: GraphConfig):
 
     if state['critique_brainstorming_narrative_messages'] == []:
         user_requirements = "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()])
-        system_prompt = CRITIQUE_PROMPT
+        system_prompt = CRITIQUE_NARRATIVE_PROMPT
         messages = [
          SystemMessage(content = system_prompt.format(user_requirements=user_requirements)),
          HumanMessage(content = str(state['plannified_chapters_messages'][-1]))
@@ -114,12 +114,11 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
     model_with_structured_output = model.with_structured_output(BrainstormingNarrativeStructuredOutput, strict = True)
     
     if state.get('is_detailed_story_plan_approved', None) is None:
-        system_prompt = BRAINSTORMING_PROMPT
+        system_prompt = BRAINSTORMING_NARRATIVE_PROMPT.format(idea_draft=f"Story overview: {state['story_overview']}\n" f"Context and Setting: {state['plannified_context_setting']}\n" f"Inciting Incident: {state['plannified_inciting_incident']}\n" f"Themes and Conflicts Introduction: {state['plannified_themes_conflicts_intro']}\n" f"Transition to Development: {state['plannified_transition_to_development']}\n" f"Rising Action: {state['plannified_rising_action']}\n" f"Subplots: {state['plannified_subplots']}\n" f"Midpoint: {state['plannified_midpoint']}\n" f"Climax Build-Up: {state['plannified_climax_build_up']}\n" f"Climax: {state['plannified_climax']}\n" f"Falling Action: {state['plannified_falling_action']}\n" f"Resolution: {state['plannified_resolution']}\n" f"Epilogue: {state['plannified_epilogue']}\n" f"Writing Style: {state['writing_style']}")
         system_prompt = SystemMessage(content = system_prompt.format(user_requirements=user_requirements))
         adding_delay_for_rate_limits(model)
         n_chapters = 10 if config['configurable'].get('n_chapters') is None else config['configurable'].get('n_chapters')
-        draft = ( f"Story overview: {state['story_overview']}\n" f"Context and Setting: {state['plannified_context_setting']}\n" f"Inciting Incident: {state['plannified_inciting_incident']}\n" f"Themes and Conflicts Introduction: {state['plannified_themes_conflicts_intro']}\n" f"Transition to Development: {state['plannified_transition_to_development']}\n" f"Rising Action: {state['plannified_rising_action']}\n" f"Subplots: {state['plannified_subplots']}\n" f"Midpoint: {state['plannified_midpoint']}\n" f"Climax Build-Up: {state['plannified_climax_build_up']}\n" f"Climax: {state['plannified_climax']}\n" f"Falling Action: {state['plannified_falling_action']}\n" f"Resolution: {state['plannified_resolution']}\n" f"Epilogue: {state['plannified_epilogue']}\n" f"Writing Style: {state['writing_style']}" )
-        user_query = HumanMessage(content = f"You have the following set up: {draft}. Develop a story with {n_chapters} chapters.")
+        user_query = HumanMessage(content = f"Develop a story with {n_chapters} chapters.\nEnsure consistency and always keep the attention of the audience.")
         messages = [system_prompt] + [user_query]
         output = model_with_structured_output.invoke(messages)
 
@@ -153,13 +152,12 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
                 'brainstorming_writer_model': retrieve_model_name(model)            
             }
 
-
 def making_general_story_brainstorming(state: State, config: GraphConfig):
     model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0.7)
     user_requirements = "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()])
     model_with_structured_output = model.with_structured_output(BrainstormingStructuredOutput, strict = True)
     
-    system_prompt = BRAINSTORMING_PROMPT
+    system_prompt = BRAINSTORMING_IDEA_PROMPT
     
     system_prompt = SystemMessage(content = system_prompt.format(user_requirements=user_requirements))
     if state.get('is_general_story_plan_approved', None) is None:
@@ -213,7 +211,6 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
             'book_prologue': output.book_prologue,
             'brainstorming_writer_model': retrieve_model_name(model)
             }
-
 
 def evaluate_chapter(state: State, config: GraphConfig):
     model = _get_model(config = config, default = "openai", key = "writing_reviewer_model", temperature = 0)
@@ -323,7 +320,7 @@ def generate_content(state: State, config: GraphConfig):
         if state['is_chapter_approved'] == False:
             new_message = [HumanMessage(content = state['writing_reviewer_memory'][-1].content + '\n Focus on each of this points, and improve the chapter.')]
         else:
-            new_message = [HumanMessage(content = f"Continue with the chapter {state['current_chapter'] + 1}, which is about: {state['plannified_chapters_summaries'][state['current_chapter']]}")]
+            new_message = [HumanMessage(content = f"Continue with the chapter {state['current_chapter'] + 1}, which is about: {state['plannified_chapters_summaries'][state['current_chapter']]}.\nRemember to read again the previous developed chapters before starting this one.")]
         adding_delay_for_rate_limits(model)
         output = model_with_structured_output.invoke(state['writer_memory'] + new_message)
 
@@ -391,7 +388,7 @@ def generate_translation(state: State, config: GraphConfig):
 
 
 def assembling_book(state: State, config: GraphConfig):
-    translation_language = config['configurable'].get("language")
+    translation_language = config['configurable'].get("language", "english")
     english_content = "Book title:\n" + state['book_title'] + '\n\n' + "Book prologue:\n" + state['book_prologue'] + '\n\n' + 'Used models:'+'\n' + "\n".join(f"- {key}: {state[key]}" for key in ["instructor_model", "brainstorming_writer_model", "brainstorming_critique_model", "writer_model", "reviewer_model", "translator_model"] if key in state) + '\n\n'  + "Initial requirement:\n" + "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()]) + '\n\n' + '-----------------------------------------' + '\n\n'
     for n_chapter, chapter in enumerate(state['content_of_approved_chapters']):
         english_content += str(n_chapter + 1) + f') {state["chapter_names_of_approved_chapters"][n_chapter]}' + '\n\n' + chapter + '\n\n'
@@ -407,3 +404,4 @@ def assembling_book(state: State, config: GraphConfig):
         "english_version_book": english_content,
         "translated_version_book": translated_content
     }
+
