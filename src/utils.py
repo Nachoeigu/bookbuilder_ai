@@ -41,21 +41,35 @@ class GraphConfig(TypedDict):
     writer_model: Literal['openai', 'google','meta','amazon']
     writing_reviewer_model: Literal['openai', 'google','meta','amazon']
     translator_model: Literal['openai', 'google','meta','amazon']
+    n_chapters: int
+
+class BrainstormingNarrativeStructuredOutput(BaseModel):
+    """
+    This tool defines the narrative of the story based on the original set up. 
+    """
+    chapters_summaries: List[str] = Field(description = "A list where each element is the summary of each chapter. Each one should contain a detailed description of what happen on it. Each summary MUST HAVE a length of 5 sentences minimum.")
 
 class BrainstormingStructuredOutput(BaseModel):
     """
     This tool defines and structures the proposed idea in detailed sections.  
     """
-    story_overview: str = Field(description = "A highly detailed overview of the narrative that includes a strong introduction, a well-developed middle, and a satisfying conclusion.")
-    writing_style: str = Field(description = "The style and tone the writer should consider while developing the book.")
-    total_paragraphs_per_chapter: int = Field(description = "The number of paragraphs in each chapter. Assuming each paragraph is around 5 sentences.")
+    story_overview: str = Field(description="A highly detailed overview of the narrative that includes a strong introduction, a well-developed middle, and a satisfying conclusion.")
+    characters: str = Field(description = "Describe the characters of the story, in one paragraph each one.  Describe their background, motivations, and situations along the at the story journey. Be as detailed as possible.")
+    writing_style: str = Field(description="The style and tone the writer should consider while developing the book.")
     book_name: str = Field(description="The title of the book. It should be unique, creative, and original.")
     book_prologue: str = Field(description="The opening section of the book. It should be engaging and designed to strongly capture the audience's attention.")
-    characters: str = Field(description = "Describe the characters of the story, in one paragraph each one.  Describe their background, motivations, and situations along the at the story journey. Be as detailed as possible.")
-    introduction: str = Field(description="Establish the foundation of the story, including elements such as:\n- Context and Setting: A description of the time, place, and atmosphere where the story takes place. Include any necessary background information relevant to the story.\n- Inciting Incident: Describe the event that disrupts, e.g: the protagonist’s normal life and initiates the main plot. It should set up the central conflict or challenge.\n- Themes and Conflicts: Introduce the central themes and conflicts that will be explored in the story. Mention any internal or external conflicts.\n- Transition: Ensure a smooth transition from the Introduction to the Development stage. Be as detailed as possible.")
-    development: str = Field(description="Expand the plot and characters. Follow this approach:\n- Rising Action: Describe the key events that increase tension and advance the central conflict. Include challenges that force the protagonist to grow or change.\n- Subplots (if applicable): Outline any secondary storylines that complement the main plot. Describe how these subplots intersect with the main plot.\n - Midpoint: Identify a significant event that alters the direction of the story or escalates the conflict. It could be a turning point or a major revelation.\n- Climax Build-up: Detail the events leading up to the climax. Explain how these events escalate the conflict and set the stage for the story's peak moment. It should build up and naturally move towards the ending. Be as detailed as possible.")
-    ending: str = Field(description="Resolve the story’s central conflicts and conclude the characters' arcs. Include the following elements:\n- Climax: Describe the decisive moment where the main conflict reaches its peak. Explain how the protagonist confronts the greatest challenge or opposition.\n- Falling Action: Outline the immediate aftermath of the climax. Describe how the resolution of the main conflict affects the characters and world.\n- Resolution: Tie up any remaining loose ends and conclude the story, reflecting on themes and character changes.\n- Epilogue (optional): Provide a final reflection or glimpse into the characters' future, showing the long-term impact of the story.")
-    chapters_summaries: List[str] = Field(description = "A list where each element is the summary of each chapter. Each one should contain a detailed description of what happen on it. Each summary MUST HAVE a length of 5 sentences minimum.")
+    context_setting: str = Field(description="Describe the time, place, and atmosphere where the story takes place. Include any necessary background information relevant to the story.")
+    inciting_incident: str = Field(description="Describe the event that disrupts the protagonist’s normal life and initiates the main plot. It should set up the central conflict or challenge.")
+    themes_conflicts_intro: str = Field(description="Introduce the central themes and conflicts that will be explored in the story. Mention any internal or external conflicts.")
+    transition_to_development: str = Field(description="Ensure a smooth transition from the Introduction to the Development stage. Detail how the story moves from the setup to the rising action.")
+    rising_action: str = Field(description="Describe the key events that increase tension and advance the central conflict. Include challenges that force the protagonist to grow or change.")
+    subplots: str = Field(description="Outline any secondary storylines that complement the main plot. Describe how these subplots intersect with the main plot.")
+    midpoint: str = Field(description="Identify a significant event that alters the direction of the story or escalates the conflict. It could be a turning point or a major revelation.")
+    climax_build_up: str = Field(description="Detail the events leading up to the climax. Explain how these events escalate the conflict and set the stage for the story's peak moment.")
+    climax: str = Field(description="Describe the decisive moment where the main conflict reaches its peak. Explain how the protagonist confronts the greatest challenge or opposition.")
+    falling_action: str = Field(description="Outline the immediate aftermath of the climax. Describe how the resolution of the main conflict affects the characters and world.")
+    resolution: str = Field(description="Tie up any remaining loose ends and conclude the story, reflecting on themes and character changes.")
+    epilogue: str = Field(description="Provide a final reflection or glimpse into the characters' future, showing the long-term impact of the story.")
 
 class TranslatorStructuredOutput(BaseModel):
     """ This tool structures the way the translator should reply """
@@ -114,7 +128,8 @@ class State(TypedDict):
     user_instructor_messages: Annotated[List[AnyMessage], operator.add]
     plannified_messages: Annotated[List[AnyMessage], operator.add]
     critique_brainstorming_messages: Annotated[List[AnyMessage], operator.add]
-    is_plan_approved: bool
+    is_general_story_plan_approved: bool
+    is_detailed_story_plan_approved: bool
     instructor_model: str
     brainstorming_writer_model: str
     brainstorming_critique_model: str
@@ -128,18 +143,28 @@ class State(TypedDict):
     instructor_documents: DocumentationReady
     book_prologue: str
     book_title: str
-    plannified_intro: str
-    plannified_development: str
-    plannified_ending: str
+    plannified_context_setting: str
+    plannified_inciting_incident: str
+    plannified_themes_conflicts_intro: str
+    plannified_transition_to_development: str
+    plannified_rising_action: str
+    plannified_subplots: str
+    plannified_midpoint: str
+    plannified_climax_build_up: str
+    plannified_climax: str
+    plannified_falling_action: str
+    plannified_resolution: str
+    plannified_epilogue: str
+    plannified_chapters_summaries: List[str]
+    plannified_chapters_messages: Annotated[List[AnyMessage], operator.add]
     characters: str
     writing_style: str
     story_overview: str
-    chapters_summaries: List[str]
-    total_paragraphs_per_chapter: int
     writing_reviewer_memory: Annotated[List[AnyMessage], operator.add]
     is_chapter_approved: bool
     english_version_book: str
     translated_version_book: str
+    critique_brainstorming_narrative_messages: Annotated[List[AnyMessage], operator.add]
 
 
 
