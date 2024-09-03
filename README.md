@@ -43,9 +43,21 @@ As each chapter is completed, a Reviewer Agent analyzes it and provides feedback
 ### 7. **Translation if needed:**
 Once all chapters are written and approved, based on the initial configuration, the book is translated (or not) to a target language.
 
+
 ### 8. **Completion:**
 We finally have the book ready to read. The finished product includes the book title, prologue, and the complete content of your story, ready for you to enjoy or share with others.
 
+
+#### Configuration of bot before stating
+You need to set up the initial configurations that are the following:
+- language: the target language the book will be.
+- critiques in loop: If it is False, it will only critiques twice. If it is True, the critique iterations will be undefined until the own AI system defines it is OK to continue.
+- instructor_model: The desired model to use for this specific agent
+- brainstormer_idea_model: The desired model to use for this specific agent
+- brainstormer_critique_model: The desired model to use for this specific agent
+- writer_model: The desired model to use for this specific agent
+-  writing_reviewer_model: The desired model to use for this specific agent
+- translator_model: The desired model to use for this specific agent
 ---
 
 **Book Builder With AI** is designed to bring your ideas to life through a collaborative process with AI, ensuring your story is as close to your vision as possible. Happy writing!
