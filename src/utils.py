@@ -122,7 +122,6 @@ class State(TypedDict):
     reviewer_model: str
     translator_model: str
     translated_book_prologue: str
-    translation_language: str
     translated_book_name: str
     current_chapter: int
     translated_current_chapter: int    

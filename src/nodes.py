@@ -236,7 +236,6 @@ def generate_content(state: State, config: GraphConfig):
 def generate_translation(state: State, config: GraphConfig):
     model = _get_model(config = config, default = "openai", key = "translator_model", temperature = 0)
     model_with_structured_output = model.with_structured_output(TranslatorStructuredOutput)
-    translation_language = config['configurable'].get("language")
 
     if state.get("translated_current_chapter", None) == None:
         system_prompt = TRANSLATOR_PROMPT
@@ -260,7 +259,6 @@ def generate_translation(state: State, config: GraphConfig):
 
         return {'translated_content': [output.translated_content],
                 'translated_book_name': book_name,
-                'translation_language': translation_language,
                 'translated_book_prologue': book_prologue,
                 'translated_chapter_names': [output.translated_chapter_name],
                 'translated_current_chapter': 1,
@@ -276,7 +274,6 @@ def generate_translation(state: State, config: GraphConfig):
         new_messages = new_message + [AIMessage(content = f"content: {output.translated_content}"+f"\n name_chapter: {output.translated_chapter_name}")]
 
         return {
-            'translation_language': translation_language,
             'translated_content': [output.translated_content],
             'translated_chapter_names': [output.translated_chapter_name],
             'translated_current_chapter': state['translated_current_chapter'] + 1,
@@ -287,14 +284,14 @@ def generate_translation(state: State, config: GraphConfig):
 
 def assembling_book(state: State, config: GraphConfig):
     translation_language = config['configurable'].get("language")
-    english_content = "Book title:\n" + state['book_title'] + '\n\n' + "Book prologue:\n" + state['book_prologue'] + '\n\n' + 'Used models:'+'\n' + "\n".join(f"- {key}: {state[key]}" for key in ["instructor_model", "brainstorming_writer_model", "brainstorming_critique_model", "writer_model", "reviewer_model", "translator_model"] if key in state) + '\n\n'  + "Initial requirement:\n" + "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()]) + '\n\n'
+    english_content = "Book title:\n" + state['book_title'] + '\n\n' + "Book prologue:\n" + state['book_prologue'] + '\n\n' + 'Used models:'+'\n' + "\n".join(f"- {key}: {state[key]}" for key in ["instructor_model", "brainstorming_writer_model", "brainstorming_critique_model", "writer_model", "reviewer_model", "translator_model"] if key in state) + '\n\n'  + "Initial requirement:\n" + "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()]) + '\n\n' + '-----------------------------------------'
     for n_chapter, chapter in enumerate(state['content_of_approved_chapters']):
         english_content += str(n_chapter + 1) + f') {state["chapter_names_of_approved_chapters"][n_chapter]}' + '\n\n' + chapter + '\n\n'
 
     if translation_language == 'english':
         translated_content = ''
     else:
-        translated_content = "Book title:\n" + state['translated_book_name']  + '\n\n' + "Book prologue:\n" + state['translated_book_prologue'] + '\n\n' + 'Used models:'+'\n' + "\n".join(f"- {key}: {state[key]}" for key in ["instructor_model", "brainstorming_writer_model", "brainstorming_critique_model", "writer_model", "reviewer_model", "translator_model"] if key in state) + '\n\n' + "Initial requirement:\n" + "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()]) + '\n\n'
+        translated_content = "Book title:\n" + state['translated_book_name']  + '\n\n' + "Book prologue:\n" + state['translated_book_prologue'] + '\n\n' + 'Used models:'+'\n' + "\n".join(f"- {key}: {state[key]}" for key in ["instructor_model", "brainstorming_writer_model", "brainstorming_critique_model", "writer_model", "reviewer_model", "translator_model"] if key in state) + '\n\n' + "Initial requirement:\n" + "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()]) + '\n\n'  + '-----------------------------------------'
         for n_chapter, chapter in enumerate(state['translated_content']):
             translated_content += str(n_chapter + 1) + f') {state["translated_chapter_names"][n_chapter]}' + '\n\n' + chapter + '\n\n'
 
