@@ -29,7 +29,7 @@ def should_continue_with_critique(state: State) -> Literal['brainstorming_critiq
 def has_writer_ended_book(state: State, config: GraphConfig) -> Literal["translator", "assembler", 'writer']:
 
     if (state['current_chapter'] == len(state['chapters_summaries']))&(state['is_chapter_approved'] == True):
-        if config['configurable'].get('language') == 'english':
+        if (config['configurable'].get('language') == 'english')|config['configurable'].get('language') is None:
             return "assembler"
         else:
             return "translator"
