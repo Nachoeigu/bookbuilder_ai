@@ -120,16 +120,19 @@ def making_writer_brainstorming(state: State, config: GraphConfig):
 
 def evaluate_chapter(state: State, config: GraphConfig):
     model = _get_model(config = config, default = "openai", key = "writing_reviewer_model", temperature = 0)
-    model_with_tools = model.bind_tools([ApprovedWriterChapter, CritiqueWriterChapter], strict = True, tool_choice = 'any')
+    try:
+        model_with_tools = model.bind_tools([ApprovedWriterChapter, CritiqueWriterChapter], strict = True, tool_choice = 'any')
+    except:
+        model_with_tools = model.bind_tools([ApprovedWriterChapter, CritiqueWriterChapter])
     draft = f"Story overview: {state['story_overview']}\nIntroduction: {state['plannified_intro']}\nMiddle: {state['plannified_development']}\nEnding: {state['plannified_ending']}\nWriting Style: {state['writing_style']}\nSummary of each chapter: {state['chapters_summaries']}"
     critiques_in_loop = config['configurable'].get('critiques_in_loop', False)
 
     if state.get('is_chapter_approved', None) == None:
         system_prompt = WRITING_REVIEWER_PROMPT
 
-        new_message = [SystemMessage(content = system_prompt.format(draft=draft))]
+        new_message = [SystemMessage(content = system_prompt.format(draft=draft))] + [HumanMessage(content=f"Start with the first chapter: {state['content'][-1]}.")]
         adding_delay_for_rate_limits(model)
-        output = model_with_tools.invoke(new_message + [HumanMessage(content=f"Start with the first chapter: {state['content'][-1]}.")])
+        output = model_with_tools.invoke(new_message)
         try:
             is_chapter_approved = [1 for tool in output.tool_calls if (tool['name'] == 'ApprovedWriterChapter')&(tool['args']['is_approved']==True)] == [1]
         except:
@@ -153,7 +156,9 @@ def evaluate_chapter(state: State, config: GraphConfig):
         return {'is_chapter_approved': True,
                 'content_of_approved_chapters': [state['content'][-1]],
                 'chapter_names_of_approved_chapters': [state['chapter_names'][-1]],
-                'writing_reviewer_memory': new_messages}
+                'writing_reviewer_memory': new_messages,
+                'reviewer_model': retrieve_model_name(model)
+        }
     else:
         feedback = [tool['args']['feedback'] for tool in output.tool_calls if (tool['name'] == 'CritiqueWriterChapter')][0]
         is_chapter_approved = False
@@ -163,10 +168,12 @@ def evaluate_chapter(state: State, config: GraphConfig):
                 'is_chapter_approved': is_chapter_approved,
                 'content_of_approved_chapters': [state['content'][-1]],
                 'chapter_names_of_approved_chapters': [state['chapter_names'][-1]],
-                'writing_reviewer_memory': new_messages}
+                'writing_reviewer_memory': new_messages,
+                'reviewer_model': retrieve_model_name(model)}
         else:
             return {'is_chapter_approved': is_chapter_approved,
-                    'writing_reviewer_memory': new_messages}
+                    'writing_reviewer_memory': new_messages,
+                    'reviewer_model': retrieve_model_name(model)}
 
 def generate_content(state: State, config: GraphConfig):
     model = _get_model(config = config, default = "openai", key = "writer_model", temperature = 0.70)
@@ -188,12 +195,17 @@ def generate_content(state: State, config: GraphConfig):
             )
         ]
         adding_delay_for_rate_limits(model)
-        output = model_with_structured_output.invoke(messages + [HumanMessage(content=f"Start with the first chapter: {state['chapters_summaries'][0]}.")])
-        messages.append(AIMessage(content = output.content))
+        human_msg = HumanMessage(content=f"Start with the first chapter: {state['chapters_summaries'][0]}.")
+
+        output = model_with_structured_output.invoke(messages + [human_msg])
         
         if check_chapter(msg_content = output.content) == False:
             adding_delay_for_rate_limits(model)
             output = model_with_structured_output.invoke(messages + [HumanMessage(content=f"The chapter should contains at least 5 paragraphs. Adjust it again!")])
+
+        messages.append(human_msg)
+        messages.append(AIMessage(content = output.content))
+
 
         return {'content': [output.content],
                 'chapter_names': [output.chapter_name],

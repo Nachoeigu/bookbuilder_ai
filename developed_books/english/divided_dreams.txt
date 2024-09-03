@@ -9,6 +9,7 @@ Used models:
 - brainstorming_writer_model: gpt-4o-mini
 - brainstorming_critique_model: gpt-4o-mini
 - writer_model: gpt-4o-mini
+- reviewer_model: gpt-4o-mini
 - translator_model: llama-3.1-70b-versatile
 
 1) Chapter 1
