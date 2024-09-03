@@ -51,7 +51,7 @@ We finally have the book ready to read. The finished product includes the book t
 #### Configuration of bot before stating
 You need to set up the initial configurations that are the following:
 - language: the target language the book will be.
-- critiques in loop: If it is False, it will only critiques twice. If it is True, the critique iterations will be undefined until the own AI system defines it is OK to continue.
+- critiques in loop: If it is False, it will only critiques once. If it is True, the critique iterations will be undefined until the own AI system defines it is OK to continue.
 - instructor_model: The desired model to use for this specific agent
 - brainstormer_idea_model: The desired model to use for this specific agent
 - brainstormer_critique_model: The desired model to use for this specific agent
