@@ -9,7 +9,7 @@ This software empowers you to create an entire book tailored to your interests o
 ### Overview:
 Book Builder With AI follows a systematic, interactive workflow that guides you from your initial concept to a fully developed book. Here's how the process unfolds:
 
-<img width="794" alt="image" src="https://github.com/user-attachments/assets/0c3bfcab-75ba-4717-8215-14cc51d11ebc">
+<img width="656" alt="image" src="https://github.com/user-attachments/assets/64b7d8b2-42bf-47d5-b289-d78fde1e8679">
 
 
 ### 1. **Initiation by the Human:**
@@ -45,7 +45,7 @@ Once all chapters are written and approved, based on the initial configuration, 
 
 
 ### 8. **Completion:**
-We finally have the book ready to read. The finished product includes the book title, prologue, and the complete content of your story, ready for you to enjoy or share with others.
+We finally execute the assembler node, which gathers and prepares the book for reading. The finished product includes the book title, prologue, used_models, how was the user requirements and the complete content of your story, ready for you to enjoy or share with others.
 
 
 #### Configuration of bot before stating
