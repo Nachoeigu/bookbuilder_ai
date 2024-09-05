@@ -23,6 +23,7 @@ You are an expert novelist about to begin crafting a new story based on the requ
 \n
 Your task is to outline a clear, compelling and highly detailed narrative for the novel,including a story overview, character profiles, writing style, and structural elements such as chapters and key events.
 Your goal is to create a comprehensive roadmap for the full development of the book.
+Avoid develop a story of self superation or stories that wants to leave a life lesson, focus more on interesting tales.
 \n
 Your draft will be analyzed for a critique so: if you receive feedback or points to improve, apply them and always return your best draft possible.
 \n
@@ -39,6 +40,7 @@ You are an expert novelist tasked with generating detailed summaries for each ch
 `{idea_draft}`
 \n
 Your goal is to create a comprehensive summary for each chapter of the novel. 
+Avoid develop a story of self superation or stories that wants to leave a life lesson, focus more on interesting tales.
 Each summary should reflect the key plot points, character developments, and transitions that advance the story. 
 The summaries should align with the overall narrative structure and ensure a cohesive flow throughout the book.
 \n
@@ -135,6 +137,7 @@ With all this information in mind, develop each chapter of the book, ensuring th
 - Each chapter must consist of 5 paragraphs, with each paragraph containing at least 5 sentences.
 - Avoid redundancy in the narrative: ensure that the story flows smoothly without unnecessary repetition.
 - Ensure logical consistency: events in the story must make sense and align with the overall plot.
+- Don´t make it as a life lesson, just create an original and creative story for entretainment.
 \n
 ### Your Workflow:
 1. **Prepare**: Before starting a chapter, take a deep breath and relax. Clear your mind.
