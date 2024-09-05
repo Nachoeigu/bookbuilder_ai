@@ -84,7 +84,7 @@ class TranslatorSpecialCaseStructuredOutput(BaseModel):
 class WriterStructuredOutput(BaseModel):
     """This tool structures the way the writer invention"""
     content: str = Field(description = "The content inside the developed chapter, avoid putting the name of the chapter here.")
-    chapter_name: str = Field(description = "The name of the developed chapter.")
+    chapter_name: str = Field(description = "The name of the developed chapter. It should be original and creative.")
 
 class DocumentationReady(TypedDict):
     """

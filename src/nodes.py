@@ -81,7 +81,7 @@ def brainstorming_narrative_critique(state: State, config: GraphConfig):
         system_prompt = CRITIQUE_NARRATIVE_PROMPT
         messages = [
          SystemMessage(content = system_prompt.format(user_requirements=user_requirements)),
-         HumanMessage(content = str(state['plannified_chapters_messages'][-1]))
+         HumanMessage(content = str(state['plannified_chapters_messages'][-1].content))
         ]
         adding_delay_for_rate_limits(model)
         output = model_with_tools.invoke(messages)
@@ -131,7 +131,7 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
     else:
         if (state['is_detailed_story_plan_approved'] == False)&(config['configurable'].get('critiques_in_loop',False) == True):
             adding_delay_for_rate_limits(model)
-            critique_query = HumanMessage(content=f"Based on this critique, adjust your entire idea and return it again with the adjustments: {state['critique_brainstorming_narrative_messages'][-1]}")
+            critique_query = HumanMessage(content=f"Based on this critique, adjust your entire idea and return it again with the adjustments: {state['critique_brainstorming_narrative_messages'][-1].content}")
             
             output = model_with_structured_output.invoke(state['plannified_chapters_messages'] + [critique_query])
             messages = [critique_query] + [AIMessage(content=str(output.chapters_summaries))]
@@ -178,7 +178,7 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
     else:
         if state['is_general_story_plan_approved'] == False:
             adding_delay_for_rate_limits(model)
-            new_msg = [HumanMessage(content=f"Based on this critique, adjust your entire idea and return it again with the adjustments: {state['critique_brainstorming_messages'][-1]}")]
+            new_msg = [HumanMessage(content=f"Based on this critique, adjust your entire idea and return it again with the adjustments: {state['critique_brainstorming_messages'][-1].content}")]
             output = model_with_structured_output.invoke(state['plannified_messages'] + new_msg)
             output = [AIMessage(content="\n".join([f"{key}: {value}" for key, value in output.dict().items()]))]
             messages = new_msg + output
@@ -297,7 +297,7 @@ def generate_content(state: State, config: GraphConfig):
             ))
         ]
         adding_delay_for_rate_limits(model)
-        human_msg = HumanMessage(content=f"Start with the first chapter. I will provide to you a summary of what should happen on it: {state['plannified_chapters_summaries'][0]}.")
+        human_msg = HumanMessage(content=f"Start with the first chapter. I will provide to you a summary of what should happen on it:\n`{state['plannified_chapters_summaries'][0]}.`")
 
         output = model_with_structured_output.invoke(messages + [human_msg])
         
@@ -318,9 +318,9 @@ def generate_content(state: State, config: GraphConfig):
 
     else:
         if state['is_chapter_approved'] == False:
-            new_message = [HumanMessage(content = state['writing_reviewer_memory'][-1].content + '\n Focus on each of this points, and improve the chapter.')]
+            new_message = [HumanMessage(content = 'I will provide to you some feedback. Focus on each of these points, and improve the chapter.\n' + state['writing_reviewer_memory'][-1].content)]
         else:
-            new_message = [HumanMessage(content = f"Continue with the chapter {state['current_chapter'] + 1}, which is about: {state['plannified_chapters_summaries'][state['current_chapter']]}.\nRemember to read again the previous developed chapters before starting this one for a perfect continuation.")]
+            new_message = [HumanMessage(content = f"Continue with the chapter {state['current_chapter'] + 1}, which is about:\n`{state['plannified_chapters_summaries'][state['current_chapter']]}.`\nBefore start, remember to read again the previous developed chapters before so you make the perfect continuation possible.")]
         adding_delay_for_rate_limits(model)
         output = model_with_structured_output.invoke(state['writer_memory'] + new_message)
 
