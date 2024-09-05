@@ -238,7 +238,7 @@ def evaluate_chapter(state: State, config: GraphConfig):
             feedback = 'Perfect!'
             is_chapter_approved = True
         else:
-            new_message = [HumanMessage(content = f"\n{state['content'][-1]}")]
+            new_message = [HumanMessage(content = f"The next chapter is the following. Read again the entire chat history in order to have the context of the previous chapters.\nWhen that was done, review the next chapter.\nThis is the next chapter, review it:\n{state['content'][-1]}")]
             adding_delay_for_rate_limits(model)
             output = model_with_tools.invoke(state['writing_reviewer_memory'] + new_message)    
             try:
