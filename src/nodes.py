@@ -297,7 +297,7 @@ def generate_content(state: State, config: GraphConfig):
             ))
         ]
         adding_delay_for_rate_limits(model)
-        human_msg = HumanMessage(content=f"Start with the first chapter: {state['plannified_chapters_summaries'][0]}.")
+        human_msg = HumanMessage(content=f"Start with the first chapter. I will provide to you a summary of what should happen on it: {state['plannified_chapters_summaries'][0]}.")
 
         output = model_with_structured_output.invoke(messages + [human_msg])
         
@@ -320,7 +320,7 @@ def generate_content(state: State, config: GraphConfig):
         if state['is_chapter_approved'] == False:
             new_message = [HumanMessage(content = state['writing_reviewer_memory'][-1].content + '\n Focus on each of this points, and improve the chapter.')]
         else:
-            new_message = [HumanMessage(content = f"Continue with the chapter {state['current_chapter'] + 1}, which is about: {state['plannified_chapters_summaries'][state['current_chapter']]}.\nRemember to read again the previous developed chapters before starting this one.")]
+            new_message = [HumanMessage(content = f"Continue with the chapter {state['current_chapter'] + 1}, which is about: {state['plannified_chapters_summaries'][state['current_chapter']]}.\nRemember to read again the previous developed chapters before starting this one for a perfect continuation.")]
         adding_delay_for_rate_limits(model)
         output = model_with_structured_output.invoke(state['writer_memory'] + new_message)
 
