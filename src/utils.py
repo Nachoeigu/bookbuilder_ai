@@ -189,7 +189,7 @@ def _get_model(config: GraphConfig, key:Literal['instructor_model','brainstormer
     if model == "openai":
         return ChatOpenAI(temperature=temperature, model="gpt-4o-mini")
     elif model == "google":
-        return ChatGoogleGenerativeAI(temperature=temperature, model="gemini-1.5-pro-exp-0801")
+        return ChatGoogleGenerativeAI(temperature=temperature, model="gemini-1.5-pro-exp-0827")
     elif model == 'meta':
         return ChatGroq(temperature=temperature, model="llama-3.1-70b-versatile")
     elif model == 'amazon':

@@ -111,8 +111,11 @@ def brainstorming_narrative_critique(state: State, config: GraphConfig):
 def making_narrative_story_brainstorming(state: State, config: GraphConfig):
     model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0.7)
     user_requirements = "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()])
-    model_with_structured_output = model.with_structured_output(BrainstormingNarrativeStructuredOutput, strict = True)
-    
+    try:
+        model_with_structured_output = model.with_structured_output(BrainstormingNarrativeStructuredOutput, strict = True)
+    except:
+        model_with_structured_output = model.with_structured_output(BrainstormingNarrativeStructuredOutput)
+
     if state.get('is_detailed_story_plan_approved', None) is None:
         system_prompt = BRAINSTORMING_NARRATIVE_PROMPT.format(idea_draft=f"Story overview: {state['story_overview']}\n" f"Context and Setting: {state['plannified_context_setting']}\n" f"Inciting Incident: {state['plannified_inciting_incident']}\n" f"Themes and Conflicts Introduction: {state['plannified_themes_conflicts_intro']}\n" f"Transition to Development: {state['plannified_transition_to_development']}\n" f"Rising Action: {state['plannified_rising_action']}\n" f"Subplots: {state['plannified_subplots']}\n" f"Midpoint: {state['plannified_midpoint']}\n" f"Climax Build-Up: {state['plannified_climax_build_up']}\n" f"Climax: {state['plannified_climax']}\n" f"Falling Action: {state['plannified_falling_action']}\n" f"Resolution: {state['plannified_resolution']}\n" f"Epilogue: {state['plannified_epilogue']}\n" f"Writing Style: {state['writing_style']}")
         system_prompt = SystemMessage(content = system_prompt.format(user_requirements=user_requirements))
@@ -143,7 +146,7 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
         else:
             model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0)
             adding_delay_for_rate_limits(model)
-            critique_query = [HumanMessage(content="Based on the improvements, structure the final structure:")]
+            critique_query = [HumanMessage(content=f"Some improvements to your chapter: {state['critique_brainstorming_narrative_messages'][-1].feedback}")]
             output = model_with_structured_output.invoke(state['plannified_chapters_messages'] + critique_query)
             messages = [critique_query] + [AIMessage(content=str(output.chapters_summaries))]
             return {
@@ -155,7 +158,10 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
 def making_general_story_brainstorming(state: State, config: GraphConfig):
     model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0.7)
     user_requirements = "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()])
-    model_with_structured_output = model.with_structured_output(BrainstormingStructuredOutput, strict = True)
+    try:
+        model_with_structured_output = model.with_structured_output(BrainstormingStructuredOutput, strict = True)
+    except:
+        model_with_structured_output = model.with_structured_output(BrainstormingStructuredOutput)
     
     system_prompt = BRAINSTORMING_IDEA_PROMPT
     
