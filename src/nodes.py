@@ -146,7 +146,7 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
         else:
             model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0)
             adding_delay_for_rate_limits(model)
-            critique_query = [HumanMessage(content=f"Some improvements to your chapter: {state['critique_brainstorming_narrative_messages'][-1].feedback}")]
+            critique_query = [HumanMessage(content=f"Some improvements to your chapter: {state['critique_brainstorming_narrative_messages'][-1]}")]
             output = model_with_structured_output.invoke(state['plannified_chapters_messages'] + critique_query)
             messages = [critique_query] + [AIMessage(content=str(output.chapters_summaries))]
             return {
@@ -309,7 +309,10 @@ def generate_content(state: State, config: GraphConfig):
         
         if check_chapter(msg_content = output.content) == False:
             adding_delay_for_rate_limits(model)
-            output = model_with_structured_output.invoke(messages + [HumanMessage(content=f"The chapter should contains at least 5 paragraphs. Adjust it again!")])
+            messages.append(human_msg)
+            messages.append(AIMessage(content = output.content))
+            human_msg = HumanMessage(content=f"The chapter should contains at least 5 paragraphs. Adjust it again!")
+            output = model_with_structured_output.invoke(messages + [human_msg])
 
         messages.append(human_msg)
         messages.append(AIMessage(content = output.content))
