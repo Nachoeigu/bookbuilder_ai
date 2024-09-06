@@ -62,7 +62,7 @@ workflow = StateGraph(State,
                       config_schema = GraphConfig)
 
 workflow.set_entry_point("instructor")
-workflow = defining_edges(workflow = workflow)
+workflow = defining_nodes(workflow = workflow)
 workflow = defining_edges(workflow = workflow)
 
 app = workflow.compile(
