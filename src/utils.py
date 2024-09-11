@@ -43,33 +43,50 @@ class GraphConfig(TypedDict):
     translator_model: Literal['openai', 'google','meta','amazon']
     n_chapters: int
 
+class DocumentationReady(TypedDict):
+    """
+    This tool confirms that the Instructor has the necessary information to pass to the writer
+    """
+
+    reasoning_step: str = Field(description = "Reason deeply, stpe by step, how to structure the document with the requirements of the user")
+    reflection_step: str = Field(description = "If you detect that you made a mistake in your reasoning step, at any point, correct yourself in this field.")
+    topic: str = Field(description="The desired topic of the user, with high details and optimized with the reasoning and reflection steps")
+    target_audience: str = Field(description = "The desired target audience the book should point to,  with high details,  and optimized with the reasoning and reflection steps")
+    genre: str = Field(description="Genre of the book to develop,  with high details,  optimized based on the reasoning and reflection steps")
+    writing_style: str = Field(description="The desired tone, style or book reference the writing should respect, with high details,  optimized based on the reasoning and reflection steps")
+    additional_requirements: str = Field(description = "More requirements beyond topic, target audience, genre and writing style.  Optimized based on the reasoning and reflection steps")
+
 class BrainstormingNarrativeStructuredOutput(BaseModel):
     """
     This tool defines the narrative of the story based on the original set up. 
     """
-    chapters_summaries: List[str] = Field(description = "A list where each element is the summary of each chapter. Each one should contain a detailed description of what happen on it. Each summary MUST HAVE a length of 5 sentences minimum.")
+    reasoning_step: str = Field(description = "Reason deeply, stpe by step, how each chapter will be developed based on the idea")
+    reflection_step: str = Field(description = "If you detect that you made a mistake in your reasoning step, at any point, correct yourself in this field.")
+    chapters_summaries: List[str] = Field(description = "A list where each element is the summary of each chapter. Each one should contain a detailed description of what happen on it. Each summary MUST HAVE a length of 5 sentences minimum. Optimized based on the reasoning and reflection steps.")
 
 class BrainstormingStructuredOutput(BaseModel):
     """
     This tool defines and structures the proposed idea in detailed sections.  
     """
-    story_overview: str = Field(description="A highly detailed overview of the narrative that includes a strong introduction, a well-developed middle, and a satisfying conclusion.")
-    characters: str = Field(description = "Describe the characters of the story, in one paragraph each one.  Describe their background, motivations, and situations along the at the story journey. Be as detailed as possible.")
-    writing_style: str = Field(description="The style and tone the writer should consider while developing the book.")
-    book_name: str = Field(description="The title of the book. It should be unique, creative, and original.")
-    book_prologue: str = Field(description="The opening section of the book. It should be engaging and designed to strongly capture the audience's attention.")
-    context_setting: str = Field(description="Describe the time, place, and atmosphere where the story takes place. Include any necessary background information relevant to the story.")
-    inciting_incident: str = Field(description="Describe the event that disrupts the protagonist’s normal life and initiates the main plot. It should set up the central conflict or challenge.")
-    themes_conflicts_intro: str = Field(description="Introduce the central themes and conflicts that will be explored in the story. Mention any internal or external conflicts.")
-    transition_to_development: str = Field(description="Ensure a smooth transition from the Introduction to the Development stage. Detail how the story moves from the setup to the rising action.")
-    rising_action: str = Field(description="Describe the key events that increase tension and advance the central conflict. Include challenges that force the protagonist to grow or change.")
-    subplots: str = Field(description="Outline any secondary storylines that complement the main plot. Describe how these subplots intersect with the main plot.")
-    midpoint: str = Field(description="Identify a significant event that alters the direction of the story or escalates the conflict. It could be a turning point or a major revelation.")
-    climax_build_up: str = Field(description="Detail the events leading up to the climax. Explain how these events escalate the conflict and set the stage for the story's peak moment.")
-    climax: str = Field(description="Describe the decisive moment where the main conflict reaches its peak. Explain how the protagonist confronts the greatest challenge or opposition.")
-    falling_action: str = Field(description="Outline the immediate aftermath of the climax. Describe how the resolution of the main conflict affects the characters and world.")
-    resolution: str = Field(description="Tie up any remaining loose ends and conclude the story, reflecting on themes and character changes.")
-    epilogue: str = Field(description="Provide a final reflection or glimpse into the characters' future, showing the long-term impact of the story.")
+    reasoning_step: str = Field(description = "Reason deeply, stpe by step, how the story will consist based on the user requirements")
+    reflection_step: str = Field(description = "If you detect that you made a mistake in your reasoning step, at any point, correct yourself in this field.")
+    story_overview: str = Field(description="A highly detailed overview of the narrative that includes a strong introduction, a well-developed middle, and a satisfying conclusion. Optimized based on the reasoning and reflection steps.")
+    characters: str = Field(description = "Describe the characters of the story, in one paragraph each one.  Describe their background, motivations, and situations along the at the story journey. Be as detailed as possible.  Optimized based on the reasoning and reflection steps.")
+    writing_style: str = Field(description="The style and tone the writer should consider while developing the book.  Optimized based on the reasoning and reflection steps.")
+    book_name: str = Field(description="The title of the book. It should be unique, creative, and original. Optimized based on the reasoning and reflection steps.")
+    book_prologue: str = Field(description="The opening section of the book. It should be engaging and designed to strongly capture the audience's attention. Optimized based on the reasoning and reflection steps.")
+    context_setting: str = Field(description="Describe the time, place, and atmosphere where the story takes place. Include any necessary background information relevant to the story. Optimized based on the reasoning and reflection steps.")
+    inciting_incident: str = Field(description="Describe the event that disrupts the protagonist’s normal life and initiates the main plot. It should set up the central conflict or challenge. Optimized based on the reasoning and reflection steps.")
+    themes_conflicts_intro: str = Field(description="Introduce the central themes and conflicts that will be explored in the story. Mention any internal or external conflicts. Optimized based on the reasoning and reflection steps.")
+    transition_to_development: str = Field(description="Ensure a smooth transition from the Introduction to the Development stage. Detail how the story moves from the setup to the rising action. Optimized based on the reasoning and reflection steps.")
+    rising_action: str = Field(description="Describe the key events that increase tension and advance the central conflict. Include challenges that force the protagonist to grow or change. Optimized based on the reasoning and reflection steps.")
+    subplots: str = Field(description="Outline any secondary storylines that complement the main plot. Describe how these subplots intersect with the main plot. Optimized based on the reasoning and reflection steps.")
+    midpoint: str = Field(description="Identify a significant event that alters the direction of the story or escalates the conflict. It could be a turning point or a major revelation. Optimized based on the reasoning and reflection steps.")
+    climax_build_up: str = Field(description="Detail the events leading up to the climax. Explain how these events escalate the conflict and set the stage for the story's peak moment. Optimized based on the reasoning and reflection steps.")
+    climax: str = Field(description="Describe the decisive moment where the main conflict reaches its peak. Explain how the protagonist confronts the greatest challenge or opposition. Optimized based on the reasoning and reflection steps.")
+    falling_action: str = Field(description="Outline the immediate aftermath of the climax. Describe how the resolution of the main conflict affects the characters and world. Optimized based on the reasoning and reflection steps.")
+    resolution: str = Field(description="Tie up any remaining loose ends and conclude the story, reflecting on themes and character changes. Optimized based on the reasoning and reflection steps.")
+    epilogue: str = Field(description="Provide a final reflection or glimpse into the characters' future, showing the long-term impact of the story. Optimized based on the reasoning and reflection steps.")
 
 class TranslatorStructuredOutput(BaseModel):
     """ This tool structures the way the translator should reply """
@@ -83,19 +100,10 @@ class TranslatorSpecialCaseStructuredOutput(BaseModel):
 
 class WriterStructuredOutput(BaseModel):
     """This tool structures the way the writer invention"""
-    content: str = Field(description = "The content inside the developed chapter, avoid putting the name of the chapter here.")
-    chapter_name: str = Field(description = "The name of the developed chapter. It should be original and creative.")
-
-class DocumentationReady(TypedDict):
-    """
-    This tool confirms that the Instructor has the necessary information to pass to the writer
-    """
-    topic: str = Field(description="The required topic defined for the user, with high details")
-    target_audience: str = Field(description = "The required target audience the book should point to,  with high details")
-    genre: str = Field(description="Genre of the book to develop,  with high details")
-    writing_style: str = Field(description="The desired tone, style or book reference the writing should respect, with high details")
-    additional_requirements: str = Field(description = "More requirements beyond topic, target audience, genre and writing style.")
-
+    reasoning_step: str = Field(description = "Reason deeply, stpe by step, how you will write the story based on the idea")
+    reflection_step: str = Field(description = "If you detect that you made a mistake in your reasoning step, at any point, correct yourself in this field.")
+    content: str = Field(description = "The content inside the developed chapter, avoid putting the name of the chapter here. Optimized based on the reasoning and reflection steps.")
+    chapter_name: str = Field(description = "The name of the developed chapter. It should be original and creative. Optimized based on the reasoning and reflection steps.")
 
 class ApprovedWriterChapter(TypedDict):
     """
@@ -165,8 +173,6 @@ class State(TypedDict):
     english_version_book: str
     translated_version_book: str
     critique_brainstorming_narrative_messages: Annotated[List[AnyMessage], operator.add]
-
-
 
 
 class GraphInput(TypedDict):
