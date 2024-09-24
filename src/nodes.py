@@ -8,7 +8,7 @@ os.chdir(WORKDIR)
 sys.path.append(WORKDIR)
 
 from src.constants import *
-from src.utils import State, DocumentationReady, ApprovedBrainstormingIdea,BrainstormingNarrativeStructuredOutput, WriterStructuredOutput, BrainstormingStructuredOutput, ApprovedWriterChapter, CritiqueWriterChapter, TranslatorStructuredOutput, TranslatorSpecialCaseStructuredOutput, retrieve_model_name
+from src.utils import State, DocumentationReady, ApprovedBrainstormingIdea,NarrativeBrainstormingStructuredOutput, WriterStructuredOutput, IdeaBrainstormingStructuredOutput, ApprovedWriterChapter, CritiqueWriterChapter, TranslatorStructuredOutput, TranslatorSpecialCaseStructuredOutput, retrieve_model_name
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from src.utils import GraphConfig, _get_model, check_chapter, adding_delay_for_rate_limits
 
@@ -112,9 +112,9 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
     model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0.7)
     user_requirements = "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()])
     try:
-        model_with_structured_output = model.with_structured_output(BrainstormingNarrativeStructuredOutput, strict = True)
+        model_with_structured_output = model.with_structured_output(NarrativeBrainstormingStructuredOutput, strict = True)
     except:
-        model_with_structured_output = model.with_structured_output(BrainstormingNarrativeStructuredOutput)
+        model_with_structured_output = model.with_structured_output(NarrativeBrainstormingStructuredOutput)
 
     if state.get('is_detailed_story_plan_approved', None) is None:
         system_prompt = BRAINSTORMING_NARRATIVE_PROMPT.format(idea_draft=f"Story overview: {state['story_overview']}\n" f"Context and Setting: {state['plannified_context_setting']}\n" f"Inciting Incident: {state['plannified_inciting_incident']}\n" f"Themes and Conflicts Introduction: {state['plannified_themes_conflicts_intro']}\n" f"Transition to Development: {state['plannified_transition_to_development']}\n" f"Rising Action: {state['plannified_rising_action']}\n" f"Subplots: {state['plannified_subplots']}\n" f"Midpoint: {state['plannified_midpoint']}\n" f"Climax Build-Up: {state['plannified_climax_build_up']}\n" f"Climax: {state['plannified_climax']}\n" f"Falling Action: {state['plannified_falling_action']}\n" f"Resolution: {state['plannified_resolution']}\n" f"Epilogue: {state['plannified_epilogue']}\n" f"Writing Style: {state['writing_style']}")
@@ -159,9 +159,9 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
     model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0.7)
     user_requirements = "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()])
     try:
-        model_with_structured_output = model.with_structured_output(BrainstormingStructuredOutput, strict = True)
+        model_with_structured_output = model.with_structured_output(IdeaBrainstormingStructuredOutput, strict = True)
     except:
-        model_with_structured_output = model.with_structured_output(BrainstormingStructuredOutput)
+        model_with_structured_output = model.with_structured_output(IdeaBrainstormingStructuredOutput)
     
     system_prompt = BRAINSTORMING_IDEA_PROMPT
     

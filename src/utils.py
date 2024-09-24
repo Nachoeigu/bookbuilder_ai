@@ -56,15 +56,15 @@ class DocumentationReady(TypedDict):
     writing_style: str = Field(description="The desired tone, style or book reference the writing should respect, with high details,  optimized based on the reasoning and reflection steps")
     additional_requirements: str = Field(description = "More requirements beyond topic, target audience, genre and writing style.  Optimized based on the reasoning and reflection steps")
 
-class BrainstormingNarrativeStructuredOutput(BaseModel):
+class NarrativeBrainstormingStructuredOutput(BaseModel):
     """
     This tool defines the narrative of the story based on the original set up. 
     """
     reasoning_step: str = Field(description = "Reason deeply, stpe by step, how each chapter will be developed based on the idea")
     reflection_step: str = Field(description = "If you detect that you made a mistake in your reasoning step, at any point, correct yourself in this field.")
-    chapters_summaries: List[str] = Field(description = "A list where each element is the summary of each chapter. Each one should contain a detailed description of what happen on it. Each summary MUST HAVE a length of 5 sentences minimum. Optimized based on the reasoning and reflection steps.")
+    chapters_summaries: List[str] = Field(description = "A list where each element is a summary of each chapter. Each one should contain a detailed description of what happen on it, with intro-development-ending. Each summary MUST HAVE a length of 5 sentences minimum. Optimized based on the reasoning and reflection steps.")
 
-class BrainstormingStructuredOutput(BaseModel):
+class IdeaBrainstormingStructuredOutput(BaseModel):
     """
     This tool defines and structures the proposed idea in detailed sections.  
     """
@@ -100,7 +100,7 @@ class TranslatorSpecialCaseStructuredOutput(BaseModel):
 
 class WriterStructuredOutput(BaseModel):
     """This tool structures the way the writer invention"""
-    reasoning_step: str = Field(description = "Reason deeply, stpe by step, how you will write the story based on the idea")
+    reasoning_step: str = Field(description = "Reason deeply, stpe by step, how you will write the story based on the proposed idea")
     reflection_step: str = Field(description = "If you detect that you made a mistake in your reasoning step, at any point, correct yourself in this field.")
     content: str = Field(description = "The content inside the developed chapter, avoid putting the name of the chapter here. Optimized based on the reasoning and reflection steps.")
     chapter_name: str = Field(description = "The name of the developed chapter. It should be original and creative. Optimized based on the reasoning and reflection steps.")
