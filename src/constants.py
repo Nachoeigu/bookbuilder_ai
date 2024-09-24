@@ -44,7 +44,7 @@ The summaries should align with the overall narrative structure and ensure a coh
 \n
 For each chapter summary, ensure the following:
 - **Key Plot Points**: Clearly outline the major events and turning points of the chapter, showing how they advance the main plot and contribute to the overall story arc.
-- **Character Development**: Describe how characters are involved in the chapter, including their actions, decisions, and any growth or change they experience.
+- **Character Development**: Describe how characters are involved in the chapter, including their actions, decisions, and any change they experience.
 - **Transition and Flow**: Illustrate how the chapter transitions from the previous one and sets up subsequent events, maintaining a logical and engaging progression.
 - **Setting and Atmosphere**: Provide context for the chapter’s setting and atmosphere, ensuring it integrates smoothly into the story’s world.
 - **Consistency with Narrative Structure**: Ensure each summary reflects the elements defined in the brainstorming phase, including themes, conflicts, and key events, maintaining alignment with the overall story.
