@@ -7,6 +7,8 @@ WORKDIR=os.getenv("WORKDIR")
 os.chdir(WORKDIR)
 sys.path.append(WORKDIR)
 
+from pydantic import BaseModel
+import json
 import operator
 from typing import Annotated, List, Literal, TypedDict, Dict
 from langchain_core.messages import AnyMessage, HumanMessage
@@ -43,7 +45,7 @@ class GraphConfig(TypedDict):
     translator_model: Literal['openai', 'google','meta','amazon']
     n_chapters: int
 
-class DocumentationReady(TypedDict):
+class DocumentationReady(BaseModel):
     """
     This tool confirms that the Instructor has the necessary information to pass to the writer
     """
@@ -230,3 +232,25 @@ def adding_delay_for_rate_limits(model):
     model_name = retrieve_model_name(model)
     if re.search('gemini|llama', model_name) is not None:
         time.sleep(6)
+
+
+def cleaning_llm_output(llm_output):
+    #We need to optimize this function
+    try:
+        return json.loads(llm_output.content.split("```")[1].split('```')[0].strip())
+    except:
+        return llm_output.content
+
+
+def get_json_schema(pydantic_class: BaseModel) -> dict:
+    """
+    This function receives a Pydantic class and returns its JSON schema representation.
+
+    :param pydantic_class: A Pydantic class that inherits from BaseModel
+    :return: A dictionary representing the JSON schema of the input class
+    """
+    if not issubclass(pydantic_class, BaseModel):
+        raise TypeError("Input must be a Pydantic class that inherits from BaseModel")
+    
+    return json.dumps(pydantic_class.model_json_schema(), indent = 4)
+

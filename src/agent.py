@@ -84,11 +84,11 @@ if __name__ == '__main__':
         "configurable": {
             "thread_id": 42,
             "language":"spanish",
-            "instructor_model":"amazon",
-            "brainstormer_idea_model":"amazon",
-            "brainstormer_critique_model":"amazon",
-            "reviewer_model":"amazon",
-            "writer_model":"openai"
+            "instructor_model":"google",
+            "brainstormer_idea_model":"google",
+            "brainstormer_critique_model":"google",
+            "reviewer_model":"google",
+            "writer_model":"google"
         }
     }
 

@@ -8,25 +8,25 @@ os.chdir(WORKDIR)
 sys.path.append(WORKDIR)
 
 from src.constants import *
-from src.utils import State, DocumentationReady, ApprovedBrainstormingIdea,NarrativeBrainstormingStructuredOutput, WriterStructuredOutput, IdeaBrainstormingStructuredOutput, ApprovedWriterChapter, CritiqueWriterChapter, TranslatorStructuredOutput, TranslatorSpecialCaseStructuredOutput, retrieve_model_name
+from src.utils import State, DocumentationReady, ApprovedBrainstormingIdea,NarrativeBrainstormingStructuredOutput, WriterStructuredOutput, IdeaBrainstormingStructuredOutput, ApprovedWriterChapter, CritiqueWriterChapter, TranslatorStructuredOutput, TranslatorSpecialCaseStructuredOutput, retrieve_model_name, get_json_schema
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
-from src.utils import GraphConfig, _get_model, check_chapter, adding_delay_for_rate_limits
+from src.utils import GraphConfig, _get_model, check_chapter, adding_delay_for_rate_limits, cleaning_llm_output
 
 
 def get_clear_instructions(state: State, config: GraphConfig):
     model = _get_model(config = config, default = "openai", key = "instructor_model", temperature = 0)
-    model = model.bind_tools([DocumentationReady])
     system_prompt = INSTRUCTOR_PROMPT
     messages = [SystemMessage(content = system_prompt)] + state['user_instructor_messages']
     adding_delay_for_rate_limits(model)
     reply = model.invoke(messages)
-
-    if len(reply.tool_calls) == 0:
+    
+    cleaned_reply = cleaning_llm_output(llm_output = reply)
+    if isinstance(cleaned_reply, str):
         return {'user_instructor_messages': [reply],
                 'instructor_model': retrieve_model_name(model)}
-    else:
+    elif isinstance(cleaned_reply, dict):
         return {
-            'instructor_documents': reply.tool_calls[0]['args'],
+            'instructor_documents': DocumentationReady(**cleaned_reply),
             'instructor_model': retrieve_model_name(model)
             }
 
@@ -35,7 +35,6 @@ def read_human_feedback(state: State):
 
 def brainstorming_idea_critique(state: State, config: GraphConfig):
     model = _get_model(config, default = "openai", key = "brainstormer_critique_model", temperature = 0.15)
-    model_with_tools = model.with_structured_output(ApprovedBrainstormingIdea)
     critiques_in_loop = config['configurable'].get('critiques_in_loop', False)
 
     if state['critique_brainstorming_messages'] == []:
@@ -46,18 +45,20 @@ def brainstorming_idea_critique(state: State, config: GraphConfig):
          HumanMessage(content = state['plannified_messages'][-1].content)
         ]
         adding_delay_for_rate_limits(model)
-        output = model_with_tools.invoke(messages)
+        output = model.invoke(messages)
+        cleaned_output = cleaning_llm_output(llm_output=output)
 
     else:
         if (critiques_in_loop == False)&((state['is_general_story_plan_approved'] == False)|(state['critique_brainstorming_messages'] != [])):
-            output = ApprovedBrainstormingIdea(grade=10, feedback="")
+            cleaned_output = ApprovedBrainstormingIdea(grade=10, feedback="")
         else:
             messages = state['critique_brainstorming_messages'] + [HumanMessage(content = state['plannified_messages'][-1].content)]
             adding_delay_for_rate_limits(model)
-            output = model_with_tools.invoke(messages)
+            output = model.invoke(messages)
+            cleaned_output = cleaning_llm_output(llm_output=output)
 
-    if int(output.grade) <= 9:
-        feedback = output.feedback
+    if int(cleaned_output['grade']) <= 9:
+        feedback = cleaned_output['feedback']
         is_general_story_plan_approved = False
 
         return {'is_general_story_plan_approved': is_general_story_plan_approved,
@@ -73,7 +74,6 @@ def brainstorming_idea_critique(state: State, config: GraphConfig):
 
 def brainstorming_narrative_critique(state: State, config: GraphConfig):
     model = _get_model(config, default = "openai", key = "brainstormer_critique_model", temperature = 0.15)
-    model_with_tools = model.with_structured_output(ApprovedBrainstormingIdea)
     critiques_in_loop = config['configurable'].get('critiques_in_loop', False)
 
     if state['critique_brainstorming_narrative_messages'] == []:
@@ -84,18 +84,20 @@ def brainstorming_narrative_critique(state: State, config: GraphConfig):
          HumanMessage(content = str(state['plannified_chapters_messages'][-1].content))
         ]
         adding_delay_for_rate_limits(model)
-        output = model_with_tools.invoke(messages)
+        output = model.invoke(messages)
+        cleaned_output = cleaning_llm_output(llm_output=output)
 
     else:
         if (critiques_in_loop == False)&((state['is_detailed_story_plan_approved'] == False)|(state['critique_brainstorming_narrative_messages'] != [])):
-            output = ApprovedBrainstormingIdea(grade=10, feedback="")
+            cleaned_output = ApprovedBrainstormingIdea(grade=10, feedback="")
         else:
             messages = state['critique_brainstorming_narrative_messages'] + [HumanMessage(content = state['plannified_chapters_messages'][-1])]
             adding_delay_for_rate_limits(model)
-            output = model_with_tools.invoke(messages)
+            output = model.invoke(messages)
+            cleaned_output = cleaning_llm_output(llm_output=output)
 
-    if int(output.grade) <= 9:
-        feedback = output.feedback
+    if int(cleaned_output['grade']) <= 9:
+        feedback = cleaned_output['feedback']
         is_general_story_plan_approved = False
 
         return {'is_detailed_story_plan_approved': is_general_story_plan_approved,
@@ -111,10 +113,6 @@ def brainstorming_narrative_critique(state: State, config: GraphConfig):
 def making_narrative_story_brainstorming(state: State, config: GraphConfig):
     model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0.7)
     user_requirements = "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()])
-    try:
-        model_with_structured_output = model.with_structured_output(NarrativeBrainstormingStructuredOutput, strict = True)
-    except:
-        model_with_structured_output = model.with_structured_output(NarrativeBrainstormingStructuredOutput)
 
     if state.get('is_detailed_story_plan_approved', None) is None:
         system_prompt = BRAINSTORMING_NARRATIVE_PROMPT.format(idea_draft=f"Story overview: {state['story_overview']}\n" f"Context and Setting: {state['plannified_context_setting']}\n" f"Inciting Incident: {state['plannified_inciting_incident']}\n" f"Themes and Conflicts Introduction: {state['plannified_themes_conflicts_intro']}\n" f"Transition to Development: {state['plannified_transition_to_development']}\n" f"Rising Action: {state['plannified_rising_action']}\n" f"Subplots: {state['plannified_subplots']}\n" f"Midpoint: {state['plannified_midpoint']}\n" f"Climax Build-Up: {state['plannified_climax_build_up']}\n" f"Climax: {state['plannified_climax']}\n" f"Falling Action: {state['plannified_falling_action']}\n" f"Resolution: {state['plannified_resolution']}\n" f"Epilogue: {state['plannified_epilogue']}\n" f"Writing Style: {state['writing_style']}")
@@ -123,9 +121,10 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
         n_chapters = 10 if config['configurable'].get('n_chapters') is None else config['configurable'].get('n_chapters')
         user_query = HumanMessage(content = f"Develop a story with {n_chapters} chapters.\nEnsure consistency and always keep the attention of the audience.")
         messages = [system_prompt] + [user_query]
-        output = model_with_structured_output.invoke(messages)
+        output = model.invoke(messages)
+        cleaned_output = cleaning_llm_output(llm_output=output)
 
-        messages = messages + [AIMessage(content=str(output.chapters_summaries))]
+        messages = messages + [AIMessage(content=str(cleaned_output['chapters_summaries']))]
     
         return {'plannified_chapters_messages': messages,
                 'brainstorming_writer_model': retrieve_model_name(model)
@@ -136,8 +135,10 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
             adding_delay_for_rate_limits(model)
             critique_query = HumanMessage(content=f"Based on this critique, adjust your entire idea and return it again with the adjustments: {state['critique_brainstorming_narrative_messages'][-1].content}")
             
-            output = model_with_structured_output.invoke(state['plannified_chapters_messages'] + [critique_query])
-            messages = [critique_query] + [AIMessage(content=str(output.chapters_summaries))]
+            output = model.invoke(state['plannified_chapters_messages'] + [critique_query])
+            cleaned_output = cleaning_llm_output(llm_output=output)
+
+            messages = [critique_query] + [AIMessage(content=str(cleaned_output['chapters_summaries']))]
             return {
                 'plannified_chapters_messages': messages,
                 'brainstorming_writer_model': retrieve_model_name(model)            
@@ -147,21 +148,18 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
             model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0)
             adding_delay_for_rate_limits(model)
             critique_query = [HumanMessage(content=f"Some improvements to your chapter: {state['critique_brainstorming_narrative_messages'][-1]}")]
-            output = model_with_structured_output.invoke(state['plannified_chapters_messages'] + critique_query)
-            messages = [critique_query] + [AIMessage(content=str(output.chapters_summaries))]
+            output = model.invoke(state['plannified_chapters_messages'] + critique_query)
+            cleaned_output = cleaning_llm_output(llm_output=output)
+            messages = [critique_query] + [AIMessage(content=str(cleaned_output['chapters_summaries']))]
             return {
                 'plannified_chapters_messages': messages,
-                'plannified_chapters_summaries': output.chapters_summaries,
+                'plannified_chapters_summaries': cleaned_output['chapters_summaries'],
                 'brainstorming_writer_model': retrieve_model_name(model)            
             }
 
 def making_general_story_brainstorming(state: State, config: GraphConfig):
     model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0.7)
     user_requirements = "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()])
-    try:
-        model_with_structured_output = model.with_structured_output(IdeaBrainstormingStructuredOutput, strict = True)
-    except:
-        model_with_structured_output = model.with_structured_output(IdeaBrainstormingStructuredOutput)
     
     system_prompt = BRAINSTORMING_IDEA_PROMPT
     
@@ -172,8 +170,9 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
             system_prompt,
             HumanMessage(content = "Start it...")
         ]
-        output = model_with_structured_output.invoke(messages)
-        output = AIMessage(content="\n".join([f"{key}: {value}" for key, value in output.dict().items()]))
+        output = model.invoke(messages)
+        cleaned_output = cleaning_llm_output(llm_output = output)
+        output = AIMessage(content="\n".join([f"{key}: {value}" for key, value in cleaned_output.dict().items()]))
 
         messages = messages + [output]
 
@@ -185,8 +184,9 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
         if state['is_general_story_plan_approved'] == False:
             adding_delay_for_rate_limits(model)
             new_msg = [HumanMessage(content=f"Based on this critique, adjust your entire idea and return it again with the adjustments: {state['critique_brainstorming_messages'][-1].content}")]
-            output = model_with_structured_output.invoke(state['plannified_messages'] + new_msg)
-            output = [AIMessage(content="\n".join([f"{key}: {value}" for key, value in output.dict().items()]))]
+            output = model.invoke(state['plannified_messages'] + new_msg)
+            cleaned_output = cleaning_llm_output(llm_output=output)
+            output = [AIMessage(content="\n".join([f"{key}: {value}" for key, value in cleaned_output.dict().items()]))]
             messages = new_msg + output
             return {
                 'plannified_messages': messages,
@@ -196,34 +196,32 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
         else:
             model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0)
             adding_delay_for_rate_limits(model)
-            output = model_with_structured_output.invoke(state['plannified_messages'] +[HumanMessage(content="Based on the improvements, structure the final structure:")])
+            output = model.invoke(state['plannified_messages'] +[HumanMessage(content="Based on the improvements, structure the final structure:")])
+            cleaned_output = cleaning_llm_output(llm_output=output)
+
             return {
-            'plannified_context_setting': output.context_setting,
-            'plannified_inciting_incident': output.inciting_incident,
-            'plannified_themes_conflicts_intro': output.themes_conflicts_intro,
-            'plannified_transition_to_development': output.transition_to_development,
-            'plannified_rising_action': output.rising_action,
-            'plannified_subplots': output.subplots,
-            'plannified_midpoint': output.midpoint,
-            'plannified_climax_build_up': output.climax_build_up,
-            'plannified_climax': output.climax,
-            'plannified_falling_action': output.falling_action,
-            'plannified_resolution': output.resolution,
-            'plannified_epilogue': output.epilogue,
-            'characters': output.characters,
-            'writing_style': output.writing_style,
-            'story_overview': output.story_overview,
-            'book_title': output.book_name,
-            'book_prologue': output.book_prologue,
+            'plannified_context_setting': cleaned_output.context_setting,
+            'plannified_inciting_incident': cleaned_output.inciting_incident,
+            'plannified_themes_conflicts_intro': cleaned_output.themes_conflicts_intro,
+            'plannified_transition_to_development': cleaned_output.transition_to_development,
+            'plannified_rising_action': cleaned_output.rising_action,
+            'plannified_subplots': cleaned_output.subplots,
+            'plannified_midpoint': cleaned_output.midpoint,
+            'plannified_climax_build_up': cleaned_output.climax_build_up,
+            'plannified_climax': cleaned_output.climax,
+            'plannified_falling_action': cleaned_output.falling_action,
+            'plannified_resolution': cleaned_output.resolution,
+            'plannified_epilogue': cleaned_output.epilogue,
+            'characters': cleaned_output.characters,
+            'writing_style': cleaned_output.writing_style,
+            'story_overview': cleaned_output.story_overview,
+            'book_title': cleaned_output.book_name,
+            'book_prologue': cleaned_output.book_prologue,
             'brainstorming_writer_model': retrieve_model_name(model)
             }
 
 def evaluate_chapter(state: State, config: GraphConfig):
     model = _get_model(config = config, default = "openai", key = "writing_reviewer_model", temperature = 0)
-    try:
-        model_with_tools = model.bind_tools([ApprovedWriterChapter, CritiqueWriterChapter], strict = True, tool_choice = 'any')
-    except:
-        model_with_tools = model.bind_tools([ApprovedWriterChapter, CritiqueWriterChapter])
     
     draft = ( f"Story overview: {state['story_overview']}\n" f"Context and Setting: {state['plannified_context_setting']}\n" f"Inciting Incident: {state['plannified_inciting_incident']}\n" f"Themes and Conflicts Introduction: {state['plannified_themes_conflicts_intro']}\n" f"Transition to Development: {state['plannified_transition_to_development']}\n" f"Rising Action: {state['plannified_rising_action']}\n" f"Subplots: {state['plannified_subplots']}\n" f"Midpoint: {state['plannified_midpoint']}\n" f"Climax Build-Up: {state['plannified_climax_build_up']}\n" f"Climax: {state['plannified_climax']}\n" f"Falling Action: {state['plannified_falling_action']}\n" f"Resolution: {state['plannified_resolution']}\n" f"Epilogue: {state['plannified_epilogue']}\n" f"Writing Style: {state['writing_style']}\n" f"Summary of each chapter: {state['plannified_chapters_summaries'][-1]}" )
     critiques_in_loop = config['configurable'].get('critiques_in_loop', False)
@@ -233,9 +231,11 @@ def evaluate_chapter(state: State, config: GraphConfig):
 
         new_message = [SystemMessage(content = system_prompt.format(draft=draft))] + [HumanMessage(content=f"Start with the first chapter: {state['content'][-1]}.")]
         adding_delay_for_rate_limits(model)
-        output = model_with_tools.invoke(new_message)
+        output = model.invoke(new_message)
+        cleaned_output = cleaning_llm_output(llm_output= output)
+
         try:
-            is_chapter_approved = [1 for tool in output.tool_calls if (tool['name'] == 'ApprovedWriterChapter')&(tool['args']['is_approved']==True)] == [1]
+            is_chapter_approved = [1 for tool in cleaned_output.tool_calls if (tool['name'] == 'ApprovedWriterChapter')&(tool['args']['is_approved']==True)] == [1]
         except:
             is_chapter_approved = False
     else:
@@ -246,9 +246,11 @@ def evaluate_chapter(state: State, config: GraphConfig):
         else:
             new_message = [HumanMessage(content = f"The next chapter is the following. Read again the entire chat history in order to have the context of the previous chapters.\nWhen that was done, review the next chapter.\nThis is the next chapter, review it:\n{state['content'][-1]}")]
             adding_delay_for_rate_limits(model)
-            output = model_with_tools.invoke(state['writing_reviewer_memory'] + new_message)    
+            output = model.invoke(state['writing_reviewer_memory'] + new_message)  
+            cleaned_output = cleaning_llm_output(llm_output= output)  
+
             try:
-                is_chapter_approved = [1 for tool in output.tool_calls if (tool['name'] == 'ApprovedWriterChapter')&(tool['args']['is_approved']==True)] == [1]
+                is_chapter_approved = [1 for tool in cleaned_output.tool_calls if (tool['name'] == 'ApprovedWriterChapter')&(tool['args']['is_approved']==True)] == [1]
             except:
                 is_chapter_approved = False
 
@@ -261,7 +263,7 @@ def evaluate_chapter(state: State, config: GraphConfig):
                 'reviewer_model': retrieve_model_name(model)
         }
     else:
-        feedback = [tool['args']['feedback'] for tool in output.tool_calls if (tool['name'] == 'CritiqueWriterChapter')][0]
+        feedback = [tool['args']['feedback'] for tool in cleaned_output.tool_calls if (tool['name'] == 'CritiqueWriterChapter')][0]
         is_chapter_approved = False
         new_messages = new_message + [AIMessage(content = feedback)]
         if is_chapter_approved == True:
@@ -278,10 +280,6 @@ def evaluate_chapter(state: State, config: GraphConfig):
 
 def generate_content(state: State, config: GraphConfig):
     model = _get_model(config = config, default = "openai", key = "writer_model", temperature = 0.70)
-    try:
-        model_with_structured_output = model.with_structured_output(WriterStructuredOutput, strict = True)
-    except:
-        model_with_structured_output = model.with_structured_output(WriterStructuredOutput)
     
     if state.get('current_chapter', None) == None:
         system_prompt = WRITER_PROMPT
@@ -308,21 +306,23 @@ def generate_content(state: State, config: GraphConfig):
         adding_delay_for_rate_limits(model)
         human_msg = HumanMessage(content=f"Start with the first chapter. I will provide to you a summary of what should happen on it:\n`{state['plannified_chapters_summaries'][0]}.`")
 
-        output = model_with_structured_output.invoke(messages + [human_msg])
+        output = model.invoke(messages + [human_msg])
+        cleaned_output = cleaning_llm_output(llm_output=output)
         
-        if check_chapter(msg_content = output.content) == False:
+        if check_chapter(msg_content = cleaned_output['content']) == False:
             adding_delay_for_rate_limits(model)
             messages.append(human_msg)
-            messages.append(AIMessage(content = output.content))
+            messages.append(AIMessage(content = cleaned_output['content']))
             human_msg = HumanMessage(content=f"The chapter should contains at least 5 paragraphs. Adjust it again!")
-            output = model_with_structured_output.invoke(messages + [human_msg])
+            output = model.invoke(messages + [human_msg])
+            cleaned_output = cleaning_llm_output(llm_output=output)
 
         messages.append(human_msg)
-        messages.append(AIMessage(content = output.content))
+        messages.append(AIMessage(content = cleaned_output['content']))
 
 
-        return {'content': [output.content],
-                'chapter_names': [output.chapter_name],
+        return {'content': [cleaned_output['content']],
+                'chapter_names': [cleaned_output['chapter_name']],
                 'current_chapter': 1,
                 'writer_memory': messages,
                 'writer_model': retrieve_model_name(model)
@@ -334,17 +334,17 @@ def generate_content(state: State, config: GraphConfig):
         else:
             new_message = [HumanMessage(content = f"Continue with the chapter {state['current_chapter'] + 1}, which is about:\n`{state['plannified_chapters_summaries'][state['current_chapter']]}.`\nBefore start, remember to read again the previous developed chapters before so you make the perfect continuation possible.")]
         adding_delay_for_rate_limits(model)
-        output = model_with_structured_output.invoke(state['writer_memory'] + new_message)
-
+        output = model.invoke(state['writer_memory'] + new_message)
+        cleaned_output = cleaning_llm_output(llm_output=output)
         new_messages = new_message + [AIMessage(content = output.content)]
     
         if check_chapter(msg_content = output.content) == False:
             adding_delay_for_rate_limits(model)
-            output = model_with_structured_output.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least 5 paragraphs. Adjust it again!")])
-
+            output = model.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least 5 paragraphs. Adjust it again!")])
+            cleaned_output = cleaning_llm_output(output)
         return {
-                'content': [output.content],
-                'chapter_names': [output.chapter_name],
+                'content': [cleaned_output['content']],
+                'chapter_names': [cleaned_output['chapter_name']],
                 'current_chapter': state['current_chapter'] + 1 if state['is_chapter_approved'] == True else state['current_chapter'],
                 'writer_memory': new_messages,
                 'writer_model': retrieve_model_name(model)
@@ -352,10 +352,6 @@ def generate_content(state: State, config: GraphConfig):
 
 def generate_translation(state: State, config: GraphConfig):
     model = _get_model(config = config, default = "openai", key = "translator_model", temperature = 0)
-    try:
-        model_with_structured_output = model.with_structured_output(TranslatorStructuredOutput, strict = True)
-    except:
-        model_with_structured_output = model.with_structured_output(TranslatorStructuredOutput)
     
     if state.get("translated_current_chapter", None) == None:
         system_prompt = TRANSLATOR_PROMPT
@@ -363,24 +359,26 @@ def generate_translation(state: State, config: GraphConfig):
             SystemMessage(content=system_prompt.format(
                 target_language=config['configurable'].get("language"),
                 book_name=state['book_title'],
-                story_topic=state['instructor_documents']['topic']
+                story_topic=state['instructor_documents']['topic'],
+                schema = get_json_schema(TranslatorStructuredOutput)
                 )
             ),
             HumanMessage(content=f"Start with the first chapter: title:\n {state['chapter_names_of_approved_chapters'][0]}\n\n Content of the Chapter:\n{state['content_of_approved_chapters'][0]}.")
         ]
         adding_delay_for_rate_limits(model)
-        output = model_with_structured_output.invoke(messages)
-        messages.append(AIMessage(content = f"Here is the translation:\n{output.translated_content}"+f"\n. This is the chapter name:\n{output.translated_chapter_name}"))
+        output = model.invoke(messages)
+        cleaned_output = cleaning_llm_output(llm_output=output)
+        messages.append(AIMessage(content = f"Here is the translation:\n{cleaned_output['translated_content']}"+f"\n. This is the chapter name:\n{cleaned_output['translated_chapter_name']}"))
 
-        model_with_structured_output_for_translating_book_name_prologue = model.with_structured_output(TranslatorSpecialCaseStructuredOutput)
-        special_case_output = model_with_structured_output_for_translating_book_name_prologue.invoke(messages + [HumanMessage(content=f"Also, translate the book title and the book prologue:\n title: {state['book_title']}\n prologue: {state['book_prologue']}")])
-        book_name = special_case_output.translated_book_name
-        book_prologue = special_case_output.translated_book_prologue
+        special_case_output = model.invoke(messages + [HumanMessage(content=f"Also, translate the book title and the book prologue:\n title: {state['book_title']}\n prologue: {state['book_prologue']}.\nBut use the following schema definition for your output: {get_json_schema(TranslatorSpecialCaseStructuredOutput)}")])
+        cleaned_special_case_output = cleaning_llm_output(llm_output=special_case_output)
+        book_name = cleaned_special_case_output['translated_book_name']
+        book_prologue = cleaned_special_case_output['translated_book_prologue']
 
-        return {'translated_content': [output.translated_content],
+        return {'translated_content': [cleaned_output['translated_content']],
                 'translated_book_name': book_name,
                 'translated_book_prologue': book_prologue,
-                'translated_chapter_names': [output.translated_chapter_name],
+                'translated_chapter_names': [cleaned_output['translated_chapter_name']],
                 'translated_current_chapter': 1,
                 'translator_memory': messages,
                 'translator_model': retrieve_model_name(model)
@@ -389,13 +387,14 @@ def generate_translation(state: State, config: GraphConfig):
         new_message = [HumanMessage(content = f"Continue with chapter number {state['translated_current_chapter']}: title: {state['chapter_names_of_approved_chapters'][state['translated_current_chapter']]}\n {state['content_of_approved_chapters'][state['translated_current_chapter']]}.")]
 
         adding_delay_for_rate_limits(model)
-        output = model_with_structured_output.invoke(state['translator_memory'] + new_message)
+        output = model.invoke(state['translator_memory'] + new_message)
+        cleaned_output = cleaning_llm_output(llm_output=output)
         
-        new_messages = new_message + [AIMessage(content = f"content: {output.translated_content}"+f"\n name_chapter: {output.translated_chapter_name}")]
+        new_messages = new_message + [AIMessage(content = f"content: {cleaned_output['translated_content']}"+f"\n name_chapter: {cleaned_output['translated_chapter_name']}")]
 
         return {
-            'translated_content': [output.translated_content],
-            'translated_chapter_names': [output.translated_chapter_name],
+            'translated_content': [cleaned_output['translated_content']],
+            'translated_chapter_names': [cleaned_output['translated_chapter_name']],
             'translated_current_chapter': state['translated_current_chapter'] + 1,
             'translator_memory': new_messages,
             'translator_model': retrieve_model_name(model)
