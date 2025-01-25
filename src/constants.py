@@ -186,7 +186,7 @@ With all this information in mind, develop each chapter of the book, ensuring th
 - Each chapter must consist of {min_paragraph_in_chapter} paragraphs, with each paragraph containing at least {min_sentences_in_each_paragraph_in_chapter} sentences.
 - Avoid redundancy in the narrative: ensure that the story flows smoothly without unnecessary repetition.
 - Ensure logical consistency: events in the story must make sense and align with the overall plot.
-- Don'çt make it as a life lesson, just create an original and creative story for entretainment.
+- Don't make it as a life lesson, just create an original and creative story for entretainment.
 </RULES>
 
 <PREPARATION>
