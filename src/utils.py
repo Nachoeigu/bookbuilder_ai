@@ -10,7 +10,7 @@ sys.path.append(WORKDIR)
 from pydantic import BaseModel
 import json
 import operator
-from typing import Annotated, List, Literal, TypedDict, Dict, Optional
+from typing import Annotated, List, Literal, TypedDict
 from langchain_core.messages import AnyMessage, HumanMessage
 from pydantic import BaseModel, Field
 from langchain_openai.chat_models import ChatOpenAI
@@ -197,9 +197,9 @@ def _get_model(config: GraphConfig, key:Literal['instructor_model','brainstormer
     if model == "openai":
         return ChatOpenAI(temperature=temperature, model="gpt-4o-mini")
     elif model == "google":
-        return ChatGoogleGenerativeAI(temperature=temperature, model="gemini-1.5-pro-exp-0827")
+        return ChatGoogleGenerativeAI(temperature=temperature, model="gemini--pro-exp-0827")
     elif model == 'meta':
-        return ChatGroq(temperature=temperature, model="llama-3.1-70b-versatile")
+        return ChatGroq(temperature=temperature, model="llama-3.3-70b-versatile")
     elif model == 'amazon':
         return ChatBedrock(model_id = 'anthropic.claude-3-5-sonnet-20240620-v1:0', model_kwargs = {'temperature':temperature})
     else:
