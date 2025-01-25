@@ -21,52 +21,7 @@ Ensure that the final document is not just a repetition of the user's words but 
 <FORMAT_OUTPUT>
 Return a Python dictionary, which should follows this JSON schema definition:
 ```schema
-{
-    "description": "This tool confirms that you has the necessary information to pass to the writer",
-    "properties": {
-        "reasoning_step": {
-            "description": "In-deep explanation of your step by step reasoning about how to structure the JSON schema with the requirements of the user",
-            "title": "Reasoning Step",
-            "type": "string"
-        },
-        "topic": {
-            "description": "The desired topic of the user, with high details and optimized with the reasoning information",
-            "title": "Topic",
-            "type": "string"
-        },
-        "target_audience": {
-            "description": "The desired target audience the book should point to,  with high details,  and optimized with the reasoning information",
-            "title": "Target Audience",
-            "type": "string"
-        },
-        "genre": {
-            "description": "Genre of the book to develop,  with high details,  optimized based on the reasoning information",
-            "title": "Genre",
-            "type": "string"
-        },
-        "writing_style": {
-            "description": "The desired tone, style or book reference the writing should respect, with high details,  optimized with the reasoning information",
-            "title": "Writing Style",
-            "type": "string"
-        },
-        "additional_requirements": {
-            "description": "More requirements beyond topic, target audience, genre and writing style.  Optimized with the reasoning information",
-            "title": "Additional Requirements",
-            "type": "string"
-        }
-    },
-    "required": [
-        "reasoning_step",
-        "reflection_step",
-        "topic",
-        "target_audience",
-        "genre",
-        "writing_style",
-        "additional_requirements"
-    ],
-    "title": "DocumentationReady",
-    "type": "object"
-}
+{schema}
 ```
 </FORMAT_OUTPUT>
 
@@ -91,129 +46,7 @@ During the conversation, you could receive feedback or points to improve, if thi
 <FORMAT_OUTPUT>
 Return a Python dictionary, which should follows this JSON schema definition:
 ```schema
-{
-    "description": "This tool defines and structures the proposed idea in detailed sections.  ",
-    "properties": {
-        "reasoning_step": {
-            "description": "In-deep explanation of your step by step reasoning about how to structure the JSON schema with the requirements of the user",
-            "title": "Reasoning Step",
-            "type": "string"
-        },
-        "reflection_step": {
-            "description": "If you detect that you made a mistake in your reasoning step, at any point, correct yourself in this field.",
-            "title": "Reflection Step",
-            "type": "string"
-        },
-        "story_overview": {
-            "description": "A highly detailed overview of the narrative that includes a strong introduction, a well-developed middle, and a satisfying conclusion. Optimized based on the reasoning and reflection steps.",
-            "title": "Story Overview",
-            "type": "string"
-        },
-        "characters": {
-            "description": "Describe the characters of the story, in one paragraph each one.  Describe their background, motivations, and situations along the at the story journey. Be as detailed as possible.  Optimized based on the reasoning and reflection steps.",
-            "title": "Characters",
-            "type": "string"
-        },
-        "writing_style": {
-            "description": "The style and tone the writer should consider while developing the book.  Optimized based on the reasoning and reflection steps.",
-            "title": "Writing Style",
-            "type": "string"
-        },
-        "book_name": {
-            "description": "The title of the book. It should be unique, creative, and original. Optimized based on the reasoning and reflection steps.",
-            "title": "Book Name",
-            "type": "string"
-        },
-        "book_prologue": {
-            "description": "The opening section of the book. It should be engaging and designed to strongly capture the audience's attention. Optimized based on the reasoning and reflection steps.",
-            "title": "Book Prologue",
-            "type": "string"
-        },
-        "context_setting": {
-            "description": "Describe the time, place, and atmosphere where the story takes place. Include any necessary background information relevant to the story. Optimized based on the reasoning and reflection steps.",
-            "title": "Context Setting",
-            "type": "string"
-        },
-        "inciting_incident": {
-            "description": "Describe the event that disrupts the protagonist\u2019s normal life and initiates the main plot. It should set up the central conflict or challenge. Optimized based on the reasoning and reflection steps.",
-            "title": "Inciting Incident",
-            "type": "string"
-        },
-        "themes_conflicts_intro": {
-            "description": "Introduce the central themes and conflicts that will be explored in the story. Mention any internal or external conflicts. Optimized based on the reasoning and reflection steps.",
-            "title": "Themes Conflicts Intro",
-            "type": "string"
-        },
-        "transition_to_development": {
-            "description": "Ensure a smooth transition from the Introduction to the Development stage. Detail how the story moves from the setup to the rising action. Optimized based on the reasoning and reflection steps.",
-            "title": "Transition To Development",
-            "type": "string"
-        },
-        "rising_action": {
-            "description": "Describe the key events that increase tension and advance the central conflict. Include challenges that force the protagonist to grow or change. Optimized based on the reasoning and reflection steps.",
-            "title": "Rising Action",
-            "type": "string"
-        },
-        "subplots": {
-            "description": "Outline any secondary storylines that complement the main plot. Describe how these subplots intersect with the main plot. Optimized based on the reasoning and reflection steps.",
-            "title": "Subplots",
-            "type": "string"
-        },
-        "midpoint": {
-            "description": "Identify a significant event that alters the direction of the story or escalates the conflict. It could be a turning point or a major revelation. Optimized based on the reasoning and reflection steps.",
-            "title": "Midpoint",
-            "type": "string"
-        },
-        "climax_build_up": {
-            "description": "Detail the events leading up to the climax. Explain how these events escalate the conflict and set the stage for the story's peak moment. Optimized based on the reasoning and reflection steps.",
-            "title": "Climax Build Up",
-            "type": "string"
-        },
-        "climax": {
-            "description": "Describe the decisive moment where the main conflict reaches its peak. Explain how the protagonist confronts the greatest challenge or opposition. Optimized based on the reasoning and reflection steps.",
-            "title": "Climax",
-            "type": "string"
-        },
-        "falling_action": {
-            "description": "Outline the immediate aftermath of the climax. Describe how the resolution of the main conflict affects the characters and world. Optimized based on the reasoning and reflection steps.",
-            "title": "Falling Action",
-            "type": "string"
-        },
-        "resolution": {
-            "description": "Tie up any remaining loose ends and conclude the story, reflecting on themes and character changes. Optimized based on the reasoning and reflection steps.",
-            "title": "Resolution",
-            "type": "string"
-        },
-        "epilogue": {
-            "description": "Provide a final reflection or glimpse into the characters' future, showing the long-term impact of the story. Optimized based on the reasoning and reflection steps.",
-            "title": "Epilogue",
-            "type": "string"
-        }
-    },
-    "required": [
-        "reasoning_step",
-        "reflection_step",
-        "story_overview",
-        "characters",
-        "writing_style",
-        "book_name",
-        "book_prologue",
-        "context_setting",
-        "inciting_incident",
-        "themes_conflicts_intro",
-        "transition_to_development",
-        "rising_action",
-        "subplots",
-        "midpoint",
-        "climax_build_up",
-        "climax",
-        "falling_action",
-        "resolution",
-        "epilogue"
-    ],
-    "title": "IdeaBrainstormingStructuredOutput",
-    "type": "object"
-}
+{schema}
 ```
 </FORMAT_OUTPUT>
 
@@ -249,36 +82,7 @@ Each chapter summary should be a minimum of five sentences, providing enough det
 <FORMAT_OUTPUT>
 
 ```schema
-{
-    "description": "This tool defines the narrative of the story based on the original set up. ",
-    "properties": {
-        "reasoning_step": {
-            "description": "In-deep explanation of your step by step reasoning about how to structure the JSON schema about how each chapter will be developed based on the idea",
-            "title": "Reasoning Step",
-            "type": "string"
-        },
-        "reflection_step": {
-            "description": "If you detect that you made a mistake in your reasoning step, at any point, correct yourself in this field.",
-            "title": "Reflection Step",
-            "type": "string"
-        },
-        "chapters_summaries": {
-            "description": "A list where each element is a summary of each chapter. Each one should contain a detailed description of what happen on it, with intro-development-ending. Each summary MUST HAVE a length of 5 sentences minimum. Optimized based on the reasoning and reflection steps.",
-            "items": {
-                "type": "string"
-            },
-            "title": "Chapters Summaries",
-            "type": "array"
-        }
-    },
-    "required": [
-        "reasoning_step",
-        "reflection_step",
-        "chapters_summaries"
-    ],
-    "title": "NarrativeBrainstormingStructuredOutput",
-    "type": "object"
-}
+{schema}
 ```
 </FORMAT_OUTPUT>
 
@@ -419,39 +223,7 @@ Trust in your experience—this is within your expertise. You have crafted thous
 <FORMAT_OUTPUT>
 Return a Python object, following this JSON schema definition:
 ```schema
-{
-    "description": "This tool structures the way the writer invention",
-    "properties": {
-        "reasoning_step": {
-            "description": "In-deep explanation of your step by step reasoning about how to structure the JSON schema considering how you will write the story based on the proposed idea",
-            "title": "Reasoning Step",
-            "type": "string"
-        },
-        "reflection_step": {
-            "description": "If you detect that you made a mistake in your reasoning step, at any point, correct yourself in this field.",
-            "title": "Reflection Step",
-            "type": "string"
-        },
-        "content": {
-            "description": "The content inside the developed chapter, avoid putting the name of the chapter here. Optimized based on the reasoning and reflection steps.",
-            "title": "Content",
-            "type": "string"
-        },
-        "chapter_name": {
-            "description": "The name of the developed chapter. It should be original and creative. Optimized based on the reasoning and reflection steps.",
-            "title": "Chapter Name",
-            "type": "string"
-        }
-    },
-    "required": [
-        "reasoning_step",
-        "reflection_step",
-        "content",
-        "chapter_name"
-    ],
-    "title": "WriterStructuredOutput",
-    "type": "object"
-}
+{schema}
 ```
 </FORMAT_OUTPUT>
 
@@ -490,41 +262,13 @@ Return only one of the two possible JSON schema definitions as JSON object.
 
 <ApprovedWriterChapter>
 ```schema
-{
-    "description": "This tool approves the chapter and its content based on your analysis.",
-    "properties": {
-        "is_approved": {
-            "description": "This tool should be invoke only if the chapter is quite well  and it could be defined as MVP, based on your analysis.",
-            "title": "Is Approved",
-            "type": "boolean"
-        }
-    },
-    "required": [
-        "is_approved"
-    ],
-    "title": "ApprovedWriterChapter",
-    "type": "object"
-}
+{approved_schema}
 ```
 </ApprovedWriterChapter>
 
 <CritiqueWriterChapter>
 ```schema
-{
-    "description": "This tool retrieves critiques and highlight improvements over the developed chapter.",
-    "properties": {
-        "feedback": {
-            "description": "Provide highly detailed suggestions and points of improvements based on your analysis.",
-            "title": "Feedback",
-            "type": "string"
-        }
-    },
-    "required": [
-        "feedback"
-    ],
-    "title": "CritiqueWriterChapter",
-    "type": "object"
-}
+{critique_schema}
 ```
 </CritiqueWriterChapter>
 

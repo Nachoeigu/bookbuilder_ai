@@ -10,7 +10,7 @@ sys.path.append(WORKDIR)
 from pydantic import BaseModel
 import json
 import operator
-from typing import Annotated, List, Literal, TypedDict, Dict
+from typing import Annotated, List, Literal, TypedDict, Dict, Optional
 from langchain_core.messages import AnyMessage, HumanMessage
 from pydantic import BaseModel, Field
 from langchain_openai.chat_models import ChatOpenAI
@@ -45,12 +45,12 @@ class GraphConfig(TypedDict):
     translator_model: Literal['openai', 'google','meta','amazon']
     n_chapters: int
 
-class DocumentationReady(TypedDict):
+class DocumentationReady(BaseModel):
     """
     This tool confirms that the Instructor has the necessary information to pass to the writer
     """
 
-    reasoning_step: str = Field(description = "Reason deeply, stpe by step, how to structure the document with the requirements of the user")
+    reasoning_step: str = Field(description = "In-deep explanation of your step by step reasoning about how to structure the JSON schema with the requirements of the user.")
     reflection_step: str = Field(description = "If you detect that you made a mistake in your reasoning step, at any point, correct yourself in this field.")
     topic: str = Field(description="The desired topic of the user, with high details and optimized with the reasoning and reflection steps")
     target_audience: str = Field(description = "The desired target audience the book should point to,  with high details,  and optimized with the reasoning and reflection steps")
@@ -107,13 +107,13 @@ class WriterStructuredOutput(BaseModel):
     content: str = Field(description = "The content inside the developed chapter, avoid putting the name of the chapter here. Optimized based on the reasoning and reflection steps.")
     chapter_name: str = Field(description = "The name of the developed chapter. It should be original and creative. Optimized based on the reasoning and reflection steps.")
 
-class ApprovedWriterChapter(TypedDict):
+class ApprovedWriterChapter(BaseModel):
     """
     This tool approves the chapter and its content based on your analysis.
     """
     is_approved: bool = Field(description = 'This tool should be invoke only if the chapter is quite well  and it could be defined as MVP, based on your analysis.')
 
-class CritiqueWriterChapter(TypedDict):
+class CritiqueWriterChapter(BaseModel):
     """
     This tool retrieves critiques and highlight improvements over the developed chapter.
     """
@@ -249,8 +249,8 @@ def get_json_schema(pydantic_class: BaseModel) -> dict:
     :param pydantic_class: A Pydantic class that inherits from BaseModel
     :return: A dictionary representing the JSON schema of the input class
     """
-    if not issubclass(pydantic_class, BaseModel):
-        raise TypeError("Input must be a Pydantic class that inherits from BaseModel")
     
     return json.dumps(pydantic_class.model_json_schema(), indent = 4)
 
+if __name__ == '__main__':
+    print(get_json_schema(DocumentationReady))

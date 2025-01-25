@@ -15,7 +15,9 @@ from src.utils import GraphConfig, _get_model, check_chapter, adding_delay_for_r
 
 def get_clear_instructions(state: State, config: GraphConfig):
     model = _get_model(config = config, default = "openai", key = "instructor_model", temperature = 0)
-    system_prompt = INSTRUCTOR_PROMPT
+    system_prompt = INSTRUCTOR_PROMPT.format(
+        schema = get_json_schema(DocumentationReady)
+    )
     messages = [SystemMessage(content = system_prompt)] + state['user_instructor_messages']
     adding_delay_for_rate_limits(model)
     reply = model.invoke(messages)
@@ -41,7 +43,7 @@ def brainstorming_idea_critique(state: State, config: GraphConfig):
         user_requirements = "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()])
         system_prompt = CRITIQUE_IDEA_PROMPT
         messages = [
-         SystemMessage(content = system_prompt.format(user_requirements=user_requirements)),
+         SystemMessage(content = system_prompt.format(user_requirements=user_requirements, schema = get_json_schema(ApprovedBrainstormingIdea))),
          HumanMessage(content = state['plannified_messages'][-1].content)
         ]
         adding_delay_for_rate_limits(model)
@@ -115,8 +117,8 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
     user_requirements = "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()])
 
     if state.get('is_detailed_story_plan_approved', None) is None:
-        system_prompt = BRAINSTORMING_NARRATIVE_PROMPT.format(idea_draft=f"Story overview: {state['story_overview']}\n" f"Context and Setting: {state['plannified_context_setting']}\n" f"Inciting Incident: {state['plannified_inciting_incident']}\n" f"Themes and Conflicts Introduction: {state['plannified_themes_conflicts_intro']}\n" f"Transition to Development: {state['plannified_transition_to_development']}\n" f"Rising Action: {state['plannified_rising_action']}\n" f"Subplots: {state['plannified_subplots']}\n" f"Midpoint: {state['plannified_midpoint']}\n" f"Climax Build-Up: {state['plannified_climax_build_up']}\n" f"Climax: {state['plannified_climax']}\n" f"Falling Action: {state['plannified_falling_action']}\n" f"Resolution: {state['plannified_resolution']}\n" f"Epilogue: {state['plannified_epilogue']}\n" f"Writing Style: {state['writing_style']}")
-        system_prompt = SystemMessage(content = system_prompt.format(user_requirements=user_requirements))
+        system_prompt = BRAINSTORMING_NARRATIVE_PROMPT
+        system_prompt = SystemMessage(content = system_prompt.format(user_requirements=user_requirements,idea_draft=f"Story overview: {state['story_overview']}\n" f"Context and Setting: {state['plannified_context_setting']}\n" f"Inciting Incident: {state['plannified_inciting_incident']}\n" f"Themes and Conflicts Introduction: {state['plannified_themes_conflicts_intro']}\n" f"Transition to Development: {state['plannified_transition_to_development']}\n" f"Rising Action: {state['plannified_rising_action']}\n" f"Subplots: {state['plannified_subplots']}\n" f"Midpoint: {state['plannified_midpoint']}\n" f"Climax Build-Up: {state['plannified_climax_build_up']}\n" f"Climax: {state['plannified_climax']}\n" f"Falling Action: {state['plannified_falling_action']}\n" f"Resolution: {state['plannified_resolution']}\n" f"Epilogue: {state['plannified_epilogue']}\n" f"Writing Style: {state['writing_style']}", schema = get_json_schema(NarrativeBrainstormingStructuredOutput)))
         adding_delay_for_rate_limits(model)
         n_chapters = 10 if config['configurable'].get('n_chapters') is None else config['configurable'].get('n_chapters')
         user_query = HumanMessage(content = f"Develop a story with {n_chapters} chapters.\nEnsure consistency and always keep the attention of the audience.")
@@ -163,7 +165,7 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
     
     system_prompt = BRAINSTORMING_IDEA_PROMPT
     
-    system_prompt = SystemMessage(content = system_prompt.format(user_requirements=user_requirements))
+    system_prompt = SystemMessage(content = system_prompt.format(user_requirements=user_requirements, schema = get_json_schema(IdeaBrainstormingStructuredOutput)))
     if state.get('is_general_story_plan_approved', None) is None:
         adding_delay_for_rate_limits(model)
         messages = [
@@ -229,7 +231,7 @@ def evaluate_chapter(state: State, config: GraphConfig):
     if state.get('is_chapter_approved', None) == None:
         system_prompt = WRITING_REVIEWER_PROMPT
 
-        new_message = [SystemMessage(content = system_prompt.format(draft=draft))] + [HumanMessage(content=f"Start with the first chapter: {state['content'][-1]}.")]
+        new_message = [SystemMessage(content = system_prompt.format(draft=draft, approved_schema = get_json_schema(ApprovedWriterChapter), critique_schema = get_json_schema(CritiqueWriterChapter)))] + [HumanMessage(content=f"Start with the first chapter: {state['content'][-1]}.")]
         adding_delay_for_rate_limits(model)
         output = model.invoke(new_message)
         cleaned_output = cleaning_llm_output(llm_output= output)
@@ -300,7 +302,8 @@ def generate_content(state: State, config: GraphConfig):
                 climax=state['plannified_climax'],
                 falling_action=state['plannified_falling_action'],
                 resolution=state['plannified_resolution'],
-                epilogue=state['plannified_epilogue']
+                epilogue=state['plannified_epilogue'],
+                schema = get_json_schema(WriterStructuredOutput)
             ))
         ]
         adding_delay_for_rate_limits(model)
