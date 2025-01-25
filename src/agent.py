@@ -88,7 +88,11 @@ if __name__ == '__main__':
             "brainstormer_idea_model":"google",
             "brainstormer_critique_model":"google",
             "reviewer_model":"google",
-            "writer_model":"google"
+            "writer_model":"google",
+            "n_chapters":10,
+            "min_paragraph_per_chapter": 10,
+            "min_sentences_in_each_paragraph_per_chapter": 10
+
         }
     }
 

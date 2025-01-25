@@ -25,7 +25,7 @@ Return a Python dictionary, which should follows this JSON schema definition:
 ```
 </FORMAT_OUTPUT>
 
-Remember to return the correct format output based on your confidence: if you are not highly confident, plain text. Otherwise, use <FORMAT_OUTPUT> tag.
+Remember to return the correct format output based on your confidence: if you are not highly confident, plain text. Otherwise, use the format present in <FORMAT_OUTPUT> tag.
 You are the best doing this job, think step by step and provide useful, high quality results.
 """
 
@@ -138,27 +138,7 @@ Consider this:
 Return a Python dictionary, which should follows this JSON schema definition:
 
 ```schema
-{
-    "description": "This tool evaluates if the brainstormed idea is quite good or need further improvements",
-    "properties": {
-        "grade": {
-            "description": "The overall grade (in scale from 0 to 10) assigned to the draft idea based on the criterias. It should be allign with the feedback.",
-            "title": "Grade",
-            "type": "integer"
-        },
-        "feedback": {
-            "description": "Provide highly detailed feedback and improvements in case it is not approved.",
-            "title": "Feedback",
-            "type": "string"
-        }
-    },
-    "required": [
-        "grade",
-        "feedback"
-    ],
-    "title": "ApprovedBrainstormingIdea",
-    "type": "object"
-}
+{schema}
 ```
 <FORMAT_OUTPUT>
 
@@ -203,10 +183,10 @@ Structure:
 With all this information in mind, develop each chapter of the book, ensuring that the story remains engaging and logically consistent from start to finish.
 
 <RULES>
-- Each chapter must consist of 5 paragraphs, with each paragraph containing at least 5 sentences.
+- Each chapter must consist of {min_paragraph_in_chapter} paragraphs, with each paragraph containing at least {min_sentences_in_each_paragraph_in_chapter} sentences.
 - Avoid redundancy in the narrative: ensure that the story flows smoothly without unnecessary repetition.
 - Ensure logical consistency: events in the story must make sense and align with the overall plot.
-- Don´t make it as a life lesson, just create an original and creative story for entretainment.
+- Don'çt make it as a life lesson, just create an original and creative story for entretainment.
 </RULES>
 
 <PREPARATION>
@@ -228,6 +208,7 @@ Return a Python object, following this JSON schema definition:
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag.
+Follow strictly each rule enumerated in <RULES> tag.
 
 Now, do you job efficiently!
 """

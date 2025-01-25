@@ -282,7 +282,9 @@ def evaluate_chapter(state: State, config: GraphConfig):
 
 def generate_content(state: State, config: GraphConfig):
     model = _get_model(config = config, default = "openai", key = "writer_model", temperature = 0.70)
-    
+
+    min_paragraph_in_chapter = config['configurable'].get('min_paragraph_per_chapter', 10)
+    min_sentences_in_each_paragraph_in_chapter = config['configurable'].get('min_sentences_in_each_paragraph_per_chapter', 10)
     if state.get('current_chapter', None) == None:
         system_prompt = WRITER_PROMPT
         messages = [
@@ -303,7 +305,9 @@ def generate_content(state: State, config: GraphConfig):
                 falling_action=state['plannified_falling_action'],
                 resolution=state['plannified_resolution'],
                 epilogue=state['plannified_epilogue'],
-                schema = get_json_schema(WriterStructuredOutput)
+                schema = get_json_schema(WriterStructuredOutput),
+                min_paragraph_in_chapter = min_paragraph_in_chapter,
+                min_sentences_in_each_paragraph_in_chapter = min_sentences_in_each_paragraph_in_chapter
             ))
         ]
         adding_delay_for_rate_limits(model)
@@ -312,11 +316,11 @@ def generate_content(state: State, config: GraphConfig):
         output = model.invoke(messages + [human_msg])
         cleaned_output = cleaning_llm_output(llm_output=output)
         
-        if check_chapter(msg_content = cleaned_output['content']) == False:
+        if check_chapter(msg_content = cleaned_output['content'], min_paragraphs = min_paragraph_in_chapter) == False:
             adding_delay_for_rate_limits(model)
             messages.append(human_msg)
             messages.append(AIMessage(content = cleaned_output['content']))
-            human_msg = HumanMessage(content=f"The chapter should contains at least 5 paragraphs. Adjust it again!")
+            human_msg = HumanMessage(content=f"The chapter should contains at least {min_paragraph_in_chapter} paragraphs. Adjust it again!")
             output = model.invoke(messages + [human_msg])
             cleaned_output = cleaning_llm_output(llm_output=output)
 
@@ -341,7 +345,7 @@ def generate_content(state: State, config: GraphConfig):
         cleaned_output = cleaning_llm_output(llm_output=output)
         new_messages = new_message + [AIMessage(content = output.content)]
     
-        if check_chapter(msg_content = output.content) == False:
+        if check_chapter(msg_content = output.content, min_paragraphs = min_paragraph_in_chapter) == False:
             adding_delay_for_rate_limits(model)
             output = model.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least 5 paragraphs. Adjust it again!")])
             cleaned_output = cleaning_llm_output(output)

@@ -44,14 +44,16 @@ class GraphConfig(TypedDict):
     writing_reviewer_model: Literal['openai', 'google','meta','amazon']
     translator_model: Literal['openai', 'google','meta','amazon']
     n_chapters: int
+    min_paragraph_per_chapter: int
+    min_sentences_in_each_paragraph_per_chapter: int
 
 class DocumentationReady(BaseModel):
     """
-    This tool confirms that the Instructor has the necessary information to pass to the writer
+    This tool is called for confirming that the Instructor has the necessary information to pass to the writer about the user requirements
     """
 
-    reasoning_step: str = Field(description = "In-deep explanation of your step by step reasoning about how to structure the JSON schema with the requirements of the user.")
-    reflection_step: str = Field(description = "If you detect that you made a mistake in your reasoning step, at any point, correct yourself in this field.")
+    reasoning_step: str = Field(description = "In-deep explanation of your step by step reasoning about how to proceed.")
+    reflection_step: str = Field(description = "In-deep review of your reasoning process so, if you detect that you made a mistake in your thoughts, at any point, correct yourself in this field.")
     topic: str = Field(description="The desired topic of the user, with high details and optimized with the reasoning and reflection steps")
     target_audience: str = Field(description = "The desired target audience the book should point to,  with high details,  and optimized with the reasoning and reflection steps")
     genre: str = Field(description="Genre of the book to develop,  with high details,  optimized based on the reasoning and reflection steps")
@@ -60,25 +62,25 @@ class DocumentationReady(BaseModel):
 
 class NarrativeBrainstormingStructuredOutput(BaseModel):
     """
-    This tool defines the narrative of the story based on the original set up. 
+    This tool defines the foundational narrative of the story based on the original set up. 
     """
-    reasoning_step: str = Field(description = "Reason deeply, stpe by step, how each chapter will be developed based on the idea")
-    reflection_step: str = Field(description = "If you detect that you made a mistake in your reasoning step, at any point, correct yourself in this field.")
-    chapters_summaries: List[str] = Field(description = "A list where each element is a summary of each chapter. Each one should contain a detailed description of what happen on it, with intro-development-ending. Each summary MUST HAVE a length of 5 sentences minimum. Optimized based on the reasoning and reflection steps.")
+    reasoning_step: str = Field(description = "In-deep explanation of your step by step reasoning about how to develop the general narrative along the evolution of the story.")
+    reflection_step: str = Field(description = "In-deep review of your thoughts: If you detect that you made a mistake in your reasoning step, at any point, correct yourself in this field.")
+    chapters_summaries: List[str] = Field(description = "A list where each element is a summary of each chapter. Each one should contain a detailed description of what happen on it, with well explained intro-development-ending stages. Each summary MUST HAVE a length of 5 sentences minimum. Optimized based on the reasoning and reflection steps.")
 
 class IdeaBrainstormingStructuredOutput(BaseModel):
     """
-    This tool defines and structures the proposed idea in detailed sections.  
+    This tool is used in order to structure the proposed writting idea into specific detailed sections that covers the main points of the story.
     """
-    reasoning_step: str = Field(description = "Reason deeply, stpe by step, how the story will consist based on the user requirements")
-    reflection_step: str = Field(description = "If you detect that you made a mistake in your reasoning step, at any point, correct yourself in this field.")
+    reasoning_step: str = Field(description = "In-deep explanation of your step by step reasoning about how how the story will consist based on the user requirements")
+    reflection_step: str = Field(description = "In-deep review of your thoughts: if you detect that you made a mistake in your reasoning step, at any point, correct yourself in this field.")
     story_overview: str = Field(description="A highly detailed overview of the narrative that includes a strong introduction, a well-developed middle, and a satisfying conclusion. Optimized based on the reasoning and reflection steps.")
     characters: str = Field(description = "Describe the characters of the story, in one paragraph each one.  Describe their background, motivations, and situations along the at the story journey. Be as detailed as possible.  Optimized based on the reasoning and reflection steps.")
     writing_style: str = Field(description="The style and tone the writer should consider while developing the book.  Optimized based on the reasoning and reflection steps.")
     book_name: str = Field(description="The title of the book. It should be unique, creative, and original. Optimized based on the reasoning and reflection steps.")
     book_prologue: str = Field(description="The opening section of the book. It should be engaging and designed to strongly capture the audience's attention. Optimized based on the reasoning and reflection steps.")
     context_setting: str = Field(description="Describe the time, place, and atmosphere where the story takes place. Include any necessary background information relevant to the story. Optimized based on the reasoning and reflection steps.")
-    inciting_incident: str = Field(description="Describe the event that disrupts the protagonist’s normal life and initiates the main plot. It should set up the central conflict or challenge. Optimized based on the reasoning and reflection steps.")
+    inciting_incident: str = Field(description="Describe the event that disrupts the protagonist's normal life and initiates the main plot. It should set up the central conflict or challenge. Optimized based on the reasoning and reflection steps.")
     themes_conflicts_intro: str = Field(description="Introduce the central themes and conflicts that will be explored in the story. Mention any internal or external conflicts. Optimized based on the reasoning and reflection steps.")
     transition_to_development: str = Field(description="Ensure a smooth transition from the Introduction to the Development stage. Detail how the story moves from the setup to the rising action. Optimized based on the reasoning and reflection steps.")
     rising_action: str = Field(description="Describe the key events that increase tension and advance the central conflict. Include challenges that force the protagonist to grow or change. Optimized based on the reasoning and reflection steps.")
@@ -91,33 +93,39 @@ class IdeaBrainstormingStructuredOutput(BaseModel):
     epilogue: str = Field(description="Provide a final reflection or glimpse into the characters' future, showing the long-term impact of the story. Optimized based on the reasoning and reflection steps.")
 
 class TranslatorStructuredOutput(BaseModel):
-    """ This tool structures the way the translator should reply """
-    translated_content: str = Field(description = "Your final translation from the original content provided")
+    """
+    This tool is used in order to structure the way the translator should reply
+    """
+    translated_content: str = Field(description = "The final translation from the original content provided")
     translated_chapter_name: str = Field(description = "Translation of the chapter name.")
 
 class TranslatorSpecialCaseStructuredOutput(BaseModel):
-    """ This tool structures the way the translator should reply """
+    """
+    This tool structures the way the translator should reply
+    """
     translated_book_name: str = Field(description = "The translation of the book name")
     translated_book_prologue: str = Field(description= "The translation of the prologue of the book")
 
 class WriterStructuredOutput(BaseModel):
-    """This tool structures the way the writer invention"""
-    reasoning_step: str = Field(description = "Reason deeply, stpe by step, how you will write the story based on the proposed idea")
-    reflection_step: str = Field(description = "If you detect that you made a mistake in your reasoning step, at any point, correct yourself in this field.")
+    """
+    This tool is used for structuring the generation of the writer.
+    """
+    reasoning_step: str = Field(description = "In-deep explanation of your step by step reasoning about how you will write the story based on the proposed idea")
+    reflection_step: str = Field(description = "In-deep review of your thoughts: if you detect that you made a mistake in your reasoning step, at any point, correct yourself in this field.")
     content: str = Field(description = "The content inside the developed chapter, avoid putting the name of the chapter here. Optimized based on the reasoning and reflection steps.")
     chapter_name: str = Field(description = "The name of the developed chapter. It should be original and creative. Optimized based on the reasoning and reflection steps.")
 
 class ApprovedWriterChapter(BaseModel):
     """
-    This tool approves the chapter and its content based on your analysis.
+    This tool is used when the reviewer approves the chapter and its content based on its analysis.
     """
     is_approved: bool = Field(description = 'This tool should be invoke only if the chapter is quite well  and it could be defined as MVP, based on your analysis.')
 
 class CritiqueWriterChapter(BaseModel):
     """
-    This tool retrieves critiques and highlight improvements over the developed chapter.
+    This tool is used when the chapter needs improvements based on the current state of it.
     """
-    feedback: str = Field(description = 'Provide highly detailed suggestions and points of improvements based on your analysis.')
+    feedback: str = Field(description = 'Highly detailed suggestions and points of improvements based on your analysis.')
 
 class ApprovedBrainstormingIdea(BaseModel):
     """
@@ -205,11 +213,11 @@ def _get_model(config: GraphConfig, key:Literal['instructor_model','brainstormer
     else:
         raise ValueError
     
-def check_chapter(msg_content:str):
+def check_chapter(msg_content:str, min_paragraphs: int):
     """
-    This function validates that the generated chapter contains a minimum size (of at least 5 paragraphs)
+    This function validates that the generated chapter contains a the minimum size that the user asks for in terms of paragraphs
     """
-    if len(msg_content.split('\n\n')) >= 4:
+    if len(msg_content.split('\n\n')) >= min_paragraphs:
         return True
     else:
         return False
