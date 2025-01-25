@@ -70,6 +70,7 @@ Return a Python dictionary, which should follows this JSON schema definition:
 ```
 </FORMAT_OUTPUT>
 
+Remember to return the correct format output based on your confidence: if you are not highly confident, plain text. Otherwise, use <FORMAT_OUTPUT> tag.
 You are the best doing this job, think step by step and provide useful, high quality results.
 """
 
@@ -216,6 +217,8 @@ Return a Python dictionary, which should follows this JSON schema definition:
 ```
 </FORMAT_OUTPUT>
 
+Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag.
+
 It is time to start, but before:
 - Take a deep breath and let your creativity guide you. Provide as much detail as possible to build a compelling and structured narrative.
 
@@ -279,6 +282,8 @@ Each chapter summary should be a minimum of five sentences, providing enough det
 ```
 </FORMAT_OUTPUT>
 
+Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag.
+
 Think step by step and provide high quality summaries.
 """
 
@@ -300,6 +305,7 @@ Consider this:
 - If it is not a 10, provide detailed feedback on what needs to be improved.
 Before starting, take a moment to breathe, and focus on the summaries. Then, proceed with your analysis, ensuring each critique is comprehensive and insightful.
 </METHODOLOGY>
+
 Let's start the critique. Be detailed and strict!
 """
 
@@ -351,6 +357,8 @@ Return a Python dictionary, which should follows this JSON schema definition:
 }
 ```
 <FORMAT_OUTPUT>
+
+Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag.
 
 Before starting, take a breath, focus on the idea, and prepare to deliver detailed, constructive feedback.
 Let's begin. Be thorough and precise!
@@ -447,6 +455,7 @@ Return a Python object, following this JSON schema definition:
 ```
 </FORMAT_OUTPUT>
 
+Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag.
 
 Now, do you job efficiently!
 """
@@ -521,6 +530,8 @@ Return only one of the two possible JSON schema definitions as JSON object.
 
 </FORMAT_OUTPUT>
 
+Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag.
+
 Let's begin the review process.
 """
 
@@ -542,4 +553,7 @@ Return the following Python object, following this JSON schema definition:
 {schema}
 ```
 </FORMAT_OUTPUT>
+
+Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag.
+
 """
