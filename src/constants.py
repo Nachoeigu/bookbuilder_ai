@@ -66,6 +66,8 @@ You are an expert novelist tasked with generating detailed summaries for each ch
 </ROLE>
 <DRAFT>
 `{idea_draft}`
+
+The story should have {n_chapters} chapters.
 </DRAFT>
 
 Your goal is to create a comprehensive summary for each chapter of the novel. 
@@ -87,6 +89,7 @@ Each chapter summary should be a minimum of five sentences, providing enough det
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag.
+Don't forget exclusively the rule regarding the minimum of five sentences per chapter summary, and ensure that the number of chapters is {n_chapters}
 
 Think step by step and provide high quality summaries.
 """
@@ -208,7 +211,7 @@ Return a Python object, following this JSON schema definition:
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag.
-Follow strictly each rule enumerated in <RULES> tag.
+Follow strictly each rule enumerated in <RULES> tag: exclusively the ones regarding minimum paragraphs and minimum sentences per paragraph.
 
 Now, do you job efficiently!
 """
