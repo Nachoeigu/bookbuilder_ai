@@ -45,7 +45,7 @@ class GraphConfig(TypedDict):
     translator_model: Literal['openai', 'google','meta','amazon']
     n_chapters: int
 
-class DocumentationReady(BaseModel):
+class DocumentationReady(TypedDict):
     """
     This tool confirms that the Instructor has the necessary information to pass to the writer
     """
