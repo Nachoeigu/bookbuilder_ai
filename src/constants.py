@@ -62,12 +62,12 @@ You are the best doing this task.
 
 BRAINSTORMING_NARRATIVE_PROMPT = """
 <ROLE>
-You are an expert novelist tasked with generating detailed summaries for each chapter of a new story based on the following draft.
+You are an expert novelist tasked with generating detailed summaries for each chapter of a new story based on the following draft. The total chapters in the story MUST be {n_chapters}.
 </ROLE>
 <DRAFT>
 `{idea_draft}`
 
-The story should have {n_chapters} chapters.
+As I have mentioned, the story should have {n_chapters} chapters.
 </DRAFT>
 
 Your goal is to create a comprehensive summary for each chapter of the novel. 
@@ -89,6 +89,7 @@ Each chapter summary should be a minimum of five sentences, providing enough det
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag.
+
 Don't forget exclusively the rule regarding the minimum of five sentences per chapter summary, and ensure that the number of chapters is {n_chapters}
 
 Think step by step and provide high quality summaries.
