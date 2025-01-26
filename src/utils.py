@@ -205,7 +205,7 @@ def _get_model(config: GraphConfig, key:Literal['instructor_model','brainstormer
     if model == "openai":
         return ChatOpenAI(temperature=temperature, model="gpt-4o-mini")
     elif model == "google":
-        return ChatGoogleGenerativeAI(temperature=temperature, model="gemini--pro-exp-0827")
+        return ChatGoogleGenerativeAI(temperature=temperature, model="gemini-2.0-flash-exp")
     elif model == 'meta':
         return ChatGroq(temperature=temperature, model="llama-3.3-70b-versatile")
     elif model == 'amazon':
@@ -243,11 +243,19 @@ def adding_delay_for_rate_limits(model):
 
 
 def cleaning_llm_output(llm_output):
-    #We need to optimize this function
-    try:
-        return json.loads(llm_output.content.split("```")[1].split('```')[0].strip())
-    except:
+    match = re.search(r"```json\s*(\{.*?\})\s*```", llm_output.content, re.DOTALL)
+
+    if match:
+        json_content = match.group(1)
+        json_content = re.sub(r"^```json|```$", "", json_content).strip()
+        json_content = re.sub(r'\s+', ' ', json_content)
+
+        return json.loads(json_content)
+    
+    else:
         return llm_output.content
+
+
 
 
 def get_json_schema(pydantic_class: BaseModel) -> dict:

@@ -50,7 +50,7 @@ Return a Python dictionary, which should follows this JSON schema definition:
 ```
 </FORMAT_OUTPUT>
 
-Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag.
+Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
 
 It is time to start, but before:
 - Take a deep breath and let your creativity guide you. Provide as much detail as possible to build a compelling and structured narrative.
@@ -82,13 +82,13 @@ For each chapter summary, ensure the following:
 Each chapter summary should be a minimum of five sentences, providing enough detail to guide the development of the full chapter while contributing to the novel's cohesive structure. Focus on clarity, engagement, and alignment with the established narrative framework.
 
 <FORMAT_OUTPUT>
-
+Return a Python dictionary, which should follows this JSON schema definition:
 ```schema
 {schema}
 ```
 </FORMAT_OUTPUT>
 
-Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag.
+Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
 
 Don't forget exclusively the rule regarding the minimum of five sentences per chapter summary, and ensure that the number of chapters is {n_chapters}
 
@@ -113,6 +113,15 @@ Consider this:
 - If it is not a 10, provide detailed feedback on what needs to be improved.
 Before starting, take a moment to breathe, and focus on the summaries. Then, proceed with your analysis, ensuring each critique is comprehensive and insightful.
 </METHODOLOGY>
+
+<FORMAT_OUTPUT>
+Return a Python dictionary, which should follows this JSON schema definition:
+```schema
+{schema}
+```
+</FORMAT_OUTPUT>
+
+Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
 
 Let's start the critique. Be detailed and strict!
 """
@@ -144,9 +153,9 @@ Return a Python dictionary, which should follows this JSON schema definition:
 ```schema
 {schema}
 ```
-<FORMAT_OUTPUT>
+</FORMAT_OUTPUT>
 
-Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag.
+Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
 
 Before starting, take a breath, focus on the idea, and prepare to deliver detailed, constructive feedback.
 Let's begin. Be thorough and precise!
@@ -211,7 +220,7 @@ Return a Python object, following this JSON schema definition:
 ```
 </FORMAT_OUTPUT>
 
-Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag.
+Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
 Follow strictly each rule enumerated in <RULES> tag: exclusively the ones regarding minimum paragraphs and minimum sentences per paragraph.
 
 Now, do you job efficiently!
@@ -244,7 +253,6 @@ Your focus is to identify areas of improvement, particularly where the chapter d
 
 <FORMAT_OUTPUT>
 Return only one of the two possible JSON schema definitions as JSON object.
-
 <ApprovedWriterChapter>
 ```schema
 {approved_schema}
@@ -259,7 +267,7 @@ Return only one of the two possible JSON schema definitions as JSON object.
 
 </FORMAT_OUTPUT>
 
-Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag.
+Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text. Only JSON object is accepted.
 
 Let's begin the review process.
 """
@@ -283,6 +291,6 @@ Return the following Python object, following this JSON schema definition:
 ```
 </FORMAT_OUTPUT>
 
-Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag.
+Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
 
 """
