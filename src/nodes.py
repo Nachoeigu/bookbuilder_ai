@@ -379,7 +379,7 @@ def evaluate_chapter(state: State, config: GraphConfig):
             feedback = 'Perfect!'
             is_chapter_approved = True
         else:
-            new_message = [HumanMessage(content = f"The next chapter is the following. Read again the entire chat history in order to have the context of the previous chapters.\nWhen that was done, review the next chapter.\nThis is the next chapter, review it:\n{state['content'][-1]}. Don't forget to return your answer using the <FORMAT_OUTPUT> instruction.")]
+            new_message = [HumanMessage(content = f"The next chapter is the following. Read again the entire chat history in order to have the context of the previous chapters.\nWhen that was done, review the next chapter.\nThis is the next chapter, review it:\n```{state['content'][-1]}```.\n\n Don't forget to return your answer using the <FORMAT_OUTPUT> instruction.")]
             adding_delay_for_rate_limits(model)
             output = model.invoke(state['writing_reviewer_memory'] + new_message)  
             cleaned_output = cleaning_llm_output(llm_output= output)                
@@ -497,7 +497,7 @@ def generate_content(state: State, config: GraphConfig):
 
     else:
         if state['is_chapter_approved'] == False:
-            new_message = [HumanMessage(content = 'I will provide to you some feedback. Focus on each of these points, and improve the chapter.\n Dont forget any key in your JSON output' + state['writing_reviewer_memory'][-1].content)]
+            new_message = [HumanMessage(content = 'I will provide to you some feedback. Focus on each of these points, and improve the chapter.\n Dont forget any key in your JSON output:\n' + state['writing_reviewer_memory'][-1].content.feedback)]
         else:
             new_message = [HumanMessage(content = f"Continue with the chapter {state['current_chapter'] + 1}, which is about:\n`{state['plannified_chapters_summaries'][state['current_chapter']]}.`\nBefore start, remember to read again the previous developed chapters before so you make the perfect continuation possible.  Dont forget any key in your JSON output")]
         adding_delay_for_rate_limits(model)
