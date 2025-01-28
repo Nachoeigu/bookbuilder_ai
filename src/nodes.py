@@ -646,7 +646,7 @@ def generate_content(state: State, config: GraphConfig):
 
     else:
         if state['is_chapter_approved'] == False:
-            new_message = [HumanMessage(content = 'I will provide to you some feedback. Focus on each of these points, and improve the chapter.\n' + cleaning_llm_output(state['writing_reviewer_memory'][-1])['feedback']) + '\n\n When returning your response, dont forget any key in your JSON output:']
+            new_message = [HumanMessage(content = 'I will provide to you some feedback. Focus on each of these points, and improve the chapter.\n' + cleaning_llm_output(state['writing_reviewer_memory'][-1])['feedback'] + '\n\n When returning your response, dont forget any key in your JSON output:')]
         else:
             new_message = [HumanMessage(content = f"Continue with the chapter {state['current_chapter'] + 1}, which is about:\n<CHAPTER_SUMMARY>\n`{state['plannified_chapters_summaries'][state['current_chapter']]}.\n</CHAPTER_SUMMARY>`\nBefore start, remember to read again the previous developed chapters before so you make the perfect continuation possible. Dont forget any key in your JSON output. Also don´t forget the chapter should contains at least {min_paragraph_in_chapter} paragraphs.")]
         adding_delay_for_rate_limits(model)
