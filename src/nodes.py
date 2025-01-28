@@ -11,7 +11,9 @@ from src.constants import *
 from src.utils import State, DocumentationReady, ApprovedBrainstormingIdea, TranslatorStructuredOutput, TranslatorSpecialCaseStructuredOutput, retrieve_model_name, get_json_schema, NarrativeBrainstormingStructuredOutput, IdeaBrainstormingStructuredOutput, ApprovedWriterChapter,CritiqueWriterChapter,WriterStructuredOutput
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from src.utils import GraphConfig, _get_model, check_chapter, adding_delay_for_rate_limits, cleaning_llm_output
+from pydantic import ValidationError
 import json
+
 
 def get_clear_instructions(state: State, config: GraphConfig):
     model = _get_model(config = config, default = "openai", key = "instructor_model", temperature = 0)
@@ -48,9 +50,20 @@ def brainstorming_idea_critique(state: State, config: GraphConfig):
         ]
         adding_delay_for_rate_limits(model)
         output = model.invoke(messages)
-
-        cleaned_output = ApprovedBrainstormingIdea(**cleaning_llm_output(llm_output=output))
-
+        try:
+            cleaned_output = ApprovedBrainstormingIdea(**cleaning_llm_output(llm_output=output))
+        except ValidationError as e:
+            adding_delay_for_rate_limits(model)
+            correction_instruction = ''
+            errors = e.errors()
+            for error in errors:
+                field_name = error['loc'][-1]
+                error_type = error['type']
+                if error_type == 'missing':
+                    correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+            correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
+            output = model.invoke(messages + [output] + [HumanMessage(content=correction_instruction)])
+            cleaned_output = ApprovedBrainstormingIdea(**cleaning_llm_output(llm_output=output))
 
     else:
         if (critiques_in_loop == False)&((state['is_general_story_plan_approved'] == False)|(state['critique_brainstorming_messages'] != [])):
@@ -59,7 +72,20 @@ def brainstorming_idea_critique(state: State, config: GraphConfig):
             messages = state['critique_brainstorming_messages'] + [HumanMessage(content = state['plannified_messages'][-1].content)]
             adding_delay_for_rate_limits(model)
             output = model.invoke(messages)
-            cleaned_output = ApprovedBrainstormingIdea(**cleaning_llm_output(llm_output=output))
+            try:
+                cleaned_output = ApprovedBrainstormingIdea(**cleaning_llm_output(llm_output=output))
+            except ValidationError as e:
+                adding_delay_for_rate_limits(model)
+                correction_instruction = ''
+                errors = e.errors()
+                for error in errors:
+                    field_name = error['loc'][-1]
+                    error_type = error['type']
+                    if error_type == 'missing':
+                        correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
+                output = model.invoke(messages + [output] + [HumanMessage(content=correction_instruction)])
+                cleaned_output = ApprovedBrainstormingIdea(**cleaning_llm_output(llm_output=output))
 
     if int(cleaned_output.grade) <= 9:
         feedback = cleaned_output.feedback
@@ -89,8 +115,20 @@ def brainstorming_narrative_critique(state: State, config: GraphConfig):
         ]
         adding_delay_for_rate_limits(model)
         output = model.invoke(messages)
-        cleaned_output = ApprovedBrainstormingIdea(**cleaning_llm_output(llm_output=output))
-
+        try:
+            cleaned_output = ApprovedBrainstormingIdea(**cleaning_llm_output(llm_output=output))
+        except ValidationError as e:
+            adding_delay_for_rate_limits(model)
+            correction_instruction = ''
+            errors = e.errors()
+            for error in errors:
+                field_name = error['loc'][-1]
+                error_type = error['type']
+                if error_type == 'missing':
+                    correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+            correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
+            output = model.invoke(messages + [output] + [HumanMessage(content=correction_instruction)])
+            cleaned_output = ApprovedBrainstormingIdea(**cleaning_llm_output(llm_output=output))
     else:
         if (critiques_in_loop == False)&((state['is_detailed_story_plan_approved'] == False)|(state['critique_brainstorming_narrative_messages'] != [])):
             cleaned_output = ApprovedBrainstormingIdea(grade=10, feedback="")
@@ -98,8 +136,20 @@ def brainstorming_narrative_critique(state: State, config: GraphConfig):
             messages = state['critique_brainstorming_narrative_messages'] + [HumanMessage(content = state['plannified_chapters_messages'][-1])]
             adding_delay_for_rate_limits(model)
             output = model.invoke(messages)
-            cleaned_output = ApprovedBrainstormingIdea(**cleaning_llm_output(llm_output=output))
-
+            try:
+                cleaned_output = ApprovedBrainstormingIdea(**cleaning_llm_output(llm_output=output))
+            except ValidationError as e:
+                adding_delay_for_rate_limits(model)
+                correction_instruction = ''
+                errors = e.errors()
+                for error in errors:
+                    field_name = error['loc'][-1]
+                    error_type = error['type']
+                    if error_type == 'missing':
+                        correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
+                output = model.invoke(messages + [output] + [HumanMessage(content=correction_instruction)])
+                cleaned_output = ApprovedBrainstormingIdea(**cleaning_llm_output(llm_output=output))
     if int(cleaned_output.grade) <= 9:
         feedback = cleaned_output.feedback
         is_general_story_plan_approved = False
@@ -126,7 +176,20 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
         user_query = HumanMessage(content = f"Develop a story with {n_chapters} chapters.\nEnsure consistency and always keep the attention of the audience.")
         messages = [system_prompt] + [user_query]
         output = model.invoke(messages)
-        cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
+        try:
+            cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
+        except ValidationError as e:
+            adding_delay_for_rate_limits(model)
+            correction_instruction = ''
+            errors = e.errors()
+            for error in errors:
+                field_name = error['loc'][-1]
+                error_type = error['type']
+                if error_type == 'missing':
+                    correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+            correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
+            output = model.invoke(messages + [output] + [HumanMessage(content=correction_instruction)])
+            cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
 
         messages = messages + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
     
@@ -140,7 +203,20 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
             critique_query = HumanMessage(content=f"Based on this critique, adjust your entire idea and return it again with the adjustments: {state['critique_brainstorming_narrative_messages'][-1].content}")
             
             output = model.invoke(state['plannified_chapters_messages'] + [critique_query])
-            cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
+            try:
+                cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
+            except ValidationError as e:
+                adding_delay_for_rate_limits(model)
+                correction_instruction = ''
+                errors = e.errors()
+                for error in errors:
+                    field_name = error['loc'][-1]
+                    error_type = error['type']
+                    if error_type == 'missing':
+                        correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
+                output = model.invoke(state['plannified_chapters_messages'] + [critique_query] + [output] + [HumanMessage(content=correction_instruction)])
+                cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
 
             messages = [critique_query] + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
             return {
@@ -153,7 +229,21 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
             adding_delay_for_rate_limits(model)
             critique_query = [HumanMessage(content=f"Some improvements to your chapter: {state['critique_brainstorming_narrative_messages'][-1]}")]
             output = model.invoke(state['plannified_chapters_messages'] + critique_query)
-            cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
+            try:
+                cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
+            except ValidationError as e:
+                adding_delay_for_rate_limits(model)
+                correction_instruction = ''
+                errors = e.errors()
+                for error in errors:
+                    field_name = error['loc'][-1]
+                    error_type = error['type']
+                    if error_type == 'missing':
+                        correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
+                output = model.invoke(state['plannified_chapters_messages'] + critique_query + [output] + [HumanMessage(content=correction_instruction)])
+                cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
+
             messages = [critique_query] + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
             return {
                 'plannified_chapters_messages': messages,
@@ -175,8 +265,21 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
             HumanMessage(content = "Start it...")
         ]
         output = model.invoke(messages)
-        cleaned_output = IdeaBrainstormingStructuredOutput(**cleaning_llm_output(llm_output = output))
-        
+        try:
+            cleaned_output = IdeaBrainstormingStructuredOutput(**cleaning_llm_output(llm_output = output))
+        except ValidationError as e:
+            adding_delay_for_rate_limits(model)
+            correction_instruction = ''
+            errors = e.errors()
+            for error in errors:
+                field_name = error['loc'][-1]
+                error_type = error['type']
+                if error_type == 'missing':
+                    correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+            correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
+            output = model.invoke(messages + [output] + [HumanMessage(content=correction_instruction)])
+            cleaned_output = IdeaBrainstormingStructuredOutput(**cleaning_llm_output(llm_output = output))
+
         messages = messages + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
 
         return {'plannified_messages': messages,
@@ -188,7 +291,20 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
             adding_delay_for_rate_limits(model)
             new_msg = [HumanMessage(content=f"Based on this critique, adjust your entire idea and return it again with the adjustments: {state['critique_brainstorming_messages'][-1].content.get('feedback')}")]
             output = model.invoke(state['plannified_messages'] + new_msg)
-            cleaned_output = IdeaBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
+            try:
+                cleaned_output = IdeaBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
+            except ValidationError as e:
+                adding_delay_for_rate_limits(model)
+                correction_instruction = ''
+                errors = e.errors()
+                for error in errors:
+                    field_name = error['loc'][-1]
+                    error_type = error['type']
+                    if error_type == 'missing':
+                        correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
+                output = model.invoke(state['plannified_messages'] + new_msg + [output] + [HumanMessage(content=correction_instruction)])
+                cleaned_output = IdeaBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
 
             messages = new_msg + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
             return {
@@ -200,7 +316,20 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
             model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0)
             adding_delay_for_rate_limits(model)
             output = model.invoke(state['plannified_messages'] +[HumanMessage(content="Based on the improvements, return your final work following the instructions mentioned in <FORMAT_OUTPUT>. Ensure to respect the format and syntaxis explicitly explained.")])
-            cleaned_output = IdeaBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
+            try:    
+                cleaned_output = IdeaBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
+            except ValidationError as e:
+                adding_delay_for_rate_limits(model)
+                correction_instruction = ''
+                errors = e.errors()
+                for error in errors:
+                    field_name = error['loc'][-1]
+                    error_type = error['type']
+                    if error_type == 'missing':
+                        correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
+                output = model.invoke(state['plannified_messages'] + +[HumanMessage(content="Based on the improvements, return your final work following the instructions mentioned in <FORMAT_OUTPUT>. Ensure to respect the format and syntaxis explicitly explained.")] + [output] + [HumanMessage(content=correction_instruction)])
+                cleaned_output = IdeaBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
 
 
             return {
@@ -319,7 +448,20 @@ def generate_content(state: State, config: GraphConfig):
         human_msg = HumanMessage(content=f"Start with the first chapter. I will provide to you a summary of what should happen on it:\n`{state['plannified_chapters_summaries'][0]}.`")
 
         output = model.invoke(messages + [human_msg])
-        cleaned_output = WriterStructuredOutput(**cleaning_llm_output(llm_output=output))
+        try:
+            cleaned_output = WriterStructuredOutput(**cleaning_llm_output(llm_output=output))
+        except ValidationError as e:
+            adding_delay_for_rate_limits(model)
+            correction_instruction = ''
+            errors = e.errors()
+            for error in errors:
+                field_name = error['loc'][-1]
+                error_type = error['type']
+                if error_type == 'missing':
+                    correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+            correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
+            output = model.invoke(messages + [human_msg] + [output] + [HumanMessage(content=correction_instruction)])
+            cleaned_output = WriterStructuredOutput(**cleaning_llm_output(llm_output=output))
         
         if check_chapter(msg_content = cleaned_output.content, min_paragraphs = min_paragraph_in_chapter) == False:
             adding_delay_for_rate_limits(model)
@@ -327,7 +469,20 @@ def generate_content(state: State, config: GraphConfig):
             messages.append(AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````"))
             human_msg = HumanMessage(content=f"The chapter should contains at least {min_paragraph_in_chapter} paragraphs. Adjust it again: When expanding the text in this chapter by adding more paragraphs, ensure that every addition meaningfully progresses the story or deepens the characters without resorting to redundant or repetitive content.")
             output = model.invoke(messages + [human_msg])
-            cleaned_output = WriterStructuredOutput(**cleaning_llm_output(llm_output=output))
+            try:
+                cleaned_output = WriterStructuredOutput(**cleaning_llm_output(llm_output=output))
+            except ValidationError as e:
+                adding_delay_for_rate_limits(model)
+                correction_instruction = ''
+                errors = e.errors()
+                for error in errors:
+                    field_name = error['loc'][-1]
+                    error_type = error['type']
+                    if error_type == 'missing':
+                        correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
+                output = model.invoke(messages + [human_msg] + [output] + [HumanMessage(content=correction_instruction)])
+                cleaned_output = WriterStructuredOutput(**cleaning_llm_output(llm_output=output))
 
         messages.append(human_msg)
         messages.append(AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````"))
@@ -347,13 +502,41 @@ def generate_content(state: State, config: GraphConfig):
             new_message = [HumanMessage(content = f"Continue with the chapter {state['current_chapter'] + 1}, which is about:\n`{state['plannified_chapters_summaries'][state['current_chapter']]}.`\nBefore start, remember to read again the previous developed chapters before so you make the perfect continuation possible.  Dont forget any key in your JSON output")]
         adding_delay_for_rate_limits(model)
         output = model.invoke(state['writer_memory'] + new_message)
-        cleaned_output = WriterStructuredOutput(**cleaning_llm_output(llm_output=output))
+        try:
+            cleaned_output = WriterStructuredOutput(**cleaning_llm_output(llm_output=output))
+        except ValidationError as e:
+            adding_delay_for_rate_limits(model)
+            correction_instruction = ''
+            errors = e.errors()
+            for error in errors:
+                field_name = error['loc'][-1]
+                error_type = error['type']
+                if error_type == 'missing':
+                    correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+            correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
+            output = model.invoke(state['writer_memory'] + new_message + [output] + [HumanMessage(content=correction_instruction)])
+            cleaned_output = WriterStructuredOutput(**cleaning_llm_output(llm_output=output))
+
         new_messages = new_message + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
     
         if check_chapter(msg_content = output.content, min_paragraphs = min_paragraph_in_chapter) == False:
             adding_delay_for_rate_limits(model)
             output = model.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least 5 paragraphs. Adjust it again!  Dont forget any key in your JSON output")])
-            cleaned_output = WriterStructuredOutput(**cleaning_llm_output(output))
+            try:
+                cleaned_output = WriterStructuredOutput(**cleaning_llm_output(output))
+            except ValidationError as e:
+                adding_delay_for_rate_limits(model)
+                correction_instruction = ''
+                errors = e.errors()
+                for error in errors:
+                    field_name = error['loc'][-1]
+                    error_type = error['type']
+                    if error_type == 'missing':
+                        correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
+                output = model.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least 5 paragraphs. Adjust it again!  Dont forget any key in your JSON output")] + [output] + [HumanMessage(content=correction_instruction)])
+                cleaned_output = WriterStructuredOutput(**cleaning_llm_output(output))
+
         return {
                 'content': [cleaned_output.content],
                 'chapter_names': [cleaned_output.chapter_name],
@@ -379,11 +562,39 @@ def generate_translation(state: State, config: GraphConfig):
         ]
         adding_delay_for_rate_limits(model)
         output = model.invoke(messages)
-        cleaned_output = TranslatorStructuredOutput(**cleaning_llm_output(llm_output=output))
+        try:
+            cleaned_output = TranslatorStructuredOutput(**cleaning_llm_output(llm_output=output))
+        except ValidationError as e:
+            adding_delay_for_rate_limits(model)
+            correction_instruction = ''
+            errors = e.errors()
+            for error in errors:
+                field_name = error['loc'][-1]
+                error_type = error['type']
+                if error_type == 'missing':
+                    correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+            correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
+            output = model.invoke(messages + [output] + [HumanMessage(content=correction_instruction)])
+            cleaned_output = TranslatorStructuredOutput(**cleaning_llm_output(llm_output=output))
+
         messages.append(AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````"))
 
         special_case_output = model.invoke(messages + [HumanMessage(content=f"Also, translate the book title and the book prologue:\n title: {state['book_title']}\n prologue: {state['book_prologue']}.\nBut use the following schema definition for your output: {get_json_schema(TranslatorSpecialCaseStructuredOutput)}")])
-        cleaned_special_case_output = TranslatorSpecialCaseStructuredOutput(**cleaning_llm_output(llm_output=special_case_output))
+        try:
+            cleaned_special_case_output = TranslatorSpecialCaseStructuredOutput(**cleaning_llm_output(llm_output=special_case_output))
+        except ValidationError as e:
+            adding_delay_for_rate_limits(model)
+            correction_instruction = ''
+            errors = e.errors()
+            for error in errors:
+                field_name = error['loc'][-1]
+                error_type = error['type']
+                if error_type == 'missing':
+                    correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+            correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
+            special_case_output = model.invoke(messages + [special_case_output] + [HumanMessage(content=correction_instruction)])
+            cleaned_special_case_output = TranslatorSpecialCaseStructuredOutput(**cleaning_llm_output(llm_output=special_case_output))
+
         book_name = cleaned_special_case_output.translated_book_name
         book_prologue = cleaned_special_case_output.translated_book_prologue
 
@@ -400,8 +611,21 @@ def generate_translation(state: State, config: GraphConfig):
 
         adding_delay_for_rate_limits(model)
         output = model.invoke(state['translator_memory'] + new_message)
-        cleaned_output = TranslatorStructuredOutput(**cleaning_llm_output(llm_output=output))
-        
+        try:
+            cleaned_output = TranslatorStructuredOutput(**cleaning_llm_output(llm_output=output))
+        except ValidationError as e:
+            adding_delay_for_rate_limits(model)
+            correction_instruction = ''
+            errors = e.errors()
+            for error in errors:
+                field_name = error['loc'][-1]
+                error_type = error['type']
+                if error_type == 'missing':
+                    correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+            correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
+            output = model.invoke(state['translator_memory'] + new_message + [output] + [HumanMessage(content=correction_instruction)])
+            cleaned_output = TranslatorStructuredOutput(**cleaning_llm_output(llm_output=output))
+
         new_messages = new_message + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
 
         return {
