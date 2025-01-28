@@ -8,7 +8,7 @@ os.chdir(WORKDIR)
 sys.path.append(WORKDIR)
 
 from src.constants import *
-from src.utils import State, DocumentationReady, ApprovedBrainstormingIdea, TranslatorStructuredOutput, TranslatorSpecialCaseStructuredOutput, retrieve_model_name, get_json_schema, NarrativeBrainstormingStructuredOutput, IdeaBrainstormingStructuredOutput, ApprovedWriterChapter,CritiqueWriterChapter,WriterStructuredOutput
+from src.utils import State, DocumentationReady, ApprovedBrainstormingIdea, TranslatorStructuredOutput, TranslatorSpecialCaseStructuredOutput, retrieve_model_name, get_json_schema, NarrativeBrainstormingStructuredOutput, IdeaBrainstormingStructuredOutput, ApprovedWriterChapter,CritiqueWriterChapter,WriterStructuredOutput, NoJson
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from src.utils import GraphConfig, _get_model, check_chapter, adding_delay_for_rate_limits, cleaning_llm_output
 from pydantic import ValidationError
@@ -25,6 +25,13 @@ def get_clear_instructions(state: State, config: GraphConfig):
     reply = model.invoke(messages)
     
     cleaned_reply = cleaning_llm_output(llm_output = reply)
+    try:
+        cleaned_reply = cleaning_llm_output(llm_output = reply)
+    except NoJson:
+        reply = model.invoke(messages + [reply] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+        cleaned_reply = cleaning_llm_output(llm_output = reply)
+
+
     if isinstance(cleaned_reply, str):
         return {'user_instructor_messages': [reply],
                 'instructor_model': retrieve_model_name(model)}
@@ -51,7 +58,12 @@ def brainstorming_idea_critique(state: State, config: GraphConfig):
         adding_delay_for_rate_limits(model)
         output = model.invoke(messages)
         try:
-            cleaned_output = ApprovedBrainstormingIdea(**cleaning_llm_output(llm_output=output))
+            cleaned_output = cleaning_llm_output(llm_output = output)
+        except NoJson:
+            output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+            cleaned_output = cleaning_llm_output(llm_output= output)
+        try:
+            cleaned_output = ApprovedBrainstormingIdea(**cleaned_output)
         except ValidationError as e:
             adding_delay_for_rate_limits(model)
             correction_instruction = ''
@@ -63,7 +75,13 @@ def brainstorming_idea_critique(state: State, config: GraphConfig):
                     correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
             correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
             output = model.invoke(messages + [output] + [HumanMessage(content=correction_instruction)])
-            cleaned_output = ApprovedBrainstormingIdea(**cleaning_llm_output(llm_output=output))
+            try:
+                cleaned_output = cleaning_llm_output(llm_output = output)
+            except NoJson:
+                output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+
+            cleaned_output = ApprovedBrainstormingIdea(**cleaned_output)
 
     else:
         if (critiques_in_loop == False)&((state['is_general_story_plan_approved'] == False)|(state['critique_brainstorming_messages'] != [])):
@@ -73,7 +91,12 @@ def brainstorming_idea_critique(state: State, config: GraphConfig):
             adding_delay_for_rate_limits(model)
             output = model.invoke(messages)
             try:
-                cleaned_output = ApprovedBrainstormingIdea(**cleaning_llm_output(llm_output=output))
+                cleaned_output = cleaning_llm_output(llm_output = output)
+            except NoJson:
+                output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+            try:
+                cleaned_output = ApprovedBrainstormingIdea(**cleaned_output)
             except ValidationError as e:
                 adding_delay_for_rate_limits(model)
                 correction_instruction = ''
@@ -85,7 +108,12 @@ def brainstorming_idea_critique(state: State, config: GraphConfig):
                         correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
                 correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
                 output = model.invoke(messages + [output] + [HumanMessage(content=correction_instruction)])
-                cleaned_output = ApprovedBrainstormingIdea(**cleaning_llm_output(llm_output=output))
+                try:
+                    cleaned_output = cleaning_llm_output(llm_output = output)
+                except NoJson:
+                    output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                    cleaned_output = cleaning_llm_output(llm_output= output)
+                cleaned_output = ApprovedBrainstormingIdea(**cleaned_output)
 
     if int(cleaned_output.grade) <= 9:
         feedback = cleaned_output.feedback
@@ -116,7 +144,12 @@ def brainstorming_narrative_critique(state: State, config: GraphConfig):
         adding_delay_for_rate_limits(model)
         output = model.invoke(messages)
         try:
-            cleaned_output = ApprovedBrainstormingIdea(**cleaning_llm_output(llm_output=output))
+            cleaned_output = cleaning_llm_output(llm_output = output)
+        except NoJson:
+            output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+            cleaned_output = cleaning_llm_output(llm_output= output)
+        try:
+            cleaned_output = ApprovedBrainstormingIdea(**cleaned_output)
         except ValidationError as e:
             adding_delay_for_rate_limits(model)
             correction_instruction = ''
@@ -128,7 +161,13 @@ def brainstorming_narrative_critique(state: State, config: GraphConfig):
                     correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
             correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
             output = model.invoke(messages + [output] + [HumanMessage(content=correction_instruction)])
-            cleaned_output = ApprovedBrainstormingIdea(**cleaning_llm_output(llm_output=output))
+            try:
+                cleaned_output = cleaning_llm_output(llm_output = output)
+            except NoJson:
+                output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+
+            cleaned_output = ApprovedBrainstormingIdea(**cleaned_output)
     else:
         if (critiques_in_loop == False)&((state['is_detailed_story_plan_approved'] == False)|(state['critique_brainstorming_narrative_messages'] != [])):
             cleaned_output = ApprovedBrainstormingIdea(grade=10, feedback="")
@@ -137,7 +176,12 @@ def brainstorming_narrative_critique(state: State, config: GraphConfig):
             adding_delay_for_rate_limits(model)
             output = model.invoke(messages)
             try:
-                cleaned_output = ApprovedBrainstormingIdea(**cleaning_llm_output(llm_output=output))
+                cleaned_output = cleaning_llm_output(llm_output = output)
+            except NoJson:
+                output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+            try:
+                cleaned_output = ApprovedBrainstormingIdea(**cleaned_output)
             except ValidationError as e:
                 adding_delay_for_rate_limits(model)
                 correction_instruction = ''
@@ -149,7 +193,13 @@ def brainstorming_narrative_critique(state: State, config: GraphConfig):
                         correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
                 correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
                 output = model.invoke(messages + [output] + [HumanMessage(content=correction_instruction)])
-                cleaned_output = ApprovedBrainstormingIdea(**cleaning_llm_output(llm_output=output))
+                try:
+                    cleaned_output = cleaning_llm_output(llm_output = output)
+                except NoJson:
+                    output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                    cleaned_output = cleaning_llm_output(llm_output= output)
+
+                cleaned_output = ApprovedBrainstormingIdea(**cleaned_output)
     if int(cleaned_output.grade) <= 9:
         feedback = cleaned_output.feedback
         is_general_story_plan_approved = False
@@ -177,7 +227,12 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
         messages = [system_prompt] + [user_query]
         output = model.invoke(messages)
         try:
-            cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
+            cleaned_output = cleaning_llm_output(llm_output = output)
+        except NoJson:
+            output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+            cleaned_output = cleaning_llm_output(llm_output= output)
+        try:
+            cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaned_output)
         except ValidationError as e:
             adding_delay_for_rate_limits(model)
             correction_instruction = ''
@@ -189,7 +244,13 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
                     correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
             correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
             output = model.invoke(messages + [output] + [HumanMessage(content=correction_instruction)])
-            cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
+            try:
+                cleaned_output = cleaning_llm_output(llm_output = output)
+            except NoJson:
+                output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+
+            cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaned_output)
 
         messages = messages + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
     
@@ -204,7 +265,12 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
             
             output = model.invoke(state['plannified_chapters_messages'] + [critique_query])
             try:
-                cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
+                cleaned_output = cleaning_llm_output(llm_output = output)
+            except NoJson:
+                output = model.invoke(state['plannified_chapters_messages'] + [critique_query] + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+            try:
+                cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaned_output)
             except ValidationError as e:
                 adding_delay_for_rate_limits(model)
                 correction_instruction = ''
@@ -216,7 +282,12 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
                         correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
                 correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
                 output = model.invoke(state['plannified_chapters_messages'] + [critique_query] + [output] + [HumanMessage(content=correction_instruction)])
-                cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
+                try:
+                    cleaned_output = cleaning_llm_output(llm_output = output)
+                except NoJson:
+                    output = model.invoke(state['plannified_chapters_messages'] + [critique_query] + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                    cleaned_output = cleaning_llm_output(llm_output= output)
+                cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaned_output)
 
             messages = [critique_query] + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
             return {
@@ -230,7 +301,12 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
             critique_query = [HumanMessage(content=f"Some improvements to your chapter: {state['critique_brainstorming_narrative_messages'][-1]}")]
             output = model.invoke(state['plannified_chapters_messages'] + critique_query)
             try:
-                cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
+                cleaned_output = cleaning_llm_output(llm_output = output)
+            except NoJson:
+                output = model.invoke(state['plannified_chapters_messages'] + critique_query + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+            try:
+                cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaned_output)
             except ValidationError as e:
                 adding_delay_for_rate_limits(model)
                 correction_instruction = ''
@@ -242,7 +318,12 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
                         correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
                 correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
                 output = model.invoke(state['plannified_chapters_messages'] + critique_query + [output] + [HumanMessage(content=correction_instruction)])
-                cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
+                try:
+                    cleaned_output = cleaning_llm_output(llm_output = output)
+                except NoJson:
+                    output = model.invoke(state['plannified_chapters_messages'] + critique_query + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                    cleaned_output = cleaning_llm_output(llm_output= output)
+                cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaned_output)
 
             messages = [critique_query] + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
             return {
@@ -266,7 +347,12 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
         ]
         output = model.invoke(messages)
         try:
-            cleaned_output = IdeaBrainstormingStructuredOutput(**cleaning_llm_output(llm_output = output))
+            cleaned_output = cleaning_llm_output(llm_output = output)
+        except NoJson:
+            output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+            cleaned_output = cleaning_llm_output(llm_output= output)
+        try:
+            cleaned_output = IdeaBrainstormingStructuredOutput(**cleaned_output)
         except ValidationError as e:
             adding_delay_for_rate_limits(model)
             correction_instruction = ''
@@ -278,7 +364,13 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
                     correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
             correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
             output = model.invoke(messages + [output] + [HumanMessage(content=correction_instruction)])
-            cleaned_output = IdeaBrainstormingStructuredOutput(**cleaning_llm_output(llm_output = output))
+            try:
+                cleaned_output = cleaning_llm_output(llm_output = output)
+            except NoJson:
+                output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+
+            cleaned_output = IdeaBrainstormingStructuredOutput(**cleaned_output)
 
         messages = messages + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
 
@@ -289,10 +381,15 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
     else:
         if state['is_general_story_plan_approved'] == False:
             adding_delay_for_rate_limits(model)
-            new_msg = [HumanMessage(content=f"Based on this critique, adjust your entire idea and return it again with the adjustments: {state['critique_brainstorming_messages'][-1].content.get('feedback')}")]
+            new_msg = [HumanMessage(content=f"Based on this critique, adjust your entire idea and return it again with the adjustments: {cleaning_llm_output(state['critique_brainstorming_messages'][-1]).get('feedback')}")]
             output = model.invoke(state['plannified_messages'] + new_msg)
             try:
-                cleaned_output = IdeaBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
+                cleaned_output = cleaning_llm_output(llm_output = output)
+            except NoJson:
+                output = model.invoke(state['plannified_messages'] + new_msg + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+            try:
+                cleaned_output = IdeaBrainstormingStructuredOutput(**cleaned_output)
             except ValidationError as e:
                 adding_delay_for_rate_limits(model)
                 correction_instruction = ''
@@ -304,7 +401,12 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
                         correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
                 correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
                 output = model.invoke(state['plannified_messages'] + new_msg + [output] + [HumanMessage(content=correction_instruction)])
-                cleaned_output = IdeaBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
+                try:
+                    cleaned_output = cleaning_llm_output(llm_output = output)
+                except NoJson:
+                    output = model.invoke(state['plannified_messages'] + new_msg + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                    cleaned_output = cleaning_llm_output(llm_output= output)
+                cleaned_output = IdeaBrainstormingStructuredOutput(**cleaned_output)
 
             messages = new_msg + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
             return {
@@ -316,8 +418,14 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
             model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0)
             adding_delay_for_rate_limits(model)
             output = model.invoke(state['plannified_messages'] +[HumanMessage(content="Based on the improvements, return your final work following the instructions mentioned in <FORMAT_OUTPUT>. Ensure to respect the format and syntaxis explicitly explained.")])
+            try:
+                cleaned_output = cleaning_llm_output(llm_output = output)
+            except NoJson:
+                output = model.invoke(state['plannified_messages'] + [HumanMessage(content="Based on the improvements, return your final work following the instructions mentioned in <FORMAT_OUTPUT>. Ensure to respect the format and syntaxis explicitly explained.")] + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+
             try:    
-                cleaned_output = IdeaBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
+                cleaned_output = IdeaBrainstormingStructuredOutput(**cleaned_output)
             except ValidationError as e:
                 adding_delay_for_rate_limits(model)
                 correction_instruction = ''
@@ -328,8 +436,17 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
                     if error_type == 'missing':
                         correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
                 correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
-                output = model.invoke(state['plannified_messages'] + +[HumanMessage(content="Based on the improvements, return your final work following the instructions mentioned in <FORMAT_OUTPUT>. Ensure to respect the format and syntaxis explicitly explained.")] + [output] + [HumanMessage(content=correction_instruction)])
-                cleaned_output = IdeaBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
+                output = model.invoke(state['plannified_messages'] +[HumanMessage(content="Based on the improvements, return your final work following the instructions mentioned in <FORMAT_OUTPUT>. Ensure to respect the format and syntaxis explicitly explained.")] + [output] + [HumanMessage(content=correction_instruction)])
+                try:
+                    cleaned_output = cleaning_llm_output(llm_output = output)
+                except NoJson:
+                    output = model.invoke(state['plannified_messages'] +[HumanMessage(content="Based on the improvements, return your final work following the instructions mentioned in <FORMAT_OUTPUT>. Ensure to respect the format and syntaxis explicitly explained.")] + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                    cleaned_output = cleaning_llm_output(llm_output= output)
+
+
+
+
+                cleaned_output = IdeaBrainstormingStructuredOutput(**cleaned_output)
 
 
             return {
@@ -365,9 +482,13 @@ def evaluate_chapter(state: State, config: GraphConfig):
         new_message = [SystemMessage(content = system_prompt.format(draft=draft, approved_schema = get_json_schema(ApprovedWriterChapter), critique_schema = get_json_schema(CritiqueWriterChapter)))] + [HumanMessage(content=f"Start with the first chapter: {state['content'][-1]}.")]
         adding_delay_for_rate_limits(model)
         output = model.invoke(new_message)
-        cleaned_output = cleaning_llm_output(llm_output= output)
-            
-        is_chapter_approved = True if "is_approved" in list(cleaned_output.keys()) else False
+        try:
+            cleaned_output = cleaning_llm_output(llm_output= output)
+        except NoJson:
+            output = model.invoke(new_message + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+            cleaned_output = cleaning_llm_output(llm_output= output)
+
+        is_chapter_approved = True if "is_approved" in list(cleaned_output) else False
         if is_chapter_approved:
             cleaned_output = ApprovedWriterChapter(**cleaned_output)
         else:
@@ -382,7 +503,12 @@ def evaluate_chapter(state: State, config: GraphConfig):
             new_message = [HumanMessage(content = f"The next chapter is the following. Read again the entire chat history in order to have the context of the previous chapters.\nWhen that was done, review the next chapter.\nThis is the next chapter, review it:\n```{state['content'][-1]}```.\n\n Don't forget to return your answer using the <FORMAT_OUTPUT> instruction.")]
             adding_delay_for_rate_limits(model)
             output = model.invoke(state['writing_reviewer_memory'] + new_message)  
-            cleaned_output = cleaning_llm_output(llm_output= output)                
+            try:
+                cleaned_output = cleaning_llm_output(llm_output= output)
+            except NoJson:
+                output = model.invoke(state['writing_reviewer_memory'] + new_message + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+
             is_chapter_approved = True if "is_approved" in list(cleaned_output.keys()) else False
             if is_chapter_approved:
                 cleaned_output = ApprovedWriterChapter(**cleaned_output)
@@ -449,7 +575,13 @@ def generate_content(state: State, config: GraphConfig):
 
         output = model.invoke(messages + [human_msg])
         try:
-            cleaned_output = WriterStructuredOutput(**cleaning_llm_output(llm_output=output))
+            cleaned_output = cleaning_llm_output(llm_output = output)
+        except NoJson:
+            output = model.invoke(messages + [human_msg] + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+            cleaned_output = cleaning_llm_output(llm_output= output)
+
+        try:
+            cleaned_output = WriterStructuredOutput(**cleaned_output)
         except ValidationError as e:
             adding_delay_for_rate_limits(model)
             correction_instruction = ''
@@ -461,7 +593,13 @@ def generate_content(state: State, config: GraphConfig):
                     correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
             correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
             output = model.invoke(messages + [human_msg] + [output] + [HumanMessage(content=correction_instruction)])
-            cleaned_output = WriterStructuredOutput(**cleaning_llm_output(llm_output=output))
+            try:
+                cleaned_output = cleaning_llm_output(llm_output = output)
+            except NoJson:
+                output = model.invoke(messages + [human_msg] + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+
+            cleaned_output = WriterStructuredOutput(**cleaned_output)
         
         if check_chapter(msg_content = cleaned_output.content, min_paragraphs = min_paragraph_in_chapter) == False:
             adding_delay_for_rate_limits(model)
@@ -470,7 +608,12 @@ def generate_content(state: State, config: GraphConfig):
             human_msg = HumanMessage(content=f"The chapter should contains at least {min_paragraph_in_chapter} paragraphs. Adjust it again: When expanding the text in this chapter by adding more paragraphs, ensure that every addition meaningfully progresses the story or deepens the characters without resorting to redundant or repetitive content.")
             output = model.invoke(messages + [human_msg])
             try:
-                cleaned_output = WriterStructuredOutput(**cleaning_llm_output(llm_output=output))
+                cleaned_output = cleaning_llm_output(llm_output = output)
+            except NoJson:
+                output = model.invoke(messages + [human_msg] + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+            try:
+                cleaned_output = WriterStructuredOutput(**cleaned_output)
             except ValidationError as e:
                 adding_delay_for_rate_limits(model)
                 correction_instruction = ''
@@ -482,7 +625,13 @@ def generate_content(state: State, config: GraphConfig):
                         correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
                 correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
                 output = model.invoke(messages + [human_msg] + [output] + [HumanMessage(content=correction_instruction)])
-                cleaned_output = WriterStructuredOutput(**cleaning_llm_output(llm_output=output))
+                try:
+                    cleaned_output = cleaning_llm_output(llm_output = output)
+                except NoJson:
+                    output = model.invoke(messages + [human_msg] + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                    cleaned_output = cleaning_llm_output(llm_output= output)
+
+                cleaned_output = WriterStructuredOutput(**cleaned_output)
 
         messages.append(human_msg)
         messages.append(AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````"))
@@ -497,13 +646,19 @@ def generate_content(state: State, config: GraphConfig):
 
     else:
         if state['is_chapter_approved'] == False:
-            new_message = [HumanMessage(content = 'I will provide to you some feedback. Focus on each of these points, and improve the chapter.\n Dont forget any key in your JSON output:\n' + state['writing_reviewer_memory'][-1].content.feedback)]
+            new_message = [HumanMessage(content = 'I will provide to you some feedback. Focus on each of these points, and improve the chapter.\n Dont forget any key in your JSON output:\n' + cleaning_llm_output(state['writing_reviewer_memory'][-1])['feedback'])]
         else:
             new_message = [HumanMessage(content = f"Continue with the chapter {state['current_chapter'] + 1}, which is about:\n`{state['plannified_chapters_summaries'][state['current_chapter']]}.`\nBefore start, remember to read again the previous developed chapters before so you make the perfect continuation possible.  Dont forget any key in your JSON output")]
         adding_delay_for_rate_limits(model)
         output = model.invoke(state['writer_memory'] + new_message)
         try:
-            cleaned_output = WriterStructuredOutput(**cleaning_llm_output(llm_output=output))
+            cleaned_output = cleaning_llm_output(llm_output = output)
+        except NoJson:
+            output = model.invoke(state['writer_memory'] + new_message + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+            cleaned_output = cleaning_llm_output(llm_output= output)
+
+        try:
+            cleaned_output = WriterStructuredOutput(**cleaned_output)
         except ValidationError as e:
             adding_delay_for_rate_limits(model)
             correction_instruction = ''
@@ -515,7 +670,13 @@ def generate_content(state: State, config: GraphConfig):
                     correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
             correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
             output = model.invoke(state['writer_memory'] + new_message + [output] + [HumanMessage(content=correction_instruction)])
-            cleaned_output = WriterStructuredOutput(**cleaning_llm_output(llm_output=output))
+            try:
+                cleaned_output = cleaning_llm_output(llm_output = output)
+            except NoJson:
+                output = model.invoke(state['writer_memory'] + new_message + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+
+            cleaned_output = WriterStructuredOutput(**cleaned_output)
 
         new_messages = new_message + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
     
@@ -563,7 +724,13 @@ def generate_translation(state: State, config: GraphConfig):
         adding_delay_for_rate_limits(model)
         output = model.invoke(messages)
         try:
-            cleaned_output = TranslatorStructuredOutput(**cleaning_llm_output(llm_output=output))
+            cleaned_output = cleaning_llm_output(llm_output = output)
+        except NoJson:
+            output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+            cleaned_output = cleaning_llm_output(llm_output= output)
+
+        try:
+            cleaned_output = TranslatorStructuredOutput(**cleaned_output)
         except ValidationError as e:
             adding_delay_for_rate_limits(model)
             correction_instruction = ''
@@ -575,13 +742,24 @@ def generate_translation(state: State, config: GraphConfig):
                     correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
             correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
             output = model.invoke(messages + [output] + [HumanMessage(content=correction_instruction)])
-            cleaned_output = TranslatorStructuredOutput(**cleaning_llm_output(llm_output=output))
+            try:
+                cleaned_output = cleaning_llm_output(llm_output = output)
+            except NoJson:
+                output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+
+            cleaned_output = TranslatorStructuredOutput(**cleaned_output)
 
         messages.append(AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````"))
 
         special_case_output = model.invoke(messages + [HumanMessage(content=f"Also, translate the book title and the book prologue:\n title: {state['book_title']}\n prologue: {state['book_prologue']}.\nBut use the following schema definition for your output: {get_json_schema(TranslatorSpecialCaseStructuredOutput)}")])
         try:
-            cleaned_special_case_output = TranslatorSpecialCaseStructuredOutput(**cleaning_llm_output(llm_output=special_case_output))
+            cleaned_special_case_output = cleaning_llm_output(llm_output = special_case_output)
+        except NoJson:
+            special_case_output = model.invoke(messages + [special_case_output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+            cleaned_special_case_output = cleaning_llm_output(llm_output= special_case_output)
+        try:
+            cleaned_special_case_output = TranslatorSpecialCaseStructuredOutput(**cleaned_special_case_output)
         except ValidationError as e:
             adding_delay_for_rate_limits(model)
             correction_instruction = ''
@@ -593,7 +771,13 @@ def generate_translation(state: State, config: GraphConfig):
                     correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
             correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
             special_case_output = model.invoke(messages + [special_case_output] + [HumanMessage(content=correction_instruction)])
-            cleaned_special_case_output = TranslatorSpecialCaseStructuredOutput(**cleaning_llm_output(llm_output=special_case_output))
+            try:
+                cleaned_special_case_output = cleaning_llm_output(llm_output = special_case_output)
+            except NoJson:
+                special_case_output = model.invoke(messages + [special_case_output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_special_case_output = cleaning_llm_output(llm_output= special_case_output)            
+            
+            cleaned_special_case_output = TranslatorSpecialCaseStructuredOutput(**cleaned_special_case_output)
 
         book_name = cleaned_special_case_output.translated_book_name
         book_prologue = cleaned_special_case_output.translated_book_prologue
@@ -612,7 +796,12 @@ def generate_translation(state: State, config: GraphConfig):
         adding_delay_for_rate_limits(model)
         output = model.invoke(state['translator_memory'] + new_message)
         try:
-            cleaned_output = TranslatorStructuredOutput(**cleaning_llm_output(llm_output=output))
+            cleaned_output = cleaning_llm_output(llm_output = output)
+        except NoJson:
+            output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+            cleaned_output = cleaning_llm_output(llm_output= output)
+        try:
+            cleaned_output = TranslatorStructuredOutput(**cleaned_output)
         except ValidationError as e:
             adding_delay_for_rate_limits(model)
             correction_instruction = ''
@@ -624,7 +813,12 @@ def generate_translation(state: State, config: GraphConfig):
                     correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
             correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
             output = model.invoke(state['translator_memory'] + new_message + [output] + [HumanMessage(content=correction_instruction)])
-            cleaned_output = TranslatorStructuredOutput(**cleaning_llm_output(llm_output=output))
+            try:
+                cleaned_output = cleaning_llm_output(llm_output = output)
+            except NoJson:
+                output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+            cleaned_output = TranslatorStructuredOutput(**cleaned_output)
 
         new_messages = new_message + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
 

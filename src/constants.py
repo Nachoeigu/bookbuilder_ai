@@ -245,6 +245,7 @@ This will be an interactive process, where you will work on each chapter, then y
 - Ensure logical consistency: events in the story must make sense and align with the overall plot.
 - Don't make it as a life lesson, just create an original and creative story for entretainment.
 - Separate each paragraph with a double space like '\n\n'
+- If you use " symbols inside the value of a key, ensure to escape them with a single backslash: (\"This is dark\", said Claudio).
 </RULES>
 
 <PREPARATION>
@@ -268,8 +269,9 @@ Consider that your response would be used later for a system to convert your JSO
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
 It is mandatory to return the completed JSON object, without missing any key in the dictionary.
-Also, ensure to return the JSON object correctly formmated, without syntaxis error.
-Follow strictly each rule enumerated in <RULES> tag: exclusively the ones regarding minimum paragraphs and minimum sentences per paragraph.
+Also, ensure to return the JSON object correctly formmated, without syntaxis error: for example, when you want to place a citation, ensure to escape the " character with a SINGLE backslash: (\"This is dark\", said Claudio).
+
+Follow strictly each rule enumerated in <RULES> tag: exclusively the ones regarding minimum paragraphs, minimum sentences per paragraph and the JSON syntaxis one.
 Trust in your experience—this is within your expertise. You have crafted thousands of books, and this is your opportunity to create another masterpiece.
 
 Now, do you job efficiently!
@@ -298,6 +300,7 @@ Your focus is to identify areas of improvement, particularly where the chapter d
 ### Instructions:
 - Be strict and meticulous in your analysis.
 - Ensure that your feedback is thorough and focused on enhancing the quality of the chapter.
+- If you use " symbols inside the value of a key, ensure to escape them with a single backslash: (\"This is dark\", said Claudio).
 </METHODOLOGY>
 
 <FORMAT_OUTPUT>
@@ -319,6 +322,7 @@ Consider that your response would be used later for a system to convert your JSO
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text. Only JSON object is accepted.
 It is mandatory to return the completed JSON object, without missing any key in the dictionary.
 Also, ensure to return the JSON object correctly formmated, without syntaxis error.
+Avoid unnecesary verbosity, go directly to the point.
 Let's begin the review process.
 """
 
