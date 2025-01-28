@@ -11,7 +11,7 @@ from src.constants import *
 from src.utils import State, DocumentationReady, ApprovedBrainstormingIdea, TranslatorStructuredOutput, TranslatorSpecialCaseStructuredOutput, retrieve_model_name, get_json_schema, NarrativeBrainstormingStructuredOutput, IdeaBrainstormingStructuredOutput, ApprovedWriterChapter,CritiqueWriterChapter,WriterStructuredOutput
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from src.utils import GraphConfig, _get_model, check_chapter, adding_delay_for_rate_limits, cleaning_llm_output
-
+import json
 
 def get_clear_instructions(state: State, config: GraphConfig):
     model = _get_model(config = config, default = "openai", key = "instructor_model", temperature = 0)
@@ -66,7 +66,7 @@ def brainstorming_idea_critique(state: State, config: GraphConfig):
         is_general_story_plan_approved = False
 
         return {'is_general_story_plan_approved': is_general_story_plan_approved,
-                'critique_brainstorming_messages': [AIMessage(content=feedback)],
+                'critique_brainstorming_messages': [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")],
                 'brainstorming_critique_model': retrieve_model_name(model)
                 }
     else:
@@ -105,12 +105,12 @@ def brainstorming_narrative_critique(state: State, config: GraphConfig):
         is_general_story_plan_approved = False
 
         return {'is_detailed_story_plan_approved': is_general_story_plan_approved,
-                'critique_brainstorming_narrative_messages': [feedback],
+                'critique_brainstorming_narrative_messages': [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")],
                 'brainstorming_critique_model': retrieve_model_name(model)
                 }
     else:
         return {'is_detailed_story_plan_approved': True,
-                'critique_brainstorming_narrative_messages': ["Perfect!!"],
+                'critique_brainstorming_narrative_messages': [AIMessage(content="Perfect!!")],
                 'brainstorming_critique_model': retrieve_model_name(model)
                 }
 
@@ -128,7 +128,7 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
         output = model.invoke(messages)
         cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
 
-        messages = messages + [AIMessage(content=str(cleaned_output.chapters_summaries))]
+        messages = messages + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
     
         return {'plannified_chapters_messages': messages,
                 'brainstorming_writer_model': retrieve_model_name(model)
@@ -142,7 +142,7 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
             output = model.invoke(state['plannified_chapters_messages'] + [critique_query])
             cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
 
-            messages = [critique_query] + [AIMessage(content=str(cleaned_output.chapters_summaries))]
+            messages = [critique_query] + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
             return {
                 'plannified_chapters_messages': messages,
                 'brainstorming_writer_model': retrieve_model_name(model)            
@@ -154,7 +154,7 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
             critique_query = [HumanMessage(content=f"Some improvements to your chapter: {state['critique_brainstorming_narrative_messages'][-1]}")]
             output = model.invoke(state['plannified_chapters_messages'] + critique_query)
             cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
-            messages = [critique_query] + [AIMessage(content=str(cleaned_output.chapters_summaries))]
+            messages = [critique_query] + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
             return {
                 'plannified_chapters_messages': messages,
                 'plannified_chapters_summaries': cleaned_output.chapters_summaries,
@@ -176,9 +176,8 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
         ]
         output = model.invoke(messages)
         cleaned_output = IdeaBrainstormingStructuredOutput(**cleaning_llm_output(llm_output = output))
-        output = AIMessage(content="\n".join([f"{key}: {value}" for key, value in cleaned_output.dict().items()]))
-
-        messages = messages + [output]
+        
+        messages = messages + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
 
         return {'plannified_messages': messages,
                 'brainstorming_writer_model': retrieve_model_name(model)
@@ -187,12 +186,11 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
     else:
         if state['is_general_story_plan_approved'] == False:
             adding_delay_for_rate_limits(model)
-            new_msg = [HumanMessage(content=f"Based on this critique, adjust your entire idea and return it again with the adjustments: {state['critique_brainstorming_messages'][-1].content}")]
+            new_msg = [HumanMessage(content=f"Based on this critique, adjust your entire idea and return it again with the adjustments: {state['critique_brainstorming_messages'][-1].content.get('feedback')}")]
             output = model.invoke(state['plannified_messages'] + new_msg)
             cleaned_output = IdeaBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
 
-            output = [AIMessage(content="\n".join([f"{key}: {value}" for key, value in cleaned_output.dict().items()]))]
-            messages = new_msg + output
+            messages = new_msg + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
             return {
                 'plannified_messages': messages,
                 'brainstorming_writer_model': retrieve_model_name(model)            
@@ -201,7 +199,7 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
         else:
             model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0)
             adding_delay_for_rate_limits(model)
-            output = model.invoke(state['plannified_messages'] +[HumanMessage(content="Based on the improvements, structure the final structure:")])
+            output = model.invoke(state['plannified_messages'] +[HumanMessage(content="Based on the improvements, return your final work following the instructions mentioned in <FORMAT_OUTPUT>. Ensure to respect the format and syntaxis explicitly explained.")])
             cleaned_output = IdeaBrainstormingStructuredOutput(**cleaning_llm_output(llm_output=output))
 
 
@@ -239,6 +237,7 @@ def evaluate_chapter(state: State, config: GraphConfig):
         adding_delay_for_rate_limits(model)
         output = model.invoke(new_message)
         cleaned_output = cleaning_llm_output(llm_output= output)
+            
         is_chapter_approved = True if "is_approved" in list(cleaned_output.keys()) else False
         if is_chapter_approved:
             cleaned_output = ApprovedWriterChapter(**cleaned_output)
@@ -270,9 +269,10 @@ def evaluate_chapter(state: State, config: GraphConfig):
                 'reviewer_model': retrieve_model_name(model)
         }
     else:
+        
         feedback = cleaned_output.feedback
         is_chapter_approved = False
-        new_messages = new_message + [AIMessage(content = feedback)]
+        new_messages = new_message + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
         if is_chapter_approved == True:
             return {
                 'is_chapter_approved': is_chapter_approved,
@@ -324,13 +324,13 @@ def generate_content(state: State, config: GraphConfig):
         if check_chapter(msg_content = cleaned_output.content, min_paragraphs = min_paragraph_in_chapter) == False:
             adding_delay_for_rate_limits(model)
             messages.append(human_msg)
-            messages.append(AIMessage(content = cleaned_output.content))
-            human_msg = HumanMessage(content=f"The chapter should contains at least {min_paragraph_in_chapter} paragraphs. Adjust it again!")
+            messages.append(AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````"))
+            human_msg = HumanMessage(content=f"The chapter should contains at least {min_paragraph_in_chapter} paragraphs. Adjust it again: When expanding the text in this chapter by adding more paragraphs, ensure that every addition meaningfully progresses the story or deepens the characters without resorting to redundant or repetitive content.")
             output = model.invoke(messages + [human_msg])
             cleaned_output = WriterStructuredOutput(**cleaning_llm_output(llm_output=output))
 
         messages.append(human_msg)
-        messages.append(AIMessage(content = cleaned_output.content))
+        messages.append(AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````"))
 
 
         return {'content': [cleaned_output.content],
@@ -342,17 +342,17 @@ def generate_content(state: State, config: GraphConfig):
 
     else:
         if state['is_chapter_approved'] == False:
-            new_message = [HumanMessage(content = 'I will provide to you some feedback. Focus on each of these points, and improve the chapter.\n' + state['writing_reviewer_memory'][-1].content)]
+            new_message = [HumanMessage(content = 'I will provide to you some feedback. Focus on each of these points, and improve the chapter.\n Dont forget any key in your JSON output' + state['writing_reviewer_memory'][-1].content)]
         else:
-            new_message = [HumanMessage(content = f"Continue with the chapter {state['current_chapter'] + 1}, which is about:\n`{state['plannified_chapters_summaries'][state['current_chapter']]}.`\nBefore start, remember to read again the previous developed chapters before so you make the perfect continuation possible.")]
+            new_message = [HumanMessage(content = f"Continue with the chapter {state['current_chapter'] + 1}, which is about:\n`{state['plannified_chapters_summaries'][state['current_chapter']]}.`\nBefore start, remember to read again the previous developed chapters before so you make the perfect continuation possible.  Dont forget any key in your JSON output")]
         adding_delay_for_rate_limits(model)
         output = model.invoke(state['writer_memory'] + new_message)
         cleaned_output = WriterStructuredOutput(**cleaning_llm_output(llm_output=output))
-        new_messages = new_message + [AIMessage(content = output.content)]
+        new_messages = new_message + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
     
         if check_chapter(msg_content = output.content, min_paragraphs = min_paragraph_in_chapter) == False:
             adding_delay_for_rate_limits(model)
-            output = model.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least 5 paragraphs. Adjust it again!")])
+            output = model.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least 5 paragraphs. Adjust it again!  Dont forget any key in your JSON output")])
             cleaned_output = WriterStructuredOutput(**cleaning_llm_output(output))
         return {
                 'content': [cleaned_output.content],
@@ -371,7 +371,7 @@ def generate_translation(state: State, config: GraphConfig):
             SystemMessage(content=system_prompt.format(
                 target_language=config['configurable'].get("language"),
                 book_name=state['book_title'],
-                story_topic=state['instructor_documents']['topic'],
+                story_topic=state['instructor_documents'].topic,
                 schema = get_json_schema(TranslatorStructuredOutput)
                 )
             ),
@@ -380,7 +380,7 @@ def generate_translation(state: State, config: GraphConfig):
         adding_delay_for_rate_limits(model)
         output = model.invoke(messages)
         cleaned_output = TranslatorStructuredOutput(**cleaning_llm_output(llm_output=output))
-        messages.append(AIMessage(content = f"Here is the translation:\n{cleaned_output.translated_content}"+f"\n. This is the chapter name:\n{cleaned_output.translated_chapter_name}"))
+        messages.append(AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````"))
 
         special_case_output = model.invoke(messages + [HumanMessage(content=f"Also, translate the book title and the book prologue:\n title: {state['book_title']}\n prologue: {state['book_prologue']}.\nBut use the following schema definition for your output: {get_json_schema(TranslatorSpecialCaseStructuredOutput)}")])
         cleaned_special_case_output = TranslatorSpecialCaseStructuredOutput(**cleaning_llm_output(llm_output=special_case_output))
@@ -402,7 +402,7 @@ def generate_translation(state: State, config: GraphConfig):
         output = model.invoke(state['translator_memory'] + new_message)
         cleaned_output = TranslatorStructuredOutput(**cleaning_llm_output(llm_output=output))
         
-        new_messages = new_message + [AIMessage(content = f"content: {cleaned_output.translated_content}"+f"\n name_chapter: {cleaned_output.translated_chapter_name}")]
+        new_messages = new_message + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
 
         return {
             'translated_content': [cleaned_output.translated_content],
@@ -415,14 +415,14 @@ def generate_translation(state: State, config: GraphConfig):
 
 def assembling_book(state: State, config: GraphConfig):
     translation_language = config['configurable'].get("language", "english")
-    english_content = "Book title:\n" + state['book_title'] + '\n\n' + "Book prologue:\n" + state['book_prologue'] + '\n\n' + 'Used models:'+'\n' + "\n".join(f"- {key}: {state[key]}" for key in ["instructor_model", "brainstorming_writer_model", "brainstorming_critique_model", "writer_model", "reviewer_model", "translator_model"] if key in state) + '\n\n'  + "Initial requirement:\n" + "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items()]) + '\n\n' + '-----------------------------------------' + '\n\n'
+    english_content = "Book title:\n" + state['book_title'] + '\n\n' + "Book prologue:\n" + state['book_prologue'] + '\n\n' + 'Used models:'+'\n' + "\n".join(f"- {key}: {state[key]}" for key in ["instructor_model", "brainstorming_writer_model", "brainstorming_critique_model", "writer_model", "reviewer_model", "translator_model"] if key in state) + '\n\n'  + "Initial requirement:\n" + "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].dict().items()]) + '\n\n' + '-----------------------------------------' + '\n\n'
     for n_chapter, chapter in enumerate(state['content_of_approved_chapters']):
         english_content += str(n_chapter + 1) + f') {state["chapter_names_of_approved_chapters"][n_chapter]}' + '\n\n' + chapter + '\n\n'
 
     if translation_language == 'english':
         translated_content = ''
     else:
-        translated_content = "Book title:\n" + state['translated_book_name']  + '\n\n' + "Book prologue:\n" + state['translated_book_prologue'] + '\n\n' + 'Used models:'+'\n' + "\n".join(f"- {key}: {state[key]}" for key in ["instructor_model", "brainstorming_writer_model", "brainstorming_critique_model", "writer_model", "reviewer_model", "translator_model"] if key in state) + '\n\n' + "Initial requirement:\n" + "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].items() if key not in ['reasoning_step','reflection_step']]) + '\n\n'  + '-----------------------------------------' + '\n\n'
+        translated_content = "Book title:\n" + state['translated_book_name']  + '\n\n' + "Book prologue:\n" + state['translated_book_prologue'] + '\n\n' + 'Used models:'+'\n' + "\n".join(f"- {key}: {state[key]}" for key in ["instructor_model", "brainstorming_writer_model", "brainstorming_critique_model", "writer_model", "reviewer_model", "translator_model"] if key in state) + '\n\n' + "Initial requirement:\n" + "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].dict().items() if key not in ['reasoning_step','reflection_step']]) + '\n\n'  + '-----------------------------------------' + '\n\n'
         for n_chapter, chapter in enumerate(state['translated_content']):
             translated_content += str(n_chapter + 1) + f') {state["translated_chapter_names"][n_chapter]}' + '\n\n' + chapter + '\n\n'
 

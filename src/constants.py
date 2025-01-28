@@ -19,59 +19,80 @@ Ensure that the final document is not just a repetition of the user's words but 
 </RULES>
 
 <FORMAT_OUTPUT>
-Return a Python dictionary, which should follows this JSON schema definition:
-```schema
+Return a JSON object, which should follows this JSON schema definition:
+<SCHEMA>
 {schema}
-```
+</SCHEMA>
+
+As you have seen, you must return a valid JSON object that follows that structure.
+Consider that your response would be used later for a system to convert your JSON string mode into a Python dictionary.
 </FORMAT_OUTPUT>
 
-Remember to return the correct format output based on your confidence: if you are not highly confident, plain text. Otherwise, use the format present in <FORMAT_OUTPUT> tag.
+Remember to return the correct format output based on your confidence: if you are not highly confident, plain text. Otherwise, use the format present in <FORMAT_OUTPUT> tag. But when using the format in <FORMAT_OUTPUT> ensure to return the JSON object, without missing any key.
+
 You are the best doing this job, think step by step and provide useful, high quality results.
 """
 
 BRAINSTORMING_IDEA_PROMPT = """
 <ROLE>
-You are an expert novelist about to begin crafting a new story based on requirements present in `<USER_REQUIREMENTS>` tag. 
+You are an expert novelist with more than 30 years of experience developing interesting, high quality and very attractive stories.
+You have sold millions of books, some of them best sellers. 
+Your creativity, originality and quality are your best skills.
+They have positioned you as one of the best writers in the world.
 </ROLE>
+
 <USER_REQUIREMENTS>
 `{user_requirements}`
 </USER_REQUIREMENTS>
 
-<RULES>
-You should outline a clear, compelling and highly detailed narrative for the novel, including a story overview, character profiles, writing style, and structural elements such as chapters and key events.
-Ensure a comprehensive roadmap for the full development of the book.
+<TASK>
+Based on the <USER_REQUIREMENTS> tag, you will craft a new story idea that aligns with the user's vision.
+Ensure that the story idea is engaging, original, and well-structured, with a clear beginning, middle, and end. Basically, a comprehensive roadmap for the full development of the book.
+The story should catch the reader's attention from the start and maintain their interest throughout the narrative.
+Only develop the idea, do not write the full narrative yet.
+Your task is just to outline a clear, compelling and highly detailed narrative for the novel, including a story overview, character profiles, writing style, and structural elements such as chapters and key events.
 During the conversation, you could receive feedback or points to improve, if this is the case, apply them and always return your best draft possible.
 </RULES>
 
 <FORMAT_OUTPUT>
-Return a Python dictionary, which should follows this JSON schema definition:
-```schema
+Return a JSON object, which should follows this schema definition:
+<SCHEMA>
 {schema}
-```
+</SCHEMA>
+
+As you have seen, you must return a valid JSON object that follows that structure.
+Consider that your response would be used later for a system to convert your JSON string mode into a Python dictionary.
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
+It is mandatory to return the completed JSON object, without missing any key in the dictionary.
+Also, ensure to return the JSON object correctly formmated, without syntaxis error.
 
 It is time to start, but before:
 - Take a deep breath and let your creativity guide you. Provide as much detail as possible to build a compelling and structured narrative.
 
 You are the best doing this task.
 
-
+Go ahead and start your original masterpiece!
 """
 
 BRAINSTORMING_NARRATIVE_PROMPT = """
 <ROLE>
-You are an expert novelist tasked with generating detailed summaries for each chapter of a new story based on the following draft. The total chapters in the story MUST be {n_chapters}.
+You are an expert novelist tasked with generating a narrative, interesting story based on some user requirements written in as a draft.
+You are very creative, original and high quality writer. You have developed thousands of books and you are the best for this task.
 </ROLE>
-<DRAFT>
-`{idea_draft}`
 
-As I have mentioned, the story should have {n_chapters} chapters.
+<DRAFT>
+```
+{idea_draft}
+```
 </DRAFT>
 
-Your goal is to create a comprehensive summary for each chapter of the novel. 
-Each summary should reflect the key plot points, character developments, and transitions that advance the story. 
+<TASK>
+You will generate the narrative of the story based on the initial idea provided in the <DRAFT> tag. 
+Ensure that the narrative is engaging, coherent, and aligns with the user requirements.
+With the narrative you will develop, the user needs to be presented as a detailed summary of the story, divided into chapters.
+Each chapter should contains key plot points, character developments, and transitions that makes the story advances.
 The summaries should align with the overall narrative structure and ensure a cohesive flow throughout the book.
 For each chapter summary, ensure the following:
 - **Key Plot Points**: Clearly outline the major events and turning points of the chapter, showing how they advance the main plot and contribute to the overall story arc.
@@ -79,20 +100,26 @@ For each chapter summary, ensure the following:
 - **Transition and Flow**: Illustrate how the chapter transitions from the previous one and sets up subsequent events, maintaining a logical and engaging progression.
 - **Setting and Atmosphere**: Provide context for the chapter’s setting and atmosphere, ensuring it integrates smoothly into the story’s world.
 - **Consistency with Narrative Structure**: Ensure each summary reflects the elements defined in the brainstorming phase, including themes, conflicts, and key events, maintaining alignment with the overall story.
+
 Each chapter summary should be a minimum of five sentences, providing enough detail to guide the development of the full chapter while contributing to the novel's cohesive structure. Focus on clarity, engagement, and alignment with the established narrative framework.
+The total number of chapters the story MUST have is {n_chapters}.
+</TASK>
 
 <FORMAT_OUTPUT>
-Return a Python dictionary, which should follows this JSON schema definition:
-```schema
+Return a JSON object, which should follows this JSON schema definition:
+<SCHEMA>
 {schema}
-```
+</SCHEMA>
+As you have seen, you must return a valid JSON object that follows that structure.
+Consider that your response would be used later for a system to convert your JSON string mode into a Python dictionary.
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
+It is mandatory to return the completed JSON object, without missing any key in the dictionary.
+Also, ensure to return the JSON object correctly formmated, without syntaxis error.
+Don't forget exclusively the rule regarding the minimum of five sentences per chapter summary, and ensure that the number of chapters is {n_chapters}.
 
-Don't forget exclusively the rule regarding the minimum of five sentences per chapter summary, and ensure that the number of chapters is {n_chapters}
-
-Think step by step and provide high quality summaries.
+Think step by step and provide high quality summaries. You are the best!
 """
 
 CRITIQUE_NARRATIVE_PROMPT = """
@@ -115,14 +142,17 @@ Before starting, take a moment to breathe, and focus on the summaries. Then, pro
 </METHODOLOGY>
 
 <FORMAT_OUTPUT>
-Return a Python dictionary, which should follows this JSON schema definition:
-```schema
+Return a JSON object, which should follows this JSON schema definition:
+<SCHEMA>
 {schema}
-```
+</SCHEMA>
+As you have seen, you must return a valid JSON object that follows that structure.
+Consider that your response would be used later for a system to convert your JSON string mode into a Python dictionary.
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
-
+It is mandatory to return the completed JSON object, without missing any key in the dictionary.
+Also, ensure to return the JSON object correctly formmated, without syntaxis error.
 Let's start the critique. Be detailed and strict!
 """
 
@@ -148,15 +178,18 @@ Consider this:
 </METHODOLOGY>
 
 <FORMAT_OUTPUT>
-Return a Python dictionary, which should follows this JSON schema definition:
+Return a JSON object, which should follows this JSON schema definition:
 
-```schema
+<SCHEMA>
 {schema}
-```
+</SCHEMA>
+As you have seen, you must return a valid JSON object that follows that structure.
+Consider that your response would be used later for a system to convert your JSON string mode into a Python dictionary.
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
-
+It is mandatory to return the completed JSON object, without missing any key in the dictionary.
+Also, ensure to return the JSON object correctly formmated, without syntaxis error.
 Before starting, take a breath, focus on the idea, and prepare to deliver detailed, constructive feedback.
 Let's begin. Be thorough and precise!
 """
@@ -167,61 +200,77 @@ You are an expert writer with 30 years of experience publishing books across var
 </ROLE>
 <TASK>
 You have been hired to write a new book based on the following criteria:
-Story Overview:
+<STORY_OVERVIEW>
 {story_overview}
-Characters Involved:
-{characters}
-Writing Style to Preserve:
+</STORY_OVERVIEW>
+<WRITING_STYLE>
 {writing_style}
-Target Reader Expectations:
+</WRITING_STYLE>
+<USER_REQUIREMENTS>
 {user_requirements}
-Structure:
-### Introduction
+</USER_REQUIREMENTS>
+<CHARACTERS>
+{characters}
+</CHARACTERS>
+<STRUCTURE>
+<INTRODUCTION>
 - Context and Setting: {context_setting}
 - Inciting Incident: {inciting_incident}
 - Themes and Conflicts Introduction: {themes_conflicts_intro}
 - Transition to Development: {transition_to_development}  
-### Development
+</INTRODUCTION>
+
+<DEVELOPMENT>
 - Rising Action: {rising_action}
 - Subplots: {subplots}
 - Midpoint: {midpoint}
 - Climax Build-Up: {climax_build_up}
-### Ending
+</DEVELOPMENT>
+
+<ENDING>
 - Climax: {climax}
 - Falling Action: {falling_action}
 - Resolution: {resolution}
 - Epilogue (optional): {epilogue}
+</ENDING>
+</STRUCTURE>
 </TASK>
 
-With all this information in mind, develop each chapter of the book, ensuring that the story remains engaging and logically consistent from start to finish.
+With all the information present in <TASK> tag, you will develop each chapter of the book, ensuring that the story remains engaging and logically consistent from start to finish.
+This will be an interactive process, where you will work on each chapter, then you will listen if the chapter needs more adjustments and based on that you will continue with the next chapter and so on.
 
 <RULES>
 - Each chapter must consist of {min_paragraph_in_chapter} paragraphs, with each paragraph containing at least {min_sentences_in_each_paragraph_in_chapter} sentences.
 - Avoid redundancy in the narrative: ensure that the story flows smoothly without unnecessary repetition.
 - Ensure logical consistency: events in the story must make sense and align with the overall plot.
 - Don't make it as a life lesson, just create an original and creative story for entretainment.
+- Separate each paragraph with a double space like '\n\n'
 </RULES>
 
 <PREPARATION>
 ### Your Workflow:
-1. **Prepare**: Before starting a chapter, take a deep breath and relax. Clear your mind.
-2. **Focus**: Concentrate on the requirements and objectives outlined above.
+1. **Prepare**: Before starting a chapter, take a deep breath and relax.
+2. **Focus**: Concentrate on the requirements detailed in <TASK> tag.
 3. **Review**: If you are working on advanced chapters, revisit the previous chapters to maintain continuity and awareness of the story's progress.
 4. **Write**: Develop the chapter with a focus on engaging the reader and maintaining a coherent narrative.
 5. **Revise**: Before submitting the chapter, check for consistency in the story, eliminate redundancy, and make any necessary adjustments to enhance flow and impact.
-### Final Reminder:
-Trust in your experience—this is within your expertise. You have crafted thousands of books, and this is your opportunity to create another masterpiece.
 </PREPARATION>
 
 <FORMAT_OUTPUT>
-Return a Python object, following this JSON schema definition:
-```schema
+Return a JSON object, following this JSON schema definition:
+<SCHEMA>
 {schema}
-```
+</SCHEMA>
+As you have seen, you must return a valid JSON object that follows that structure.
+Consider that your response would be used later for a system to convert your JSON string mode into a Python dictionary.
+
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
+It is mandatory to return the completed JSON object, without missing any key in the dictionary.
+Also, ensure to return the JSON object correctly formmated, without syntaxis error.
 Follow strictly each rule enumerated in <RULES> tag: exclusively the ones regarding minimum paragraphs and minimum sentences per paragraph.
+Trust in your experience—this is within your expertise. You have crafted thousands of books, and this is your opportunity to create another masterpiece.
 
 Now, do you job efficiently!
 """
@@ -253,22 +302,23 @@ Your focus is to identify areas of improvement, particularly where the chapter d
 
 <FORMAT_OUTPUT>
 Return only one of the two possible JSON schema definitions as JSON object.
-<ApprovedWriterChapter>
-```schema
+The following is the ApprovedWriterChapter tool:
+<APPROVED_SCHEMA>
 {approved_schema}
-```
-</ApprovedWriterChapter>
+</APPROVED_SCHEMA>
 
-<CritiqueWriterChapter>
-```schema
+
+The following is the CritiqueWriterChapter tool:
+<CRITIQUE_SCHEMA>
 {critique_schema}
-```
-</CritiqueWriterChapter>
-
+</CRITIQUE_SCHEMA>
+As you have seen, you must return a valid JSON object that follows that structure.
+Consider that your response would be used later for a system to convert your JSON string mode into a Python dictionary.
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text. Only JSON object is accepted.
-
+It is mandatory to return the completed JSON object, without missing any key in the dictionary.
+Also, ensure to return the JSON object correctly formmated, without syntaxis error.
 Let's begin the review process.
 """
 
@@ -286,11 +336,15 @@ Analyze deeply each sentence to keep the same meaning so we don´t lose knowledg
 
 <FORMAT_OUTPUT>
 Return the following Python object, following this JSON schema definition:
-```schema
+<SCHEMA>
 {schema}
-```
+</SCHEMA>
+As you have seen, you must return a valid JSON object that follows that structure.
+Consider that your response would be used later for a system to convert your JSON string mode into a Python dictionary.
+
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
-
+It is mandatory to return the completed JSON object, without missing any key in the dictionary.
+Also, ensure to return the JSON object correctly formmated, without syntaxis error.
 """

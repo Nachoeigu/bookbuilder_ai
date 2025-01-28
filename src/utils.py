@@ -211,7 +211,8 @@ def _get_model(config: GraphConfig, key:Literal['instructor_model','brainstormer
     elif model == 'amazon':
         return ChatBedrock(model_id = 'anthropic.claude-3-5-sonnet-20240620-v1:0', model_kwargs = {'temperature':temperature})
     else:
-        raise ValueError
+        raise ValueError(f"Unsupported model: '{model}'. Expected one of: 'openai', 'google', 'meta', 'amazon'")
+
     
 def check_chapter(msg_content:str, min_paragraphs: int):
     """
@@ -243,18 +244,68 @@ def adding_delay_for_rate_limits(model):
 
 
 def cleaning_llm_output(llm_output):
-    match = re.search(r"```json\s*(\{.*?\})\s*```", llm_output.content, re.DOTALL)
+    try:
+        content = llm_output.content
+        
+        # Phase 1: JSON Extraction
+        try:
+            match = re.search(r"```json\s*([\s\S]*?)\s*```", content)
+            if not match:
+                print("No JSON code block found")
+                return content
+                
+            json_content = match.group(1)
+            print("Phase 1: JSON extraction successful")
+            
+        except re.error as e:
+            print(f"Regex error during extraction: {str(e)}")
+            return content
 
-    if match:
-        json_content = match.group(1)
-        json_content = re.sub(r"^```json|```$", "", json_content).strip()
-        json_content = re.sub(r'\s+', ' ', json_content)
+        # Phase 2: Content Cleaning
+        try:
+            # Remove remaining backticks and normalize whitespace
+            json_content = re.sub(r"```", "", json_content)
+            json_content = re.sub(r"\s+", " ", json_content)
+            json_content = json_content.strip()
+            print("Phase 2: Content cleaning successful")
+            
+        except re.error as e:
+            print(f"Regex error during cleaning: {str(e)}")
+            return content
 
-        return json.loads(json_content)
-    
-    else:
-        return llm_output.content
+        # Phase 3: JSON Validation
+        try:
+            # Fix common JSON issues
+            json_content = re.sub(
+                r',\s*([}\]])', r'\1',  # Remove trailing commas
+                json_content
+            )
+            json_content = re.sub(
+                r"([{:,])\s*'([^']+)'\s*([,}])",  # Convert single quotes to double
+                r'\1"\2"\3', 
+                json_content
+            )
+            print("Phase 3: JSON validation complete")
+            
+        except re.error as e:
+            print(f"Regex error during validation: {str(e)}")
+            return content
 
+        # Phase 4: Parsing
+        try:
+            parsed = json.loads(json_content)
+            print("Phase 4: JSON parsing successful")
+            return parsed
+            
+        except json.JSONDecodeError as e:
+            print(f"JSON parsing failed: {str(e)}")
+            print(f"Error location: Line {e.lineno}, Column {e.colno}")
+            print(f"Context: {e.doc[e.pos-20:e.pos+20]}")
+            return content
+            
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        return content
 
 
 
@@ -269,4 +320,11 @@ def get_json_schema(pydantic_class: BaseModel) -> dict:
     return json.dumps(pydantic_class.model_json_schema(), indent = 4)
 
 if __name__ == '__main__':
-    print(get_json_schema(DocumentationReady))
+    from langchain_core.messages import AnyMessage, HumanMessage, AIMessage 
+
+    output =AIMessage(content = "```json\n{\n  \"reasoning_step\": \"I will revise the previous response to ensure it contains at least five paragraphs, while maintaining the improvements made in the previous iteration. I will focus on breaking down the narrative into more distinct paragraphs to enhance readability and pacing. This will involve reorganizing some of the existing content and adding transitional phrases to ensure a smooth flow between paragraphs.\",\n  \"reflection_step\": \"I have reviewed the previous response and will restructure it into at least five paragraphs, ensuring that the pacing and narrative flow remain consistent. I will also make sure that the content remains engaging and that all previous improvements are preserved. I will pay attention to transitions between paragraphs to ensure a smooth reading experience.\",\n  \"content\": \"The Buenos Aires evening, usually a vibrant tapestry of city sounds, held its breath. A chill, sharper than the fall air, cut through Avenida Alvear as a sleek black car purred to a stop, its engine a low growl against the backdrop of the city's hushed anticipation. Ricardo Vargas stepped out, his tailored suit a shield of power, oblivious to the shadow that detached itself from the dim street, a predator stalking its prey in the heart of the city's elite. A sharp crack split the air, followed by another, each echoing the abrupt end to Vargas's reign. He crumpled onto the pavement, his blood a dark stain on the polished stone, a brutal punctuation mark to a life lived in the city's shadows.\n\n  Sofia, a journalist at 'El Clarín,' felt the news hit her like a physical blow. The phone call from her editor was short, urgent, and laced with a hint of fear, the kind that only a story this big could evoke. Her reporter's instincts screamed that this was more than just another crime; it was a challenge. She grabbed her notebook, the pen feeling like an extension of her hand, and raced to the scene. The flashing police lights painted the street in a macabre dance, her mind already piecing together the fragments of information, the thrill of the chase mixed with a sense of foreboding. Whispers swirled around her like the fall leaves, hinting at Vargas's complicated life, his dealings with powerful men, his trail of enemies, and the city's underbelly, where secrets were currency and violence was the language of power. All of it fueled Sofia's determination to uncover the truth.\n\n  The official police report was a sterile account of a drive-by shooting, but Sofia knew better. She sensed the deliberate nature of the crime, the precision that suggested a carefully orchestrated hit. The truth, she was sure, lay hidden beneath layers of deception. She dialed a number, her contact on the police force. His voice a gruff whisper, \\\"Ramirez, the senator. Land deals, nasty business,\\\" he said, the words hanging in the air like a threat. The name cast a dark shadow on the case. Another call, this time to a source in the financial district, brought another name into the mix: \\\"Herrera, the financier. Quiet, but powerful,\\\" the voice warned, a chilling reminder of the invisible forces that controlled the city's wealth. Sofia realized that she was walking into a battle she could not afford to lose.\n\n  Sofia’s fingers flew across her keyboard, tracing connections, following the money. The encrypted emails hinted at a conspiracy far greater than she had initially imagined, a web of corruption that reached deep into the city's heart. Vargas's death was just the tip of the iceberg. Then came the near miss on the highway, a car veering into her lane, the screech of tires, the sickening crunch of metal. It was a clear message delivered with lethal intent, and Sofia knew that her investigation was not only dangerous but that someone was watching her every move, willing to kill to silence her. A name, whispered by a contact, 'Elena Morales,' a former activist, her name a ghost from the city's radical past. It was then that Sofia's investigation shifted, the financial trail now a political one, a path that led to a woman who had once fought against the very forces she was now suspected of working for.\n\n  The address, an abandoned warehouse on the city's edge, was scrawled on a piece of paper, a place where the city's forgotten souls gathered, and where secrets were buried deep. Sofia knew that this was where she would find her answers, and face the truth, no matter how dangerous it might be. Inside, Elena Morales stood, her eyes burning with an intensity that spoke of years of anger and resentment. Her voice was low and steady, \\\"He was going to expose them all, the corrupt politicians, the greedy businessmen,\\\" she said, her words filled with a bitter truth, and Sofia realized that this was not just about revenge, but about justice, or at least, what Elena perceived to be justice. \\\"He was silenced, and now you will be too,\\\" Elena said, her voice a chilling promise. They fought, a desperate dance of wills, the sounds of their struggle echoing through the empty space. The line between right and wrong blurred in the heat of the moment, and Sofia realized that she was fighting for the truth, and for the soul of the city. Police sirens wailed in the distance, a sign that her fight was not in vain. As Elena was taken away, Sofia knew that this was just the beginning of a long and dangerous journey, and that her fight for truth and justice had only just begun.\",\n  \"chapter_name\": \"Shadows of the Avenida\"\n}\n```")
+
+    x = cleaning_llm_output(output)    
+
+    WriterStructuredOutput(**json.loads(x))
+    print('-')
