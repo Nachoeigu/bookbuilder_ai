@@ -343,7 +343,7 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
         adding_delay_for_rate_limits(model)
         messages = [
             system_prompt,
-            HumanMessage(content = "Start it...")
+            HumanMessage(content = "Start it, respect all the rules previously mentioned...")
         ]
         output = model.invoke(messages)
         try:
@@ -500,7 +500,7 @@ def evaluate_chapter(state: State, config: GraphConfig):
             feedback = 'Perfect!'
             is_chapter_approved = True
         else:
-            new_message = [HumanMessage(content = f"The next chapter is the following. Read again the entire chat history in order to have the context of the previous chapters.\nWhen that was done, review the next chapter.\nThis is the next chapter, review it:\n```{state['content'][-1]}```.\n\n Don't forget to return your answer using the <FORMAT_OUTPUT> instruction.")]
+            new_message = [HumanMessage(content = f"Well done, now focus on the next chapter. But, first, read again the entire chat history so you have the context of the previous chapters.\nAfter reviewing the chat history, focus on the new chapter:\n<NEW_CHAPTER>\n```{state['content'][-1]}```.\n</NEW_CHAPTER>\n\nDon't forget to return your answer using the <FORMAT_OUTPUT> instruction.")]
             adding_delay_for_rate_limits(model)
             output = model.invoke(state['writing_reviewer_memory'] + new_message)  
             try:
@@ -646,9 +646,9 @@ def generate_content(state: State, config: GraphConfig):
 
     else:
         if state['is_chapter_approved'] == False:
-            new_message = [HumanMessage(content = 'I will provide to you some feedback. Focus on each of these points, and improve the chapter.\n Dont forget any key in your JSON output:\n' + cleaning_llm_output(state['writing_reviewer_memory'][-1])['feedback'])]
+            new_message = [HumanMessage(content = 'I will provide to you some feedback. Focus on each of these points, and improve the chapter.\n' + cleaning_llm_output(state['writing_reviewer_memory'][-1])['feedback']) + '\n\n When returning your response, dont forget any key in your JSON output:']
         else:
-            new_message = [HumanMessage(content = f"Continue with the chapter {state['current_chapter'] + 1}, which is about:\n`{state['plannified_chapters_summaries'][state['current_chapter']]}.`\nBefore start, remember to read again the previous developed chapters before so you make the perfect continuation possible.  Dont forget any key in your JSON output")]
+            new_message = [HumanMessage(content = f"Continue with the chapter {state['current_chapter'] + 1}, which is about:\n<CHAPTER_SUMMARY>\n`{state['plannified_chapters_summaries'][state['current_chapter']]}.\n</CHAPTER_SUMMARY>`\nBefore start, remember to read again the previous developed chapters before so you make the perfect continuation possible. Dont forget any key in your JSON output. Also don´t forget the chapter should contains at least {min_paragraph_in_chapter} paragraphs.")]
         adding_delay_for_rate_limits(model)
         output = model.invoke(state['writer_memory'] + new_message)
         try:
@@ -682,7 +682,7 @@ def generate_content(state: State, config: GraphConfig):
     
         if check_chapter(msg_content = output.content, min_paragraphs = min_paragraph_in_chapter) == False:
             adding_delay_for_rate_limits(model)
-            output = model.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least 5 paragraphs. Adjust it again!  Dont forget any key in your JSON output")])
+            output = model.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least {min_paragraph_in_chapter} paragraphs. Adjust it again!  Dont forget any key in your JSON output")])
             try:
                 cleaned_output = WriterStructuredOutput(**cleaning_llm_output(output))
             except ValidationError as e:
@@ -695,7 +695,7 @@ def generate_content(state: State, config: GraphConfig):
                     if error_type == 'missing':
                         correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
                 correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
-                output = model.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least 5 paragraphs. Adjust it again!  Dont forget any key in your JSON output")] + [output] + [HumanMessage(content=correction_instruction)])
+                output = model.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least {min_paragraph_in_chapter} paragraphs. Adjust it again!  Dont forget any key in your JSON output")] + [output] + [HumanMessage(content=correction_instruction)])
                 cleaned_output = WriterStructuredOutput(**cleaning_llm_output(output))
 
         return {

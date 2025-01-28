@@ -264,13 +264,14 @@ Return a JSON object, following this JSON schema definition:
 </SCHEMA>
 As you have seen, you must return a valid JSON object that follows that structure.
 Consider that your response would be used later for a system to convert your JSON string mode into a Python dictionary.
+The output must be a JSON object, with 4 keys UNIQUELY: "reasoning_step", "reflection_step, "content" and "chapter_name".
 
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
 It is mandatory to return the completed JSON object, without missing any key in the dictionary.
 Also, ensure to return the JSON object correctly formmated, without syntaxis error: for example, when you want to place a citation, ensure to escape the " character with a SINGLE backslash: (\"This is dark\", said Claudio).
-
+Don't forget that the output must be a JSON object, with 4 keys UNIQUELY: "reasoning_step", "reflection_step, "content" and "chapter_name".
 Follow strictly each rule enumerated in <RULES> tag: exclusively the ones regarding minimum paragraphs, minimum sentences per paragraph and the JSON syntaxis one.
 Trust in your experience—this is within your expertise. You have crafted thousands of books, and this is your opportunity to create another masterpiece.
 
