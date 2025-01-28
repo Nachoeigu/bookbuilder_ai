@@ -71,8 +71,11 @@ def brainstorming_idea_critique(state: State, config: GraphConfig):
             for error in errors:
                 field_name = error['loc'][-1]
                 error_type = error['type']
+                error_msg = error['msg']
                 if error_type == 'missing':
                     correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                elif error_type == 'string_type':
+                    correction_instruction += f"You place incorrectly the data type of the key `{field_name}`: {error_msg}\n\n"
             correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
             output = model.invoke(messages + [output] + [HumanMessage(content=correction_instruction)])
             try:
@@ -104,8 +107,11 @@ def brainstorming_idea_critique(state: State, config: GraphConfig):
                 for error in errors:
                     field_name = error['loc'][-1]
                     error_type = error['type']
+                    error_msg = error['msg']
                     if error_type == 'missing':
                         correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                    elif error_type == 'string_type':
+                        correction_instruction += f"You place incorrectly the data type of the key `{field_name}`: {error_msg}\n\n"
                 correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
                 output = model.invoke(messages + [output] + [HumanMessage(content=correction_instruction)])
                 try:
@@ -157,8 +163,11 @@ def brainstorming_narrative_critique(state: State, config: GraphConfig):
             for error in errors:
                 field_name = error['loc'][-1]
                 error_type = error['type']
+                error_msg = error['msg']
                 if error_type == 'missing':
                     correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                elif error_type == 'string_type':
+                    correction_instruction += f"You place incorrectly the data type of the key `{field_name}`: {error_msg}\n\n"
             correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
             output = model.invoke(messages + [output] + [HumanMessage(content=correction_instruction)])
             try:
@@ -189,8 +198,11 @@ def brainstorming_narrative_critique(state: State, config: GraphConfig):
                 for error in errors:
                     field_name = error['loc'][-1]
                     error_type = error['type']
+                    error_msg = error['msg']
                     if error_type == 'missing':
                         correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                    elif error_type == 'string_type':
+                        correction_instruction += f"You place incorrectly the data type of the key `{field_name}`: {error_msg}\n\n"
                 correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
                 output = model.invoke(messages + [output] + [HumanMessage(content=correction_instruction)])
                 try:
@@ -240,8 +252,11 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
             for error in errors:
                 field_name = error['loc'][-1]
                 error_type = error['type']
+                error_msg = error['msg']
                 if error_type == 'missing':
                     correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                elif error_type == 'string_type':
+                    correction_instruction += f"You place incorrectly the data type of the key `{field_name}`: {error_msg}\n\n"
             correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
             output = model.invoke(messages + [output] + [HumanMessage(content=correction_instruction)])
             try:
@@ -278,8 +293,11 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
                 for error in errors:
                     field_name = error['loc'][-1]
                     error_type = error['type']
+                    error_msg = error['msg']
                     if error_type == 'missing':
                         correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                    elif error_type == 'string_type':
+                        correction_instruction += f"You place incorrectly the data type of the key `{field_name}`: {error_msg}\n\n"
                 correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
                 output = model.invoke(state['plannified_chapters_messages'] + [critique_query] + [output] + [HumanMessage(content=correction_instruction)])
                 try:
@@ -314,8 +332,11 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
                 for error in errors:
                     field_name = error['loc'][-1]
                     error_type = error['type']
+                    error_msg = error['msg']
                     if error_type == 'missing':
                         correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                    elif error_type == 'string_type':
+                        correction_instruction += f"You place incorrectly the data type of the key `{field_name}`: {error_msg}\n\n"
                 correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
                 output = model.invoke(state['plannified_chapters_messages'] + critique_query + [output] + [HumanMessage(content=correction_instruction)])
                 try:
@@ -360,8 +381,11 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
             for error in errors:
                 field_name = error['loc'][-1]
                 error_type = error['type']
+                error_msg = error['msg']
                 if error_type == 'missing':
                     correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                elif error_type == 'string_type':
+                    correction_instruction += f"You place incorrectly the data type of the key `{field_name}`: {error_msg}\n\n"
             correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
             output = model.invoke(messages + [output] + [HumanMessage(content=correction_instruction)])
             try:
@@ -397,8 +421,11 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
                 for error in errors:
                     field_name = error['loc'][-1]
                     error_type = error['type']
+                    error_msg = error['msg']
                     if error_type == 'missing':
                         correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                    elif error_type == 'string_type':
+                        correction_instruction += f"You place incorrectly the data type of the key `{field_name}`: {error_msg}\n\n"
                 correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
                 output = model.invoke(state['plannified_messages'] + new_msg + [output] + [HumanMessage(content=correction_instruction)])
                 try:
@@ -433,8 +460,11 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
                 for error in errors:
                     field_name = error['loc'][-1]
                     error_type = error['type']
+                    error_msg = error['msg']
                     if error_type == 'missing':
                         correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                    elif error_type == 'string_type':
+                        correction_instruction += f"You place incorrectly the data type of the key `{field_name}`: {error_msg}\n\n"
                 correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
                 output = model.invoke(state['plannified_messages'] +[HumanMessage(content="Based on the improvements, return your final work following the instructions mentioned in <FORMAT_OUTPUT>. Ensure to respect the format and syntaxis explicitly explained.")] + [output] + [HumanMessage(content=correction_instruction)])
                 try:
@@ -544,6 +574,7 @@ def generate_content(state: State, config: GraphConfig):
     model = _get_model(config = config, default = "openai", key = "writer_model", temperature = 0.70)
 
     min_paragraph_in_chapter = config['configurable'].get('min_paragraph_per_chapter', 10)
+    min_sentences_in_each_paragraph_per_chapter = config['configurable'].get('min_sentences_in_each_paragraph_per_chapter', 5)
     min_sentences_in_each_paragraph_in_chapter = config['configurable'].get('min_sentences_in_each_paragraph_per_chapter', 10)
     if state.get('current_chapter', None) == None:
         system_prompt = WRITER_PROMPT
@@ -589,9 +620,12 @@ def generate_content(state: State, config: GraphConfig):
             for error in errors:
                 field_name = error['loc'][-1]
                 error_type = error['type']
+                error_msg = error['msg']
                 if error_type == 'missing':
                     correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
-            correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
+                elif error_type == 'string_type':
+                    correction_instruction += f"You place incorrectly the data type of the key `{field_name}`: {error_msg}\n\n"
+            correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format. Follow correctly the JSON output schema that you have received in your instructions inside the <FORMAT_OUTPUT> tag."
             output = model.invoke(messages + [human_msg] + [output] + [HumanMessage(content=correction_instruction)])
             try:
                 cleaned_output = cleaning_llm_output(llm_output = output)
@@ -605,7 +639,7 @@ def generate_content(state: State, config: GraphConfig):
             adding_delay_for_rate_limits(model)
             messages.append(human_msg)
             messages.append(AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````"))
-            human_msg = HumanMessage(content=f"The chapter should contains at least {min_paragraph_in_chapter} paragraphs. Adjust it again: When expanding the text in this chapter by adding more paragraphs, ensure that every addition meaningfully progresses the story or deepens the characters without resorting to redundant or repetitive content.")
+            human_msg = HumanMessage(content=f"The chapter should contains at least {min_paragraph_in_chapter} paragraphs and also, each one of the paragraphs must have at least {min_sentences_in_each_paragraph_per_chapter} sentences. Adjust it again: When expanding the text in this chapter by adding more paragraphs / sentences, ensure that every addition meaningfully progresses the story or deepens the characters without resorting to redundant or repetitive content.")
             output = model.invoke(messages + [human_msg])
             try:
                 cleaned_output = cleaning_llm_output(llm_output = output)
@@ -621,8 +655,11 @@ def generate_content(state: State, config: GraphConfig):
                 for error in errors:
                     field_name = error['loc'][-1]
                     error_type = error['type']
+                    error_msg = error['msg']
                     if error_type == 'missing':
                         correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                    elif error_type == 'string_type':
+                        correction_instruction += f"You place incorrectly the data type of the key `{field_name}`: {error_msg}\n\n"
                 correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
                 output = model.invoke(messages + [human_msg] + [output] + [HumanMessage(content=correction_instruction)])
                 try:
@@ -648,7 +685,7 @@ def generate_content(state: State, config: GraphConfig):
         if state['is_chapter_approved'] == False:
             new_message = [HumanMessage(content = 'I will provide to you some feedback. Focus on each of these points, and improve the chapter.\n' + cleaning_llm_output(state['writing_reviewer_memory'][-1])['feedback'] + '\n\n When returning your response, dont forget any key in your JSON output:')]
         else:
-            new_message = [HumanMessage(content = f"Continue with the chapter {state['current_chapter'] + 1}, which is about:\n<CHAPTER_SUMMARY>\n`{state['plannified_chapters_summaries'][state['current_chapter']]}.\n</CHAPTER_SUMMARY>`\nBefore start, remember to read again the previous developed chapters before so you make the perfect continuation possible. Dont forget any key in your JSON output. Also don´t forget the chapter should contains at least {min_paragraph_in_chapter} paragraphs.")]
+            new_message = [HumanMessage(content = f"Continue with the chapter {state['current_chapter'] + 1}, which is about:\n<CHAPTER_SUMMARY>\n`{state['plannified_chapters_summaries'][state['current_chapter']]}.\n</CHAPTER_SUMMARY>`\nBefore start, remember to read again the previous developed chapters before so you make the perfect continuation possible. Dont forget any key in your JSON output. Also don´t forget the chapter should contains at least {min_paragraph_in_chapter} paragraphs and also, each one of the paragraphs must have at least {min_sentences_in_each_paragraph_per_chapter} sentences.")]
         adding_delay_for_rate_limits(model)
         output = model.invoke(state['writer_memory'] + new_message)
         try:
@@ -666,8 +703,11 @@ def generate_content(state: State, config: GraphConfig):
             for error in errors:
                 field_name = error['loc'][-1]
                 error_type = error['type']
+                error_msg = error['msg']
                 if error_type == 'missing':
                     correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                elif error_type == 'string_type':
+                    correction_instruction += f"You place incorrectly the data type of the key `{field_name}`: {error_msg}\n\n"
             correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
             output = model.invoke(state['writer_memory'] + new_message + [output] + [HumanMessage(content=correction_instruction)])
             try:
@@ -682,7 +722,7 @@ def generate_content(state: State, config: GraphConfig):
     
         if check_chapter(msg_content = output.content, min_paragraphs = min_paragraph_in_chapter) == False:
             adding_delay_for_rate_limits(model)
-            output = model.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least {min_paragraph_in_chapter} paragraphs. Adjust it again!  Dont forget any key in your JSON output")])
+            output = model.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least {min_paragraph_in_chapter} paragraphs, and also, each one of the paragraphs must have at least {min_sentences_in_each_paragraph_per_chapter} sentences. Adjust it again!  Dont forget any key in your JSON output")])
             try:
                 cleaned_output = WriterStructuredOutput(**cleaning_llm_output(output))
             except ValidationError as e:
@@ -692,10 +732,13 @@ def generate_content(state: State, config: GraphConfig):
                 for error in errors:
                     field_name = error['loc'][-1]
                     error_type = error['type']
+                    error_msg = error['msg']
                     if error_type == 'missing':
                         correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                    elif error_type == 'string_type':
+                        correction_instruction += f"You place incorrectly the data type of the key `{field_name}`: {error_msg}\n\n"
                 correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
-                output = model.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least {min_paragraph_in_chapter} paragraphs. Adjust it again!  Dont forget any key in your JSON output")] + [output] + [HumanMessage(content=correction_instruction)])
+                output = model.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least {min_paragraph_in_chapter} paragraphs, and also, each one of the paragraphs must have at least {min_sentences_in_each_paragraph_per_chapter} sentences. Adjust it again!  Dont forget any key in your JSON output")] + [output] + [HumanMessage(content=correction_instruction)])
                 cleaned_output = WriterStructuredOutput(**cleaning_llm_output(output))
 
         return {
@@ -738,8 +781,11 @@ def generate_translation(state: State, config: GraphConfig):
             for error in errors:
                 field_name = error['loc'][-1]
                 error_type = error['type']
+                error_msg = error['msg']
                 if error_type == 'missing':
                     correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                elif error_type == 'string_type':
+                    correction_instruction += f"You place incorrectly the data type of the key `{field_name}`: {error_msg}\n\n"
             correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
             output = model.invoke(messages + [output] + [HumanMessage(content=correction_instruction)])
             try:
@@ -767,8 +813,11 @@ def generate_translation(state: State, config: GraphConfig):
             for error in errors:
                 field_name = error['loc'][-1]
                 error_type = error['type']
+                error_msg = error['msg']
                 if error_type == 'missing':
                     correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                elif error_type == 'string_type':
+                    correction_instruction += f"You place incorrectly the data type of the key `{field_name}`: {error_msg}\n\n"
             correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
             special_case_output = model.invoke(messages + [special_case_output] + [HumanMessage(content=correction_instruction)])
             try:
@@ -809,8 +858,11 @@ def generate_translation(state: State, config: GraphConfig):
             for error in errors:
                 field_name = error['loc'][-1]
                 error_type = error['type']
+                error_msg = error['msg']
                 if error_type == 'missing':
                     correction_instruction += f"You forgot to place the key `{field_name}`\n\n"
+                elif error_type == 'string_type':
+                    correction_instruction += f"You place incorrectly the data type of the key `{field_name}`: {error_msg}\n\n"
             correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
             output = model.invoke(state['translator_memory'] + new_message + [output] + [HumanMessage(content=correction_instruction)])
             try:
