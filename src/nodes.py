@@ -1029,6 +1029,7 @@ def generate_content(state: State, config: GraphConfig):
                 adding_delay_for_rate_limits(model)
                 correction_instruction = ''
                 errors = e.errors()
+
                 for error in errors:
                     field_name = error['loc'][-1]
                     error_type = error['type']
