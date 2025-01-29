@@ -306,13 +306,9 @@ def cleaning_llm_output(llm_output):
     # Phase 4: Parsing
     try:
         parsed = json.loads(json_content)
-        print("Phase 4: JSON parsing successful")
         return parsed
         
     except json.JSONDecodeError as e:
-        print(f"JSON parsing failed: {str(e)}")
-        print(f"Error location: Line {e.lineno}, Column {e.colno}")
-        print(f"Context: {e.doc[e.pos-200:e.pos+200]}")
         raise BadFormattedJson({"error": f"While trying to format the JSON object you have generated we detect the following error: {e.args[0]}", "detail": f"Error location: Line {e.lineno}, Column {e.colno}", "context": f"{e.doc[e.pos-20:e.pos+20]}"})
 
 
