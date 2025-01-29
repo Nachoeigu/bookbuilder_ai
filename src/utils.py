@@ -200,16 +200,16 @@ class GraphOutput(TypedDict):
     content: Annotated[List[str], operator.add]
     chapter_names: Annotated[List[str], operator.add]
 
-def _get_model(config: GraphConfig, key:Literal['instructor_model','brainstormer_idea_model','brainstormer_critique_model','writer_model','writing_reviewer_model','translator_model'], temperature:float, default:Literal['openai', 'google','meta','amazon']='openai'):
+def _get_model(config: GraphConfig, key:Literal['instructor_model','brainstormer_idea_model','brainstormer_critique_model','writer_model','writing_reviewer_model','translator_model'], temperature:float, default:Literal['openai', 'google','meta','amazon']='openai', top_k=50, top_p=0.9):
     model = config['configurable'].get(key, default)
     if model == "openai":
-        return ChatOpenAI(temperature=temperature, model="gpt-4o-mini")
+        return ChatOpenAI(temperature=temperature, model="gpt-4o-mini", top_k = top_k, top_p = top_p)
     elif model == "google":
-        return ChatGoogleGenerativeAI(temperature=temperature, model="gemini-2.0-flash-exp")
+        return ChatGoogleGenerativeAI(temperature=temperature, model="gemini-2.0-flash-exp", top_k = top_k, top_p = top_p)
     elif model == 'meta':
-        return ChatGroq(temperature=temperature, model="llama-3.3-70b-versatile")
+        return ChatGroq(temperature=temperature, model="llama-3.3-70b-versatile", top_k = top_k, top_p = top_p)
     elif model == 'amazon':
-        return ChatBedrock(model_id = 'anthropic.claude-3-5-sonnet-20240620-v1:0', model_kwargs = {'temperature':temperature})
+        return ChatBedrock(model_id = 'anthropic.claude-3-5-sonnet-20240620-v1:0', model_kwargs = {'temperature':temperature, 'top_k': top_k, 'top_p': top_p})
     else:
         raise ValueError(f"Unsupported model: '{model}'. Expected one of: 'openai', 'google', 'meta', 'amazon'")
 
@@ -256,11 +256,9 @@ def cleaning_llm_output(llm_output):
     try:
         match = re.search(r"```json\s*([\s\S]*?)\s*```", content)
         if not match:
-            print("No JSON code block found")
             raise NoJson("The output does not contain a JSON code block")
             
         json_content = match.group(1)
-        print("Phase 1: JSON extraction successful")
         
     except re.error as e:
         print(f"Regex error during extraction: {str(e)}")
@@ -284,7 +282,6 @@ def cleaning_llm_output(llm_output):
         
         json_content = json_content.replace("\\", "")
         json_content = json_content.strip()
-        print("Phase 2: Content cleaning successful")
 
     except re.error as e:
         print(f"Regex error during cleaning: {str(e)}")
@@ -302,10 +299,8 @@ def cleaning_llm_output(llm_output):
             r'\1"\2"\3', 
             json_content
         )
-        print("Phase 3: JSON validation complete")
         
     except re.error as e:
-        print(f"Regex error during validation: {str(e)}")
         return content
 
     # Phase 4: Parsing

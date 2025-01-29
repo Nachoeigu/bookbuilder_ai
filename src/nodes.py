@@ -23,11 +23,10 @@ def get_clear_instructions(state: State, config: GraphConfig):
     messages = [SystemMessage(content = system_prompt)] + state['user_instructor_messages']
     adding_delay_for_rate_limits(model)
     reply = model.invoke(messages)
-
-    cleaned_reply = cleaning_llm_output(llm_output = reply)
-
-    cleaned_reply = cleaning_llm_output(llm_output = reply)
-
+    try:
+        cleaned_reply = cleaning_llm_output(llm_output = reply)
+    except:
+        cleaned_reply = reply.content
     if isinstance(cleaned_reply, str):
         return {'user_instructor_messages': [reply],
                 'instructor_model': retrieve_model_name(model)}
@@ -248,7 +247,7 @@ def brainstorming_narrative_critique(state: State, config: GraphConfig):
                 }
 
 def making_narrative_story_brainstorming(state: State, config: GraphConfig):
-    model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0.7)
+    model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0.7, top_k = 200, top_p = 0.85)
     user_requirements = "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].dict().items()])
 
     if state.get('is_detailed_story_plan_approved', None) is None:
@@ -347,7 +346,7 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
             }
 
         else:
-            model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0)
+            model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0, top_k = 200, top_p = 0.85)
             adding_delay_for_rate_limits(model)
             critique_query = [HumanMessage(content=f"Some improvements to your chapter: {state['critique_brainstorming_narrative_messages'][-1]}")]
             output = model.invoke(state['plannified_chapters_messages'] + critique_query)
@@ -393,7 +392,7 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
             }
 
 def making_general_story_brainstorming(state: State, config: GraphConfig):
-    model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0.7)
+    model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0.7,top_k = 200, top_p = 0.85)
     user_requirements = "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].dict().items()])
     
     system_prompt = BRAINSTORMING_IDEA_PROMPT
@@ -493,7 +492,7 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
             }
 
         else:
-            model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0)
+            model = _get_model(config, default = "openai", key = "brainstormer_idea_model", temperature = 0, top_k = 200, top_p = 0.85)
             adding_delay_for_rate_limits(model)
             output = model.invoke(state['plannified_messages'] +[HumanMessage(content="Based on the improvements, return your final work following the instructions mentioned in <FORMAT_OUTPUT>. Ensure to respect the format and syntaxis explicitly explained.")])
             try:
@@ -632,7 +631,7 @@ def evaluate_chapter(state: State, config: GraphConfig):
                     'reviewer_model': retrieve_model_name(model)}
 
 def generate_content(state: State, config: GraphConfig):
-    model = _get_model(config = config, default = "openai", key = "writer_model", temperature = 0.70)
+    model = _get_model(config = config, default = "openai", key = "writer_model", temperature = 0.70, top_k = 250, top_p = 0.90)
 
     min_paragraph_in_chapter = config['configurable'].get('min_paragraph_per_chapter', 10)
     min_sentences_in_each_paragraph_per_chapter = config['configurable'].get('min_sentences_in_each_paragraph_per_chapter', 5)
