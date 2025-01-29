@@ -38,6 +38,7 @@ def has_writer_ended_book(state: State, config: GraphConfig) -> Literal["transla
 
     if (state['current_chapter'] == len(state['plannified_chapters_summaries']))&(state['is_chapter_approved'] == True):
         if (config['configurable'].get('language') == 'english')|(config['configurable'].get('language') is None):
+            print("The translator agent is not needed in this case")
             return "assembler"
         else:
             return "translator"

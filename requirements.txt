@@ -6,3 +6,4 @@ python-dotenv
 langchain_groq
 pyyaml
 langchain-aws
+unidecode

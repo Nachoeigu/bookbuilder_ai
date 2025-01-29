@@ -74,6 +74,13 @@ You need to set up the initial configurations that are the following:
 - writer_model: The desired model to use for this specific agent
 -  writing_reviewer_model: The desired model to use for this specific agent
 - translator_model: The desired model to use for this specific agent
+- n_chapters: The number of chapters the book must have
+- min_paragraph_per_chapter: The minimum number of paragraphs in each chapter
+- min_sentences_in_each_paragraph_per_chapter: The minimum number of sentences in each paragraph
+
 ---
 
 **Book Builder With AI** is designed to bring your ideas to life through a collaborative process with AI, ensuring your story is as close to your vision as possible. Happy writing!
+
+#### Developers disclaimer
+The system currently is configured in order to work in LangGraph Cloud and/or LangGraph Studio. You can refine it to work in your own server if you want it.
