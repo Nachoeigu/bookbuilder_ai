@@ -11,6 +11,8 @@ from langgraph.graph import StateGraph
 from src.utils import State, GraphInput, GraphOutput, GraphConfig
 from src.nodes import *
 from src.routers import *
+from unidecode import unidecode
+import re
 
 def defining_nodes(workflow: StateGraph):
     workflow.add_node("instructor", get_clear_instructions)
@@ -169,15 +171,16 @@ if __name__ == '__main__':
         book_raw_content = event['content']
         book_raw_chapter_names = event['chapter_names']
         book_final_content = {k: v for k, v in zip(book_raw_chapter_names, book_raw_content)}
-        # The idea is to save in developed_books/english
-        with open("developed_books/english/"+book_title_english.replace(" ","_").lower()+".txt", "w") as f:
+
+
+        with open("developed_books/english/"+re.sub(r'[^\w\s]','', unidecode(book_title_english.replace(" ","_"))).lower()+".txt", "w") as f:
             f.write("Title:"+ '\n')
             f.write(book_title_english+'\n\n')
             f.write("Prologue:"+"\n")
             f.write(book_prologue_english+'\n\n')
             for chapter_name, chapter_content in book_final_content.items():
                 f.write(chapter_name+'\n')
-                f.write(chapter_content+'\n\n')
+                f.write(chapter_content+'\n\n') 
 
         # If it is also in other language (not english):
         if not ((configuration['configurable'].get('language') == 'english')|(configuration['configurable'].get('language') is None)):
@@ -187,7 +190,7 @@ if __name__ == '__main__':
             book_raw_chapter_names_translation = event['translated_chapter_names']
             book_final_content_translation = {k: v for k, v in zip(book_raw_chapter_names_translation, book_raw_content_translation)}
             # The idea is to save in developed_books/{language}
-            with open(f"developed_books/{configuration['configurable'].get('language')}/{book_title_translation.replace(" ","_").lower()}.txt", "w") as f:
+            with open(f"developed_books/{configuration['configurable'].get('language')}/{re.sub(r'[^\w\s]','', unidecode(book_title_translation.replace(" ","_"))).lower()}.txt", "w") as f:
                 f.write("Title:\n")
                 f.write(book_title_translation+'\n\n')
                 f.write("Prologue:\n")
