@@ -2,7 +2,7 @@ Book title:
 The Blue and Yellow Scar
 
 Book prologue:
-The prologue opens with a sensory explosion, depicting the vibrant chaos of La Bombonera before the match. Mateo is introduced in a moment of pure joy, completely immersed in the fan culture. The smells of grilling choripán, the taste of cheap beer, and the feel of the crowd's energy are vividly described. A subtle foreshadowing of the tragedy is introduced through a sense of unease, a fleeting moment of dissonance amidst the overwhelming passion. The political tensions of 2008 are subtly hinted at through overheard conversations and snippets of news, creating a sense of unease and foreshadowing the events to come.
+La Bombonera roared, a concrete and passion-fueled giant pulsating with the energy of thousands of Xeneize souls. The air hung thick with the intoxicating blend of grilled choripán, cheap beer, and the sweat of the crowd, a sensory explosion that enveloped Mateo in a rapturous joy. A radiant smile stretched across his face as he savored the beer, a toast to the life that throbbed in every chant, in every waving flag. Yet, a shiver snaked down his spine, a discordant note in the symphony of passion, a premonition perhaps, fueled by fragments of conversations about the political tensions of 2008, a year that slithered by stealthily, charged with an invisible electricity that was beginning to spark in the atmosphere, whispering that the calm of La Bombonera, this refuge, this temple, merely preceded the storm that was about to break.
 
 Used models:
 - instructor_model: models/gemini-2.0-flash-exp

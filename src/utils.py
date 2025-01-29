@@ -74,11 +74,11 @@ class IdeaBrainstormingStructuredOutput(BaseModel):
     """
     reasoning_step: str = Field(description = "In-deep explanation of your step by step reasoning about how how the story will consist based on the user requirements")
     reflection_step: str = Field(description = "In-deep review of your thoughts: if you detect that you made a mistake in your reasoning step, at any point, correct yourself in this field.")
-    story_overview: str = Field(description="A highly detailed overview of the narrative that includes a strong introduction, a well-developed middle, and a satisfying conclusion. Optimized based on the reasoning and reflection steps.")
-    characters: str = Field(description = "Describe the characters of the story, in one paragraph each one.  Describe their background, motivations, and situations along the at the story journey. Be as detailed as possible.  Optimized based on the reasoning and reflection steps.")
-    writing_style: str = Field(description="The style and tone the writer should consider while developing the book.  Optimized based on the reasoning and reflection steps.")
-    book_name: str = Field(description="The title of the book. It should be unique, creative, and original. Optimized based on the reasoning and reflection steps.")
-    book_prologue: str = Field(description="An engaging introduction to the book, crafted to capture the reader's attention without revealing key details. It should spark curiosity and create excitement, leaving them eager to explore the full story.")
+    story_overview: str = Field(description="Place a highly detailed overview of the narrative that includes a strong introduction, a well-developed middle, and a satisfying conclusion. Optimized based on the reasoning and reflection steps.")
+    characters: str = Field(description = "Place the description of the characters of the story, in one paragraph each one.  Describe their background, motivations, and situations along the at the story journey. Be as detailed as possible.  Optimized based on the reasoning and reflection steps.")
+    writing_style: str = Field(description="Place the style and tone the writer should consider while developing the book.  Optimized based on the reasoning and reflection steps.")
+    book_name: str = Field(description="Place the title of the book. It should be unique, creative, and original. Optimized based on the reasoning and reflection steps.")
+    book_prologue: str = Field(description="Place an engaging introduction to the book, crafted to capture the reader's attention without revealing key details. It should spark curiosity and create excitement, leaving them eager to explore the full story.")
     context_setting: str = Field(description="Describe the time, place, and atmosphere where the story takes place. Include any necessary background information relevant to the story. Optimized based on the reasoning and reflection steps.")
     inciting_incident: str = Field(description="Describe the event that disrupts the protagonist's normal life and initiates the main plot. It should set up the central conflict or challenge. Optimized based on the reasoning and reflection steps.")
     themes_conflicts_intro: str = Field(description="Introduce the central themes and conflicts that will be explored in the story. Mention any internal or external conflicts. Optimized based on the reasoning and reflection steps.")
@@ -112,8 +112,8 @@ class WriterStructuredOutput(BaseModel):
     """
     reasoning_step: str = Field(description = "In-deep explanation of your step by step reasoning about how you will write the story based on the proposed idea")
     reflection_step: str = Field(description = "In-deep review of your thoughts: if you detect that you made a mistake in your reasoning step, at any point, correct yourself in this field.")
-    content: str = Field(description = "The content inside the developed chapter, avoid putting the name of the chapter here. Optimized based on the reasoning and reflection steps.")
-    chapter_name: str = Field(description = "The name of the developed chapter. It should be original and creative. Optimized based on the reasoning and reflection steps.")
+    content: str = Field(description = "Place the content inside the developed chapter, avoid putting the name of the chapter here. Optimized based on the reasoning and reflection steps.")
+    chapter_name: str = Field(description = "Place the name of the developed chapter. It should be original and creative. Optimized based on the reasoning and reflection steps.")
 
 class ApprovedWriterChapter(BaseModel):
     """
@@ -245,82 +245,81 @@ def adding_delay_for_rate_limits(model):
 class NoJson(Exception):
     pass
 
+class BadFormattedJson(Exception):
+    pass
 
 def cleaning_llm_output(llm_output):
+
+    content = llm_output.content
+    
+    # Phase 1: JSON Extraction
     try:
-        content = llm_output.content
+        match = re.search(r"```json\s*([\s\S]*?)\s*```", content)
+        if not match:
+            print("No JSON code block found")
+            raise NoJson("The output does not contain a JSON code block")
+            
+        json_content = match.group(1)
+        print("Phase 1: JSON extraction successful")
         
-        # Phase 1: JSON Extraction
-        try:
-            match = re.search(r"```json\s*([\s\S]*?)\s*```", content)
-            if not match:
-                print("No JSON code block found")
-                raise NoJson("The output does not contain a JSON code block")
-                
-            json_content = match.group(1)
-            print("Phase 1: JSON extraction successful")
-            
-        except re.error as e:
-            print(f"Regex error during extraction: {str(e)}")
-            return content
-
-        # Phase 2: Content Cleaning
-        try:
-            # Remove remaining backticks and normalize whitespace
-            try:
-                json_content = re.sub(r"```", "", json_content)
-                parsed = json.loads(json_content)                                
-                return parsed
-            except:
-                pass
-            try:
-                json_content = re.sub(r"\s+", " ", json_content)
-                parsed = json.loads(json_content)
-                return parsed
-            except:
-                pass
-            
-            json_content = json_content.replace("\\", "")
-            json_content = json_content.strip()
-            print("Phase 2: Content cleaning successful")
-
-        except re.error as e:
-            print(f"Regex error during cleaning: {str(e)}")
-            return content
-
-        # Phase 3: JSON Validation
-        try:
-            # Fix common JSON issues
-            json_content = re.sub(
-                r',\s*([}\]])', r'\1',  # Remove trailing commas
-                json_content
-            )
-            json_content = re.sub(
-                r"([{:,])\s*'([^']+)'\s*([,}])",  # Convert single quotes to double
-                r'\1"\2"\3', 
-                json_content
-            )
-            print("Phase 3: JSON validation complete")
-            
-        except re.error as e:
-            print(f"Regex error during validation: {str(e)}")
-            return content
-
-        # Phase 4: Parsing
-        try:
-            parsed = json.loads(json_content)
-            print("Phase 4: JSON parsing successful")
-            return parsed
-            
-        except json.JSONDecodeError as e:
-            print(f"JSON parsing failed: {str(e)}")
-            print(f"Error location: Line {e.lineno}, Column {e.colno}")
-            print(f"Context: {e.doc[e.pos-20:e.pos+20]}")
-            return content
-            
-    except Exception as e:
-        print(f"Unexpected error: {str(e)}")
+    except re.error as e:
+        print(f"Regex error during extraction: {str(e)}")
         return content
+
+    # Phase 2: Content Cleaning
+    try:
+        # Remove remaining backticks and normalize whitespace
+        try:
+            json_content = re.sub(r"```", "", json_content)
+            parsed = json.loads(json_content)                                
+            return parsed
+        except:
+            pass
+        try:
+            json_content = re.sub(r"\s+", " ", json_content)
+            parsed = json.loads(json_content)
+            return parsed
+        except:
+            pass
+        
+        json_content = json_content.replace("\\", "")
+        json_content = json_content.strip()
+        print("Phase 2: Content cleaning successful")
+
+    except re.error as e:
+        print(f"Regex error during cleaning: {str(e)}")
+        return content
+
+    # Phase 3: JSON Validation
+    try:
+        # Fix common JSON issues
+        json_content = re.sub(
+            r',\s*([}\]])', r'\1',  # Remove trailing commas
+            json_content
+        )
+        json_content = re.sub(
+            r"([{:,])\s*'([^']+)'\s*([,}])",  # Convert single quotes to double
+            r'\1"\2"\3', 
+            json_content
+        )
+        print("Phase 3: JSON validation complete")
+        
+    except re.error as e:
+        print(f"Regex error during validation: {str(e)}")
+        return content
+
+    # Phase 4: Parsing
+    try:
+        parsed = json.loads(json_content)
+        print("Phase 4: JSON parsing successful")
+        return parsed
+        
+    except json.JSONDecodeError as e:
+        print(f"JSON parsing failed: {str(e)}")
+        print(f"Error location: Line {e.lineno}, Column {e.colno}")
+        print(f"Context: {e.doc[e.pos-200:e.pos+200]}")
+        raise BadFormattedJson({"error": f"While trying to format the JSON object you have generated we detect the following error: {e.args[0]}", "detail": f"Error location: Line {e.lineno}, Column {e.colno}", "context": f"{e.doc[e.pos-20:e.pos+20]}"})
+
 
 
 
@@ -337,36 +336,38 @@ def get_json_schema(pydantic_class: BaseModel) -> dict:
 if __name__ == '__main__':
     from langchain_core.messages import AnyMessage, HumanMessage, AIMessage 
 
-    output = AIMessage(content = "```json\n{\n  \"reasoning_step\": \"I need to expand the previous chapter to include at least 5 paragraphs while maintaining the pacing and tension. I will focus on sensory details to enhance the feeling of unease and use the paragraphs to build the tension incrementally, leading up to the final collapse. I will make sure the paragraphs are balanced in length and contribute to the overall narrative flow, avoiding repetition and keeping the focus on specific observations and interactions to create a more immersive experience for the reader. I will also make sure that all the key elements of the previous iteration are still present, and that no key is forgotten in the JSON output.\",\n  \"reflection_step\": \"The previous iteration was good but needed to be more structured and expanded to meet the paragraph requirements. I will use specific observations and sensory details to amplify the sense of unease and use the 5 paragraphs to create a clear progression from initial apprehension to full-blown panic, setting the stage for the disaster that is to come. I will make sure each paragraph has a specific purpose, either introducing new elements of unease or building on the existing ones, and I will keep the language vivid and engaging to maintain the reader's attention.\",\n  \"content\": \"The whistle's sharp blast pierced the air, marking the start of the game, but the usual roar of the crowd seemed distant, muffled by a growing knot of dread in my stomach. On the pitch, the players moved like distant figures, their actions a blur, and my focus was drawn away from the game, towards subtle irregularities that were becoming increasingly hard to ignore. A gate, usually guarded by a security officer, hung open, the metal barrier swaying loosely in the wind, and I scanned the area, searching for the missing guard, but he was nowhere to be seen, a chill running down my spine. Further up, near the Tercera bandeja, a group of fans were arguing loudly, their voices rising above the din, and I strained to hear their words, realizing they were discussing the structural integrity of the section, their faces etched with concern. The air itself seemed to thicken, the usual pre-game excitement replaced by an unusual stillness, a sense of anticipation tinged with dread, and I tried to shake off my apprehension, but the subtle signs of danger kept chipping away at my resolve. \\n\\nEl Ruso, ever the cynic, leaned closer, his voice low and gravelly, “Did you see that guard, viejo? The one near the gate? Vanished into thin air.” His words, though spoken with his usual detached tone, intensified my anxiety, and I knew I wasn't alone in sensing that something was terribly wrong. I tried to focus on the game, to lose myself in the action on the pitch, but the image of the unguarded gate and the arguing fans kept flashing through my mind, and I felt a growing sense of helplessness, as if we were all trapped in a nightmare about to unfold. The players moved with frantic energy, their actions almost desperate, and the chants of the crowd grew more strained, the usual passion replaced by unease. I could smell the sweat of the crowd, a metallic tang in the air, and I felt a pressure building, like a storm gathering force. \\n\\nEl Ruso scoffed, his gaze fixed on the Tercera bandeja, “They're arguing about the cracks, Nico. They know it’s not safe, but nobody is doing anything about it.” His words, though cynical, were a stark reminder of the danger lurking above us, and my heart pounded in my chest, a frantic drumbeat against the rising tide of fear. I saw a few more security guards gesturing frantically towards the Tercera bandeja, their faces etched with panic, and I followed their gaze, my heart skipping a beat. The cracks were spreading, the concrete sagging more visibly, and I knew the situation was rapidly deteriorating, that we were running out of time. The chants of the crowd grew more desperate, the energy more chaotic, and I could feel the tension rising, almost unbearable, and I looked around, trying to gauge the mood, but everyone seemed lost in the game, oblivious to the danger. \\n\\nI felt a sudden urge to leave, to get out of the stadium, to escape the feeling of impending disaster, but I was frozen in place, unable to move, and I knew it was too late, that the tragedy was about to strike, that the vibrant energy of the stadium was about to be shattered. The ground seemed to tremble beneath our feet, the stadium groaned, and I knew the moment of disaster was about to arrive, and I closed my eyes, bracing myself for the inevitable. The air grew heavy, the stadium seemed to hold its breath, and the silence was broken by a low, ominous creaking sound, a sound that seemed to come from the very depths of the earth. \\n\\nI opened my eyes, my heart pounding, and I saw that the section of concrete on the Tercera bandeja was now visibly collapsing, the cracks spreading across its surface like a spiderweb, and I knew the moment of disaster had arrived. The screams began, a chorus of terror that filled the air, and I saw people scrambling, desperately trying to escape the collapsing structure. The chaos was immediate, the vibrant atmosphere of the stadium shattering into pandemonium, and I grabbed El Ruso's arm, shouting his name, and we both started to run, desperately trying to find a way out, our hearts pounding, our minds racing with fear and adrenaline, knowing that our lives depended on it.\",\n  \"chapter_name\": \"The Unfolding Nightmare\"\n}\n```")
-    data = {
-        "reasoning_step": "I will craft a story that adheres to the user's specifications: a first-person narrative of a tragic event during a Boca-River match at La Bombonera in 2008. The story will emphasize the mass behavior contributing to the chaos and the socio-political context of Argentina at the time. The narrative will follow a clear structure, with a compelling beginning, middle, and end. I will focus on creating a realistic and suspenseful atmosphere and the specific details of the stadium and the event. The protagonist will be an ordinary fan, and the writing style will be intense and immersive.",
-        "reflection_step": "I've reviewed the user's requirements and will focus on the first-person perspective, the 2008 setting, and the mass behavior aspects. I will ensure that the story is realistic, avoids sensationalism, and captures the gravity of the tragic events. I will also make sure that the characters are well-defined and relatable, and that the narrative maintains a suspenseful and emotional tone throughout.",
-        "story_overview": "The story opens with a Boca Juniors fan, Mateo, preparing for the Superclásico against River Plate at La Bombonera in 2008. The atmosphere is electric, charged with the intense rivalry and the socio-political tensions of the time. As the match progresses, the crowd becomes increasingly agitated, fueled by alcohol, machismo, and a sense of collective identity. The narrative details the escalating chaos, the pushing and shoving, and the growing sense of panic. A sudden surge of the crowd leads to a stampede, resulting in a tragic loss of life. Mateo, caught in the middle, witnesses the horror and struggles to survive. The story then shifts to the aftermath, exploring the emotional toll on Mateo and the community, the search for accountability, and the lasting impact of the tragedy on Argentine society. The narrative concludes with Mateo trying to find a way to cope with the trauma, forever changed by the events he endured.",
-        "characters": {
-            "mateo": "Mateo, a 28-year-old working-class man, is a lifelong Boca fan. He is passionate about football and sees it as a way to escape the mundane reality of his life. He is not prone to violence but gets carried away by the intense atmosphere of La Bombonera. He is relatable, with a strong sense of loyalty and a hidden vulnerability that comes to the fore during the tragedy. The events of the match shake his core beliefs and leave him grappling with survivor's guilt and the fragility of life.",
-            "sofia": "Sofia, Mateo's girlfriend, is a more pragmatic and level-headed character. She is not as invested in football as Mateo, but she understands its importance to him. She is concerned about Mateo's safety and the potential for violence at the match. Her perspective offers a contrast to Mateo's passion, and she becomes a source of support for him after the tragedy. She represents the voice of reason and caution.",
-            "el_viejo": "El Viejo, an older, seasoned Boca fan, is a mentor figure to Mateo. He is a regular at La Bombonera and has witnessed many derbies. He represents the old guard of Boca fans, with a deep understanding of the rivalry and the traditions of the club. He is initially full of fervor and passion, but is shaken by the tragedy, revealing his own hidden fears and vulnerabilities. He provides a sense of history and continuity.",
-            "ramon": "Ramón, a younger, more aggressive Boca fan, is part of the barra brava. He is fueled by anger and a desire for conflict. He embodies the toxic elements of the fanbase and contributes to the escalating violence. He is a foil to Mateo, representing the dangers of unchecked passion and mob mentality. His actions are part of what leads to the tragedy."
-        },
-        "writing_style": "The narrative will be in the first person, present tense, to create a sense of immediacy and immersion. The tone will be intense, suspenseful, and emotionally charged, reflecting Mateo's experience of the unfolding tragedy. The writing will be descriptive and evocative, capturing the atmosphere of La Bombonera and the escalating chaos. The style will aim for journalistic realism, avoiding sensationalism while conveying the gravity of the events. The language will be raw and authentic, reflecting Mateo's working-class background. The narrative will be interspersed with Mateo's inner thoughts and reflections, giving the reader access to his emotional state.",
-        "book_name": "The Blue and Gold Inferno",
-        "book_prologue": "The air crackles. Not just with the anticipation of the Superclásico, but with something else, something dark and volatile. It's 2008, and La Bombonera is a pressure cooker about to explode. I can feel it in the sweat on my palms, in the roar of the crowd, in the way my heart hammers against my ribs. This isn't just a game; it's a war, and we're all soldiers in the blue and gold army. But today, the enemy isn't just the team in red and white. Today, the enemy is something else, something far more insidious.",
-        "context_setting": "The story is set in Buenos Aires, Argentina, in 2008. The country is still recovering from the economic crisis of the early 2000s, and there's a palpable sense of social and political unrest. Football, particularly the rivalry between Boca Juniors and River Plate, is a major outlet for these tensions. La Bombonera, Boca's stadium, is an iconic symbol of the club's identity and a cauldron of intense passion. The pre-match atmosphere is electric, with fans drinking, chanting, and lighting flares. The stadium is overcrowded, with inadequate safety measures, creating a dangerous environment.",
-        "inciting_incident": "The inciting incident is the start of the match itself. The initial excitement and anticipation quickly give way to a sense of unease as the crowd becomes more agitated. The pushing and shoving become more intense, and there are several near-misses of people falling. The tension in the stadium rises as the match progresses, the referee's calls, the actions on the field, all contribute to the overall tension and the fans' agitation.",
-        "themes_conflicts_intro": "The central themes of the story are the dangers of mass behavior, the fragility of life, and the psychological impact of trauma. The main conflicts are both external and internal. The external conflict is the escalating chaos and violence within the stadium. The internal conflict is Mateo's struggle to reconcile his passion for football with the horrific events he witnesses, and the survivor's guilt that consumes him. The story will also explore the themes of identity, loyalty, and the search for meaning in the face of tragedy.",
-        "transition_to_development": "The story transitions from the initial excitement of the match to the rising tension as the crowd becomes more volatile. The narrative shifts from Mateo's personal experience to a broader view of the collective behavior of the crowd. The descriptions become more detailed and visceral, capturing the sights, sounds, and smells of the stadium as it descends into chaos. The use of present tense and first person perspective intensifies the feeling of being there, as the reader feels the increasing tension with Mateo.",
-        "rising_action": "The rising action involves the increasing intensity of the crowd's behavior. The pushing and shoving become more aggressive, and there are several near-misses of people being injured. The narrative details the escalating violence, the use of flares and fireworks, and the growing sense of panic among the fans. Mateo witnesses acts of aggression and feels the collective madness taking over. The match becomes secondary to the chaos unfolding in the stands, as the focus shifts to the growing sense of danger and impending disaster.",
-        "subplots": "One subplot will involve the story of El Viejo, the older fan who serves as a mentor to Mateo. His experience of the game and his reaction to the tragedy will be explored, highlighting the generational impact of the event. Another subplot will focus on the actions of Ramón and the barra brava, showing the role of organized violence in the tragedy. A minor subplot will explore Sofia's perspective on Mateo's passion for football and her growing concern for his safety.",
-        "midpoint": "The midpoint of the story is the moment when the crowd surge begins. There is a sudden, overwhelming push, and people start falling. The air is filled with screams and the sounds of bodies crashing against each other. This is when the tragic consequences of the chaos become apparent, and the focus shifts to the struggle for survival. Mateo finds himself trapped in the middle of the stampede, desperately trying to stay on his feet and protect himself.",
-        "climax_build_up": "The climax build-up involves the chaos of the stampede reaching its peak. The narrative becomes more frantic and visceral, describing the horrors of the event in vivid detail. Mateo witnesses people being crushed, trampled, and suffocated. He struggles to breathe, feels the weight of the crowd pressing down on him, and loses sight of his friends. The sense of panic and desperation intensifies, as the hope of survival diminishes. The crowd is no longer a collective, but a destructive force.",
-        "climax": "The climax is the moment when the stampede reaches its peak, and the full extent of the tragedy becomes apparent. Mateo witnesses the loss of life firsthand and experiences a moment of complete despair and helplessness. He manages to find a small pocket of space and struggles to keep himself from being crushed. The descriptions are raw and unflinching, capturing the horrific reality of the event. This is the moment of the greatest tension, where Mateo's survival hangs in the balance.",
-        "falling_action": "The falling action involves the immediate aftermath of the stampede. The crowd slowly begins to disperse, and the scene of devastation becomes visible. Mateo, battered and bruised, struggles to comprehend what has happened. The narrative focuses on the emotional toll of the tragedy, the shock, the grief, and the survivor's guilt. Mateo tries to find his friends, while the stadium becomes a scene of chaos and despair. The emergency services arrive, but their efforts seem almost futile in the face of the immense scale of the disaster.",  "resolution": "The resolution focuses on Mateo's attempt to cope with the trauma and the long-term impact of the tragedy. He is haunted by the memories of the event, struggling with nightmares and flashbacks. The narrative explores the emotional toll on the community, the search for accountability, and the lasting changes in the way football matches are managed. Mateo reflects on the meaning of loyalty and identity, and tries to find a way to move forward, forever changed by the events he endured. He starts to see the game in a different light, and his old passion is replaced by a sense of loss.",
-        "epilogue": "The epilogue takes place a few years after the tragedy. Mateo is still grappling with the emotional scars, but he has found a way to live with them. He no longer attends matches at La Bombonera, but he still feels a connection to the club and its fans. The story ends with Mateo reflecting on the fragility of life and the importance of remembering the victims of the tragedy. He has found a measure of peace, but he will never forget the day the blue and gold became an inferno."
-        }
+    output = AIMessage(content = """
+```json
+{
+  "reasoning_step": "I will revise the chapter again, ensuring it contains at least 10 paragraphs, and each paragraph has at least 10 sentences. I will maintain the improvements from the previous revision, focusing on subtlety, nuance, and plot progression while avoiding melodrama and excessive repetition. I will ensure that the descriptions are concise yet evocative, the dialogue is natural, and the pacing is dynamic. The focus will remain on showing rather than telling, with character development revealed through actions and interactions. I will also ensure that the chapter is focused, original, and compelling, and that it avoids clich\u00e9s and stereotypes.",
+  "reflection_step": "I have carefully reviewed the previous revision and the new constraint. I will now ensure that the chapter is structured into at least 10 distinct paragraphs, each fulfilling the requirement of containing at least 10 sentences. I will also maintain the previous improvements, ensuring that the chapter is more nuanced, subtle, and engaging. The pacing will be carefully managed to maintain a balance between character development and plot advancement. The descriptions will be more concise and evocative, and the dialogue will be more natural. I will make sure that the chapter is focused, original, and compelling, avoiding melodrama and excessive repetition, and that the chapter is more sophisticated and less predictable.",
+  "content": "The initial shock of Thorne's confession reverberated through Port Blossom like a tidal wave, washing away the facade of normalcy and revealing the deep cracks in the community's foundation, the news spreading like wildfire through the narrow streets and across the bustling marketplace, each whisper carrying the weight of betrayal and disbelief, the townspeople grappling with the realization that the man they had trusted, the man they had elected, was a wolf in sheep's clothing, his charismatic smile and reassuring words now replaced by the cold, hard truth of his corruption, the sense of security they had once felt replaced by a gnawing unease, the once-familiar faces of their neighbors now tinged with suspicion and anger, the quiet murmur of daily life replaced by the clamor of outrage and confusion, the once-harmonious community now fractured into a thousand different pieces, each one reflecting the pain and turmoil of the moment, the uncertainty of what was to come. Thorne's arrest was swift and decisive, the authorities moving with a newfound urgency to secure the man who had once held so much sway, the handcuffs clicking around his wrists a symbolic end to his reign of power, the once-proud mayor now a shadow of his former self, his eyes filled with a mixture of fear and resentment, the illusion of his invincibility shattered into a million pieces, his carefully constructed world crumbling around him, the weight of his crimes finally catching up to him, the whispers of his treachery now becoming a chorus of condemnation, the once-revered figure now a pariah in his own town, his legacy forever tarnished by his greed and deceit, his name a synonym for corruption and betrayal, a stark reminder of the darkness that can lurk beneath the surface of even the most seemingly respectable individuals. The community was forced to confront the uncomfortable truth about itself, the systemic flaws that had allowed Thorne to rise to power, the blindness that had allowed his corruption to fester, the apathy that had allowed him to manipulate the town for so long, the realization that they were not as innocent as they had believed, the uncomfortable understanding that they had been complicit in their own misfortune, the heavy burden of responsibility now weighing on their shoulders, the feeling that they had to make amends, the feeling that they had to change, the feeling that they had to seek justice, the feeling that they had to rebuild their community from the ground up, the feeling that they had to ensure that such a tragedy would never happen again, the weight of that responsibility palpable and profound.
 
-#    x = cleaning_llm_output(output)    
+  Divisions within the town emerged almost immediately, old grievances bubbling to the surface, new alliances forming along fault lines of suspicion and distrust, some demanding immediate justice and retribution, others advocating for a more measured approach, some seeking to protect their own interests, others genuinely striving for a better future, the once-united community now fractured into warring factions, each convinced of the righteousness of their cause, the streets once filled with the sounds of laughter and camaraderie now echoed with angry shouts and bitter accusations, the fragile peace of Port Blossom now shattered into a million pieces, the future uncertain and fraught with peril, the path to healing long and arduous, the challenges ahead seemingly insurmountable. Elara, the catalyst for this upheaval, found herself thrust into a new role, her courage and determination now the focus of both admiration and resentment, some hailing her as a hero, the brave truth-seeker who had exposed the corruption, others viewing her with suspicion, wary of the changes she had wrought, the weight of her actions now resting heavily on her shoulders, her name now synonymous with both hope and discord, her story now a legend that would be told and retold for generations, her impact on Port Blossom undeniable and irreversible, her journey far from over. She felt the weight of the town's expectations, the burden of responsibility heavy on her young shoulders, the realization that she had set into motion forces she could not fully control, the understanding that the future of Port Blossom now rested in part on her actions, the feeling that she had to guide them through this tumultuous time, the feeling that she had to help them rebuild their lives, the feeling that she had to help them heal from the wounds of betrayal, the feeling that she had to make things right, the feeling that she had to do her part to create a better future, the feeling that she could not just stand by and watch as the town she loved fell apart.
+
+  The personal cost of her actions was also beginning to take its toll, the rifts within her own social circle widening, the divisions within her community causing her deep pain, the knowledge that she had shattered the fragile peace of Port Blossom weighing heavily on her conscience, the understanding that she had exposed the darkness but also unleashed chaos, the feeling that she had to do her part to help the community heal, the feeling that she had to find a way to bridge the divides, the feeling that she had a duty to help them move forward, the feeling that she had a responsibility to guide them towards a more just future, the understanding that she had to learn to live with the consequences of her actions, the realization that her journey was far from over. Elara retreated to her sanctuary, the small cottage overlooking the sea, seeking solace in the familiar sounds of the waves crashing against the shore, the vast expanse of the ocean a reminder of the endless possibilities that lay ahead, the quiet solitude a temporary escape from the turmoil of the town, the need to reflect and gather her strength palpable, the understanding that she could not allow the chaos to consume her, the determination to find a way to help her community heal and rebuild, the conviction that she could not give up hope, the belief that she could make a difference, the resolve to face the challenges ahead with courage and determination. She ran her fingers over the worn pages of her sister's journal, the familiar words a comfort, the memories of her sister's courage a source of inspiration, the reminder that she was not alone in her fight for justice, the understanding that her sister's legacy lived on through her actions, the feeling that she had a duty to honor her memory, the determination to continue the fight for truth and justice, the belief that she could make a difference, the resolve to face the challenges ahead with courage and determination, the quiet whisper of her sister's voice in her heart, urging her to keep going.
+
+  The days that followed were a blur of meetings, arguments, and quiet moments of reflection, the townspeople struggling to come to terms with the enormity of the betrayal, the discussions ranging from calls for immediate retribution to pleas for understanding and reconciliation, the old wounds of the past being reopened, new ones being inflicted, the path forward unclear and uncertain, the need for a leader palpable, the hope that someone would step forward to guide them through the darkness, the understanding that they had to rebuild their community, the feeling that they had to create a better future, the sense that they had to find a way to heal, the belief that they could emerge from the ashes stronger and more united. Elara found herself drawn into the center of the storm, the townspeople seeking her guidance and support, her quiet strength and unwavering determination a beacon of hope in the midst of the chaos, the weight of their expectations heavy on her shoulders, the responsibility of leadership thrust upon her, the understanding that she had to use her influence wisely, the feeling that she had to be the voice of reason, the feeling that she had to help them find their way, the feeling that she had to guide them towards a better future, the feeling that she had to be the anchor in the storm, the feeling that she had to be strong for them, the feeling that she had to be brave for them, the feeling that she had to be the change she wanted to see in Port Blossom. The local council, once a bastion of Thorne's power, was now in disarray, the members scrambling to distance themselves from his crimes, the old guard clinging to their positions, a new generation of voices rising to challenge the status quo, the struggle for power creating further divisions within the town, the need for a new system of governance apparent, the understanding that they had to start from scratch, the feeling that they had to build something new and better, the feeling that they had to learn from their mistakes, the feeling that they had to create a future where such corruption could never take root again, the feeling that they had to do it together, the hope that they could overcome the challenges before them.
+
+  The whispers of dissent grew louder, the old guard clinging to their power, using fear and misinformation to sow further division, the newly emboldened voices of change rising to challenge the status quo, the battle for the soul of Port Blossom now underway, the future of the town hanging in the balance, the need for unity and understanding more urgent than ever, the hope that they could find a way to bridge the divides, the understanding that they had to rebuild their community, the feeling that they had to create a better future, the feeling that they had to work together, the feeling that they had to find common ground, the feeling that they had to choose hope over despair. The small businesses in the town struggled to stay afloat, their livelihoods threatened by the economic uncertainty and the lingering suspicion, the once-thriving marketplace now a shadow of its former self, the community's resilience being tested to its limits, the need for support and solidarity more crucial than ever, the understanding that they were all in this together, the feeling that they had to help each other, the feeling that they had to find a way to survive, the feeling that they had to keep moving forward, the feeling that they had to find a way to rebuild their lives, the belief that they could overcome the challenges before them, the determination to persevere. Elara found herself drawn to the heart of the community, the marketplace, where she had once felt so lost and alone, now a place where she was sought out for guidance and support, the people looking to her for answers, the realization that they had placed their faith in her, the feeling that she could not let them down, the feeling that she had to do everything in her power to help them, the feeling that she had to be their leader, the feeling that she had to be their guiding light, the feeling that she had to be their strength, the feeling that she had to be their hope, the feeling that she had to be their voice.
+
+   She spent her days listening to the concerns of the townspeople, offering words of encouragement and hope, working to bridge the divides that had formed, her unwavering commitment to justice and her genuine empathy for their struggles earning her the respect of many, the understanding that she was not just a hero, but a member of their community, the realization that she was just as vulnerable as they were, the feeling that they were all in this together, the feeling that they had to support each other, the feeling that they had to heal together, the feeling that they had to rebuild their community together, the feeling that they had to create a better future together, the feeling that they had to find their way together, the feeling that they had to trust each other, the feeling that they had to believe in each other. The children of Port Blossom, once full of laughter and play, now carried the weight of the town's turmoil on their small shoulders, the innocence of their childhoods threatened by the chaos and uncertainty, the need to protect them and ensure their safety more paramount than ever, the understanding that they were the future of Port Blossom, the feeling that they had to help them understand, the feeling that they had to give them hope, the feeling that they had to protect them from the darkness, the feeling that they had to show them that things could get better, the feeling that they had to be their strength, the feeling that they had to be their hope, the feeling that they had to be their guiding light, the feeling that they had to be their future. Elara started spending time with them, telling them stories of courage and resilience, teaching them the importance of truth and justice, offering them a glimpse of hope in the midst of the darkness, her kindness and gentle nature bringing smiles back to their faces, the understanding that they were not forgotten, the feeling that they were still loved, the feeling that they were still safe, the feeling that they were still part of something bigger than themselves, the feeling that they were still the future of Port Blossom, the feeling that they were still the hope of Port Blossom.
+
+  The nights were filled with quiet contemplation, Elara wrestling with the weight of her responsibilities, the understanding that she had to make difficult choices, the feeling that she had to be strong, the feeling that she had to be wise, the feeling that she had to be brave, the feeling that she had to be the leader they needed, the feeling that she had to do what was right, the feeling that she could not falter, the feeling that she could not give up, the feeling that she had to keep going, the feeling that she had to find a way to move forward, the feeling that she had to help them heal, the feeling that she had to help them rebuild, the feeling that she had to help them create a better future, the feeling that she had to be there for them. She revisited her sister's journal, the words now resonating with a deeper meaning, the understanding that her sister's fight for justice was not in vain, the feeling that she had to carry on her legacy, the feeling that she had to make her proud, the feeling that she had to continue to seek the truth, the feeling that she had to continue to fight for justice, the feeling that she had to continue to believe in the power of hope, the feeling that she had to continue to be brave, the feeling that she had to continue to be strong, the feeling that she had to continue to be the voice of change, the feeling that she had to continue to be the leader they needed. The sea became her confidante, the waves washing away her doubts and fears, the vastness of the ocean reminding her that she was part of something bigger than herself, the quiet rhythm of the tides a constant source of comfort, the knowledge that she was not alone in her struggles, the feeling that she had the strength to face the challenges ahead, the feeling that she had the courage to keep going, the feeling that she had the wisdom to guide her community, the feeling that she had the hope to create a better future, the feeling that she had the power to make a difference.
+
+  Elara began to formulate a plan, a way to rebuild Port Blossom from the ground up, a vision of a community that was more just, more equitable, and more united, the understanding that they had to start with the foundation of their governance, the feeling that they had to create a system that was transparent and accountable, the feeling that they had to empower the people, the feeling that they had to give them a voice, the feeling that they had to give them a stake in their own future, the feeling that they had to find a way to heal their wounds, the feeling that they had to learn from their mistakes, the feeling that they had to create a better future, the feeling that they had to work together, the feeling that they had to trust each other, the feeling that they had to believe in each other. She reached out to the various factions within the town, inviting them to come together, to put aside their differences, to work towards a common goal, the understanding that they were all part of the same community, the feeling that they were all in this together, the feeling that they had to support each other, the feeling that they had to heal together, the feeling that they had to rebuild together, the feeling that they had to create a better future together, the feeling that they had to find their way together, the feeling that they had to believe in each other. The initial meetings were tense, the old wounds still raw, the mistrust still palpable, but Elara persevered, her unwavering commitment to justice and her genuine empathy for their struggles slowly breaking down the barriers between them, the understanding that they all wanted the same thing, the feeling that they could work together, the feeling that they could overcome their differences, the feeling that they could create a better future, the feeling that they could heal their community, the feeling that they could find their way, the feeling that they could trust each other, the feeling that they could believe in each other.
+
+   The townspeople began to see a glimmer of hope, a belief that they could rebuild, a sense that they could overcome the challenges before them, the understanding that they had to work together, the feeling that they had to support each other, the feeling that they had to heal together, the feeling that they had to create a better future together, the feeling that they had to find their way together, the feeling that they had to trust each other, the feeling that they had to believe in each other, the feeling that they had to move forward, the feeling that they had to learn from their mistakes, the feeling that they had to be stronger, the feeling that they had to be wiser, the feeling that they had to be braver, the feeling that they had to be better. Elara continued to lead them, her quiet strength and unwavering determination a source of inspiration, the understanding that she was not just a leader, but a member of their community, the realization that she was just as vulnerable as they were, the feeling that they were all in this together, the feeling that they had to support each other, the feeling that they had to heal together, the feeling that they had to rebuild their community together, the feeling that they had to create a better future together, the feeling that they had to find their way together, the feeling that they had to trust each other, the feeling that they had to believe in each other, the feeling that they had to be a beacon of hope for each other. The journey ahead was still long and arduous, but for the first time since Thorne's confession, the people of Port Blossom felt a sense of hope, a belief that they could emerge from the darkness stronger and more united, the understanding that they had the power to shape their own future, the feeling that they had the courage to face the challenges ahead, the feeling that they had the wisdom to rebuild their community, the feeling that they had the hope to create a better future, the feeling that they had each other, the feeling that they had Elara, the feeling that they had a chance to start again, the feeling that they had a chance to heal, the feeling that they had a chance to move forward, the feeling that they had a chance to be better, the feeling that they had a chance to be the community that they always knew they could be.
+"chapter_name": "Shattered Shores"
+}
+```                       
+""")
     try:
-        IdeaBrainstormingStructuredOutput(**data)
+        x = cleaning_llm_output(output)    
+    except BadFormattedJson as e:
+        print('-')
+    try:
+        WriterStructuredOutput(**x)
     except Exception as e:
         print('-')
     print('-')

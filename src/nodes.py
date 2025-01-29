@@ -8,7 +8,7 @@ os.chdir(WORKDIR)
 sys.path.append(WORKDIR)
 
 from src.constants import *
-from src.utils import State, DocumentationReady, ApprovedBrainstormingIdea, TranslatorStructuredOutput, TranslatorSpecialCaseStructuredOutput, retrieve_model_name, get_json_schema, NarrativeBrainstormingStructuredOutput, IdeaBrainstormingStructuredOutput, ApprovedWriterChapter,CritiqueWriterChapter,WriterStructuredOutput, NoJson
+from src.utils import State, DocumentationReady, ApprovedBrainstormingIdea, TranslatorStructuredOutput, TranslatorSpecialCaseStructuredOutput, retrieve_model_name, get_json_schema, NarrativeBrainstormingStructuredOutput, IdeaBrainstormingStructuredOutput, ApprovedWriterChapter,CritiqueWriterChapter,WriterStructuredOutput, NoJson, BadFormattedJson
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from src.utils import GraphConfig, _get_model, check_chapter, adding_delay_for_rate_limits, cleaning_llm_output
 from pydantic import ValidationError
@@ -23,14 +23,10 @@ def get_clear_instructions(state: State, config: GraphConfig):
     messages = [SystemMessage(content = system_prompt)] + state['user_instructor_messages']
     adding_delay_for_rate_limits(model)
     reply = model.invoke(messages)
-    
-    cleaned_reply = cleaning_llm_output(llm_output = reply)
-    try:
-        cleaned_reply = cleaning_llm_output(llm_output = reply)
-    except NoJson:
-        reply = model.invoke(messages + [reply] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
-        cleaned_reply = cleaning_llm_output(llm_output = reply)
 
+    cleaned_reply = cleaning_llm_output(llm_output = reply)
+
+    cleaned_reply = cleaning_llm_output(llm_output = reply)
 
     if isinstance(cleaned_reply, str):
         return {'user_instructor_messages': [reply],
@@ -62,6 +58,9 @@ def brainstorming_idea_critique(state: State, config: GraphConfig):
         except NoJson:
             output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
             cleaned_output = cleaning_llm_output(llm_output= output)
+        except BadFormattedJson as e:
+            output = model.invoke(messages + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+            cleaned_output = cleaning_llm_output(llm_output= output)
         try:
             cleaned_output = ApprovedBrainstormingIdea(**cleaned_output)
         except ValidationError as e:
@@ -83,6 +82,10 @@ def brainstorming_idea_critique(state: State, config: GraphConfig):
             except NoJson:
                 output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
                 cleaned_output = cleaning_llm_output(llm_output= output)
+            except BadFormattedJson as e:
+                output = model.invoke(messages + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+                cleaned_output = cleaning_llm_output(llm_output= output)            
+
 
             cleaned_output = ApprovedBrainstormingIdea(**cleaned_output)
 
@@ -97,6 +100,9 @@ def brainstorming_idea_critique(state: State, config: GraphConfig):
                 cleaned_output = cleaning_llm_output(llm_output = output)
             except NoJson:
                 output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+            except BadFormattedJson as e:
+                output = model.invoke(messages + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
                 cleaned_output = cleaning_llm_output(llm_output= output)
             try:
                 cleaned_output = ApprovedBrainstormingIdea(**cleaned_output)
@@ -118,6 +124,9 @@ def brainstorming_idea_critique(state: State, config: GraphConfig):
                     cleaned_output = cleaning_llm_output(llm_output = output)
                 except NoJson:
                     output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                    cleaned_output = cleaning_llm_output(llm_output= output)
+                except BadFormattedJson as e:
+                    output = model.invoke(messages + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
                     cleaned_output = cleaning_llm_output(llm_output= output)
                 cleaned_output = ApprovedBrainstormingIdea(**cleaned_output)
 
@@ -154,6 +163,9 @@ def brainstorming_narrative_critique(state: State, config: GraphConfig):
         except NoJson:
             output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
             cleaned_output = cleaning_llm_output(llm_output= output)
+        except BadFormattedJson as e:
+            output = model.invoke(messages + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+            cleaned_output = cleaning_llm_output(llm_output= output)
         try:
             cleaned_output = ApprovedBrainstormingIdea(**cleaned_output)
         except ValidationError as e:
@@ -175,6 +187,9 @@ def brainstorming_narrative_critique(state: State, config: GraphConfig):
             except NoJson:
                 output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
                 cleaned_output = cleaning_llm_output(llm_output= output)
+            except BadFormattedJson as e:
+                output = model.invoke(messages + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
 
             cleaned_output = ApprovedBrainstormingIdea(**cleaned_output)
     else:
@@ -188,6 +203,9 @@ def brainstorming_narrative_critique(state: State, config: GraphConfig):
                 cleaned_output = cleaning_llm_output(llm_output = output)
             except NoJson:
                 output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+            except BadFormattedJson as e:
+                output = model.invoke(messages + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
                 cleaned_output = cleaning_llm_output(llm_output= output)
             try:
                 cleaned_output = ApprovedBrainstormingIdea(**cleaned_output)
@@ -209,6 +227,9 @@ def brainstorming_narrative_critique(state: State, config: GraphConfig):
                     cleaned_output = cleaning_llm_output(llm_output = output)
                 except NoJson:
                     output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                    cleaned_output = cleaning_llm_output(llm_output= output)
+                except BadFormattedJson as e:
+                    output = model.invoke(messages + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
                     cleaned_output = cleaning_llm_output(llm_output= output)
 
                 cleaned_output = ApprovedBrainstormingIdea(**cleaned_output)
@@ -243,6 +264,9 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
         except NoJson:
             output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
             cleaned_output = cleaning_llm_output(llm_output= output)
+        except BadFormattedJson as e:
+            output = model.invoke(messages + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+            cleaned_output = cleaning_llm_output(llm_output= output)
         try:
             cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaned_output)
         except ValidationError as e:
@@ -264,6 +288,9 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
             except NoJson:
                 output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
                 cleaned_output = cleaning_llm_output(llm_output= output)
+            except BadFormattedJson as e:
+                output = model.invoke(messages + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
 
             cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaned_output)
 
@@ -283,6 +310,9 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
                 cleaned_output = cleaning_llm_output(llm_output = output)
             except NoJson:
                 output = model.invoke(state['plannified_chapters_messages'] + [critique_query] + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+            except BadFormattedJson as e:
+                output = model.invoke(state['plannified_chapters_messages'] + [critique_query] + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
                 cleaned_output = cleaning_llm_output(llm_output= output)
             try:
                 cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaned_output)
@@ -305,6 +335,9 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
                 except NoJson:
                     output = model.invoke(state['plannified_chapters_messages'] + [critique_query] + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
                     cleaned_output = cleaning_llm_output(llm_output= output)
+                except BadFormattedJson as e:
+                    output = model.invoke(state['plannified_chapters_messages'] + [critique_query] + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+                    cleaned_output = cleaning_llm_output(llm_output= output)
                 cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaned_output)
 
             messages = [critique_query] + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
@@ -322,6 +355,9 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
                 cleaned_output = cleaning_llm_output(llm_output = output)
             except NoJson:
                 output = model.invoke(state['plannified_chapters_messages'] + critique_query + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+            except BadFormattedJson as e:
+                output = model.invoke(state['plannified_chapters_messages'] + critique_query + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
                 cleaned_output = cleaning_llm_output(llm_output= output)
             try:
                 cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaned_output)
@@ -343,6 +379,9 @@ def making_narrative_story_brainstorming(state: State, config: GraphConfig):
                     cleaned_output = cleaning_llm_output(llm_output = output)
                 except NoJson:
                     output = model.invoke(state['plannified_chapters_messages'] + critique_query + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                    cleaned_output = cleaning_llm_output(llm_output= output)
+                except BadFormattedJson as e:
+                    output = model.invoke(state['plannified_chapters_messages'] + critique_query + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
                     cleaned_output = cleaning_llm_output(llm_output= output)
                 cleaned_output = NarrativeBrainstormingStructuredOutput(**cleaned_output)
 
@@ -372,6 +411,9 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
         except NoJson:
             output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
             cleaned_output = cleaning_llm_output(llm_output= output)
+        except BadFormattedJson as e:
+            output = model.invoke(messages + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+            cleaned_output = cleaning_llm_output(llm_output= output)
         try:
             cleaned_output = IdeaBrainstormingStructuredOutput(**cleaned_output)
         except ValidationError as e:
@@ -393,6 +435,9 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
             except NoJson:
                 output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
                 cleaned_output = cleaning_llm_output(llm_output= output)
+            except BadFormattedJson as e:
+                output = model.invoke(messages + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
 
             cleaned_output = IdeaBrainstormingStructuredOutput(**cleaned_output)
 
@@ -411,6 +456,9 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
                 cleaned_output = cleaning_llm_output(llm_output = output)
             except NoJson:
                 output = model.invoke(state['plannified_messages'] + new_msg + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+            except BadFormattedJson as e:
+                output = model.invoke(state['plannified_messages'] + new_msg + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
                 cleaned_output = cleaning_llm_output(llm_output= output)
             try:
                 cleaned_output = IdeaBrainstormingStructuredOutput(**cleaned_output)
@@ -433,6 +481,9 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
                 except NoJson:
                     output = model.invoke(state['plannified_messages'] + new_msg + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
                     cleaned_output = cleaning_llm_output(llm_output= output)
+                except BadFormattedJson as e:
+                    output = model.invoke(state['plannified_messages'] + [new_msg] + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+                    cleaned_output = cleaning_llm_output(llm_output= output)
                 cleaned_output = IdeaBrainstormingStructuredOutput(**cleaned_output)
 
             messages = new_msg + [AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````")]
@@ -450,7 +501,9 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
             except NoJson:
                 output = model.invoke(state['plannified_messages'] + [HumanMessage(content="Based on the improvements, return your final work following the instructions mentioned in <FORMAT_OUTPUT>. Ensure to respect the format and syntaxis explicitly explained.")] + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
                 cleaned_output = cleaning_llm_output(llm_output= output)
-
+            except BadFormattedJson as e:
+                output = model.invoke(state['plannified_messages'] + [HumanMessage(content="Based on the improvements, return your final work following the instructions mentioned in <FORMAT_OUTPUT>. Ensure to respect the format and syntaxis explicitly explained.")] + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
             try:    
                 cleaned_output = IdeaBrainstormingStructuredOutput(**cleaned_output)
             except ValidationError as e:
@@ -472,7 +525,9 @@ def making_general_story_brainstorming(state: State, config: GraphConfig):
                 except NoJson:
                     output = model.invoke(state['plannified_messages'] +[HumanMessage(content="Based on the improvements, return your final work following the instructions mentioned in <FORMAT_OUTPUT>. Ensure to respect the format and syntaxis explicitly explained.")] + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
                     cleaned_output = cleaning_llm_output(llm_output= output)
-
+                except BadFormattedJson as e:
+                    output = model.invoke(state['plannified_messages'] + [HumanMessage(content="Based on the improvements, return your final work following the instructions mentioned in <FORMAT_OUTPUT>. Ensure to respect the format and syntaxis explicitly explained.")] + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+                    cleaned_output = cleaning_llm_output(llm_output= output)
 
 
 
@@ -517,6 +572,9 @@ def evaluate_chapter(state: State, config: GraphConfig):
         except NoJson:
             output = model.invoke(new_message + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
             cleaned_output = cleaning_llm_output(llm_output= output)
+        except BadFormattedJson as e:
+            output = model.invoke(new_messages + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+            cleaned_output = cleaning_llm_output(llm_output= output)
 
         is_chapter_approved = True if "is_approved" in list(cleaned_output) else False
         if is_chapter_approved:
@@ -537,6 +595,9 @@ def evaluate_chapter(state: State, config: GraphConfig):
                 cleaned_output = cleaning_llm_output(llm_output= output)
             except NoJson:
                 output = model.invoke(state['writing_reviewer_memory'] + new_message + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+            except BadFormattedJson as e:
+                output = model.invoke(state['writing_reviewer_memory'] + new_message + [output] +  [HumanMessage(content="Based on the improvements, return your final work following the instructions mentioned in <FORMAT_OUTPUT>. Ensure to respect the format and syntaxis explicitly explained.")] + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
                 cleaned_output = cleaning_llm_output(llm_output= output)
 
             is_chapter_approved = True if "is_approved" in list(cleaned_output.keys()) else False
@@ -610,6 +671,9 @@ def generate_content(state: State, config: GraphConfig):
         except NoJson:
             output = model.invoke(messages + [human_msg] + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
             cleaned_output = cleaning_llm_output(llm_output= output)
+        except BadFormattedJson as e:
+            output = model.invoke(messages + [human_msg] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+            cleaned_output = cleaning_llm_output(llm_output= output)
 
         try:
             cleaned_output = WriterStructuredOutput(**cleaned_output)
@@ -632,7 +696,9 @@ def generate_content(state: State, config: GraphConfig):
             except NoJson:
                 output = model.invoke(messages + [human_msg] + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
                 cleaned_output = cleaning_llm_output(llm_output= output)
-
+            except BadFormattedJson as e:
+                output = model.invoke(messages + [human_msg] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
             cleaned_output = WriterStructuredOutput(**cleaned_output)
         
         if check_chapter(msg_content = cleaned_output.content, min_paragraphs = min_paragraph_in_chapter) == False:
@@ -645,6 +711,9 @@ def generate_content(state: State, config: GraphConfig):
                 cleaned_output = cleaning_llm_output(llm_output = output)
             except NoJson:
                 output = model.invoke(messages + [human_msg] + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+            except BadFormattedJson as e:
+                output = model.invoke(messages + [human_msg] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
                 cleaned_output = cleaning_llm_output(llm_output= output)
             try:
                 cleaned_output = WriterStructuredOutput(**cleaned_output)
@@ -666,6 +735,9 @@ def generate_content(state: State, config: GraphConfig):
                     cleaned_output = cleaning_llm_output(llm_output = output)
                 except NoJson:
                     output = model.invoke(messages + [human_msg] + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                    cleaned_output = cleaning_llm_output(llm_output= output)
+                except BadFormattedJson as e:
+                    output = model.invoke(messages + [human_msg] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
                     cleaned_output = cleaning_llm_output(llm_output= output)
 
                 cleaned_output = WriterStructuredOutput(**cleaned_output)
@@ -693,7 +765,9 @@ def generate_content(state: State, config: GraphConfig):
         except NoJson:
             output = model.invoke(state['writer_memory'] + new_message + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
             cleaned_output = cleaning_llm_output(llm_output= output)
-
+        except BadFormattedJson as e:
+            output = model.invoke(state['writer_memory'] + new_message + [output] + [HumanMessage(content="Based on the improvements, return your final work following the instructions mentioned in <FORMAT_OUTPUT>. Ensure to respect the format and syntaxis explicitly explained.")] + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+            cleaned_output = cleaning_llm_output(llm_output= output)
         try:
             cleaned_output = WriterStructuredOutput(**cleaned_output)
         except ValidationError as e:
@@ -715,6 +789,9 @@ def generate_content(state: State, config: GraphConfig):
             except NoJson:
                 output = model.invoke(state['writer_memory'] + new_message + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
                 cleaned_output = cleaning_llm_output(llm_output= output)
+            except BadFormattedJson as e:
+                output = model.invoke(state['writer_memory'] + new_message + [output] + [HumanMessage(content="Based on the improvements, return your final work following the instructions mentioned in <FORMAT_OUTPUT>. Ensure to respect the format and syntaxis explicitly explained.")] + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
 
             cleaned_output = WriterStructuredOutput(**cleaned_output)
 
@@ -724,7 +801,16 @@ def generate_content(state: State, config: GraphConfig):
             adding_delay_for_rate_limits(model)
             output = model.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least {min_paragraph_in_chapter} paragraphs, and also, each one of the paragraphs must have at least {min_sentences_in_each_paragraph_per_chapter} sentences. Adjust it again!  Dont forget any key in your JSON output")])
             try:
-                cleaned_output = WriterStructuredOutput(**cleaning_llm_output(output))
+                cleaned_output = cleaning_llm_output(llm_output = output)
+            except NoJson:
+                output = model.invoke(new_message + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)            
+            except BadFormattedJson as e:
+                output = model.invoke(new_message + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+
+            try:
+                cleaned_output = WriterStructuredOutput(**cleaned_output)
             except ValidationError as e:
                 adding_delay_for_rate_limits(model)
                 correction_instruction = ''
@@ -739,7 +825,17 @@ def generate_content(state: State, config: GraphConfig):
                         correction_instruction += f"You place incorrectly the data type of the key `{field_name}`: {error_msg}\n\n"
                 correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
                 output = model.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least {min_paragraph_in_chapter} paragraphs, and also, each one of the paragraphs must have at least {min_sentences_in_each_paragraph_per_chapter} sentences. Adjust it again!  Dont forget any key in your JSON output")] + [output] + [HumanMessage(content=correction_instruction)])
-                cleaned_output = WriterStructuredOutput(**cleaning_llm_output(output))
+                try:
+                    cleaned_output = cleaning_llm_output(llm_output = output)
+                except NoJson:
+                    output = model.invoke(new_message + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                    cleaned_output = cleaning_llm_output(llm_output= output)            
+                except BadFormattedJson as e:
+                    output = model.invoke(new_message + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+                    cleaned_output = cleaning_llm_output(llm_output= output)
+
+
+                cleaned_output = WriterStructuredOutput(**cleaned_output)
 
         return {
                 'content': [cleaned_output.content],
@@ -771,6 +867,10 @@ def generate_translation(state: State, config: GraphConfig):
         except NoJson:
             output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
             cleaned_output = cleaning_llm_output(llm_output= output)
+        except BadFormattedJson as e:
+            output = model.invoke(messages + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+            cleaned_output = cleaning_llm_output(llm_output= output)
+
 
         try:
             cleaned_output = TranslatorStructuredOutput(**cleaned_output)
@@ -793,6 +893,9 @@ def generate_translation(state: State, config: GraphConfig):
             except NoJson:
                 output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
                 cleaned_output = cleaning_llm_output(llm_output= output)
+            except BadFormattedJson as e:
+                output = model.invoke(messages + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
 
             cleaned_output = TranslatorStructuredOutput(**cleaned_output)
 
@@ -803,6 +906,9 @@ def generate_translation(state: State, config: GraphConfig):
             cleaned_special_case_output = cleaning_llm_output(llm_output = special_case_output)
         except NoJson:
             special_case_output = model.invoke(messages + [special_case_output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+            cleaned_special_case_output = cleaning_llm_output(llm_output= special_case_output)
+        except BadFormattedJson as e:
+            special_case_output = model.invoke(messages + [special_case_output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
             cleaned_special_case_output = cleaning_llm_output(llm_output= special_case_output)
         try:
             cleaned_special_case_output = TranslatorSpecialCaseStructuredOutput(**cleaned_special_case_output)
@@ -824,7 +930,10 @@ def generate_translation(state: State, config: GraphConfig):
                 cleaned_special_case_output = cleaning_llm_output(llm_output = special_case_output)
             except NoJson:
                 special_case_output = model.invoke(messages + [special_case_output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
-                cleaned_special_case_output = cleaning_llm_output(llm_output= special_case_output)            
+                cleaned_special_case_output = cleaning_llm_output(llm_output= special_case_output)    
+            except BadFormattedJson as e:
+                special_case_output = model.invoke(messages + [special_case_output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+                cleaned_special_case_output = cleaning_llm_output(llm_output= special_case_output)        
             
             cleaned_special_case_output = TranslatorSpecialCaseStructuredOutput(**cleaned_special_case_output)
 
@@ -847,7 +956,10 @@ def generate_translation(state: State, config: GraphConfig):
         try:
             cleaned_output = cleaning_llm_output(llm_output = output)
         except NoJson:
-            output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+            output = model.invoke(state['translator_memory'] + new_message + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+            cleaned_output = cleaning_llm_output(llm_output= output)
+        except BadFormattedJson as e:
+            output = model.invoke(state['translator_memory'] + new_message  + [output] + [HumanMessage(content="Based on the improvements, return your final work following the instructions mentioned in <FORMAT_OUTPUT>. Ensure to respect the format and syntaxis explicitly explained.")] + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
             cleaned_output = cleaning_llm_output(llm_output= output)
         try:
             cleaned_output = TranslatorStructuredOutput(**cleaned_output)
@@ -868,7 +980,10 @@ def generate_translation(state: State, config: GraphConfig):
             try:
                 cleaned_output = cleaning_llm_output(llm_output = output)
             except NoJson:
-                output = model.invoke(messages + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                output = model.invoke(state['translator_memory'] + new_message + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format.")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+            except BadFormattedJson as e:
+                output = model.invoke(state['translator_memory'] + new_message + [output] + [HumanMessage(content="Based on the improvements, return your final work following the instructions mentioned in <FORMAT_OUTPUT>. Ensure to respect the format and syntaxis explicitly explained.")] + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
                 cleaned_output = cleaning_llm_output(llm_output= output)
             cleaned_output = TranslatorStructuredOutput(**cleaned_output)
 
