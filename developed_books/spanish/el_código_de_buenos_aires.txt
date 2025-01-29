@@ -1,6 +1,8 @@
 Title:
 El Código de Buenos Aires
 
+Model in Agents: Google 2.0 Flash
+
 Prologue:
 La lluvia caía como un sudario sobre Buenos Aires, cada gota un pequeño golpe de martillo contra la indiferencia de la ciudad. En los laberínticos callejones, susurros de secretos se deslizaban, ocultos a los ojos de los poderosos. Sofía, un fantasma en su propia ciudad, se movía entre las sombras, sus dedos trazando el frío acero de un recuerdo: un padre perdido, una verdad enterrada. Esta noche, los susurros eran más fuertes, y la lluvia se sentía como una promesa... o una amenaza. El juego había comenzado, y la ciudad contuvo la respiración, inconsciente de la tormenta que estaba a punto de desatarse.
 

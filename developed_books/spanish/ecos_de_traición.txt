@@ -1,6 +1,8 @@
 Title:
 Ecos de Traición
 
+Model in Agents: Google 2.0 Flash
+
 Prologue:
 El horizonte de la ciudad, un testimonio del ingenio humano, proyectaba largas sombras sobre la escena del crimen. Una vida extinguida, un legado hecho añicos y un silencio que gritaba traición. Esto no era solo un asesinato; era una sinfonía de engaño cuidadosamente orquestada, y la primera nota fue una pregunta que resonó en el frío aire nocturno: ¿Quién tenía más que ganar con la muerte de Elias Thorne y por qué? Pero más importante aún, ¿quién estaba moviendo los hilos desde las sombras?
 

@@ -1,6 +1,8 @@
 Title:
 Lugano's Echoes
 
+Model in Agents: Google 2.0 Flash
+
 Prologue:
 The air in Villa Lugano carried the scent of resilience and forgotten dreams, a place where the echoes of laughter and struggle intertwined. Within the walls of the neglected community center, the weight of past failures lingered, a silent testament to dashed hopes. In this space, a community organizer, her spirit fueled by unwavering determination and hidden vulnerabilities, and an artist, his soul yearning for purpose beyond the gilded cage, were destined to collide. Their story, like a symphony of contrasting notes, was about to unfold, revealing the transformative power of art, love, and the indomitable spirit of a community.
 

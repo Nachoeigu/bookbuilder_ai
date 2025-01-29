@@ -1,6 +1,8 @@
 Book title:
 El Abrazo de la Tormenta
 
+Model in Agents: Google 2.0 Flash
+
 Book prologue:
 El mar susurraba historias de aventura, un canto de sirena que lo atraía cada vez más cerca del borde. El sol pintaba la isla con tonos dorados, ocultando la tempestad que se gestaba en el horizonte. Era un muchacho en busca de una historia, pero la isla tenía una diferente reservada, una prueba de fuego que lo transformaría en algo más de lo que jamás imaginó.
 

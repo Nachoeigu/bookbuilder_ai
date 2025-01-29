@@ -1,6 +1,8 @@
 Book title:
 The Storm's Embrace
 
+Model in Agents: Google 2.0 Flash
+
 Book prologue:
 The sea whispered tales of adventure, a siren's song that lured him closer to the edge. The sun painted the island with hues of gold, hiding the tempest brewing on the horizon. He was a boy seeking a story, but the island had a different one in store, a trial by storm that would carve him into something more than he ever imagined.
 

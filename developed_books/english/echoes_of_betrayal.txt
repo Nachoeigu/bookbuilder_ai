@@ -1,6 +1,8 @@
 Title:
 Echoes of Betrayal
 
+Model in Agents: Google 2.0 Flash
+
 Prologue:
 The city's skyline, a testament to human ingenuity, cast long shadows over the scene of the crime. A life extinguished, a legacy in tatters, and a silence that screamed of betrayal. This wasn't just a murder; it was a carefully orchestrated symphony of deception, and the first note was a question that echoed through the cold night air: Who had the most to gain from Elias Thorne's demise, and why? But more importantly, who was pulling the strings from the shadows?
 

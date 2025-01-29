@@ -1,6 +1,8 @@
 Title:
 The Buenos Aires Cipher
 
+Model in Agents: Google 2.0 Flash
+
 Prologue:
 The rain fell like a shroud over Buenos Aires, each drop a tiny hammer blow against the city’s indifference. In the labyrinthine alleys, whispers of secrets slithered, hidden from the eyes of the powerful. Sofia, a ghost in her own city, moved through the shadows, her fingers tracing the cold steel of a memory – a father lost, a truth buried. Tonight, the whispers were louder, and the rain felt like a promise… or a threat. The game had begun, and the city held its breath, unaware of the storm that was about to break.
 
