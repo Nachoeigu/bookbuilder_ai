@@ -205,7 +205,7 @@ def _get_model(config: GraphConfig, key:Literal['instructor_model','brainstormer
     if model == "openai":
         return ChatOpenAI(temperature=temperature, model="gpt-4o-mini", top_k = top_k, top_p = top_p)
     elif model == "google":
-        return ChatGoogleGenerativeAI(temperature=temperature, model="gemini-2.0-flash-exp", top_k = top_k, top_p = top_p)
+        return ChatGoogleGenerativeAI(temperature=temperature, model="gemini-2.0-flash-thinking-exp-01-21", top_k = top_k, top_p = top_p)
     elif model == 'meta':
         return ChatGroq(temperature=temperature, model="llama-3.3-70b-versatile", top_k = top_k, top_p = top_p)
     elif model == 'amazon':
