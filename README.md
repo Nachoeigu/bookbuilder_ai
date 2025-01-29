@@ -81,3 +81,6 @@ You need to set up the initial configurations that are the following:
 ---
 
 **Book Builder With AI** is designed to bring your ideas to life through a collaborative process with AI, ensuring your story is as close to your vision as possible. Happy writing!
+
+#### Developers disclaimer
+The system currently is configured in order to work in LangGraph Cloud and/or LangGraph Studio. You can refine it to work in your own server if you want it.

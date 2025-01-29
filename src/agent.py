@@ -89,12 +89,17 @@ if __name__ == '__main__':
             "brainstormer_critique_model":"google",
             "reviewer_model":"google",
             "writer_model":"google",
+            "writing_reviewer_model":"google",
+            "translator_model":"google",
             "n_chapters":10,
             "min_paragraph_per_chapter": 10,
-            "min_sentences_in_each_paragraph_per_chapter": 10
+            "min_sentences_in_each_paragraph_per_chapter": 10,
+            "critiques_in_loop": False,
 
-        }
+        },
+        "recursion_limit": 150
     }
+
 
     for event in app.stream(
             input = {'user_instructor_messages': [HumanMessage(content=human_input_msg)]},
@@ -105,11 +110,11 @@ if __name__ == '__main__':
         msg = event['user_instructor_messages'][-1].content
         print(type_msg.upper() + f": {msg}")
 
-    while True:
+    instructor_condition = False
+    while instructor_condition == False:
         new_human_input_msg = input("Provide your answer: ")
         new_human_input_msg = HumanMessage(content = new_human_input_msg)
         app.update_state(configuration, {'user_instructor_messages': [new_human_input_msg]}, as_node = 'human_feedback')
-        print("HUMAN" + f": {new_human_input_msg.content}")
         current_node = 'human_feedback'
         app.get_state(config = configuration).next
         for event in app.stream(
@@ -118,5 +123,56 @@ if __name__ == '__main__':
                 stream_mode='values'):
             type_msg = event['user_instructor_messages'][-1].type
             msg = event['user_instructor_messages'][-1].content
-            print(type_msg.upper() + f": {msg}")
+            if (msg == "Done, executed")&(type_msg == "ai"):
+                instructor_condition = True
+                break
+            else:
+                print(type_msg.upper() + f": {msg}")
+    print("Starting the automated autonomous behaviour")
+    app.get_state(config = configuration).next
+    # copy the current state of events
+    last_snapshot_events = event
+    for event in app.stream(
+            input = None,
+            config = configuration,
+            stream_mode='values'):
 
+        print(f"We are in step number: {app.get_state(config = configuration).metadata['step']}")
+        print(f"Currently the agent {list(app.get_state(config = configuration).metadata['writes'].keys())[0]} is working...")
+        last_snapshot_events = event
+
+    
+    book_title_english = event['book_title']
+    book_prologue_english = event['book_prologue']
+    book_raw_content = event['content']
+    book_raw_chapter_names = event['chapter_names']
+    book_final_content = {k: v for k, v in zip(book_raw_chapter_names, book_raw_content)}
+    # The idea is to save in developed_books/english
+    with open("developed_books/english/"+book_title_english.replace(" ","_").lower()+".txt", "w") as f:
+        f.write("Title:"+ '\n')
+        f.write(book_title_english+'\n\n')
+        f.write("Prologue:"+"\n")
+        f.write(book_prologue_english+'\n\n')
+        for chapter_name, chapter_content in book_final_content.items():
+            f.write(chapter_name+'\n')
+            f.write(chapter_content+'\n\n')
+
+    # If it is also in other language (not english):
+    if not ((configuration['configurable'].get('language') == 'english')|(configuration['configurable'].get('language') is None)):
+        book_title_translation = event['translated_book_name']
+        book_prologue_translation = event['translated_book_prologue']
+        book_raw_content_translation = event['translated_content']
+        book_raw_chapter_names_translation = event['translated_chapter_names']
+        book_final_content_translation = {k: v for k, v in zip(book_raw_chapter_names_translation, book_raw_content_translation)}
+        # The idea is to save in developed_books/{language}
+        with open(f"developed_books/{configuration['configurable'].get('language')}/{book_title_translation.replace(" ","_").lower()}.txt", "w") as f:
+            f.write("Title:\n")
+            f.write(book_title_translation+'\n\n')
+            f.write("Prologue:\n")
+            f.write(book_prologue_translation+'\n\n')
+            for chapter_name, chapter_content in book_final_content_translation.items():
+                f.write(chapter_name+'\n')
+                f.write(chapter_content+'\n\n')        
+    
+
+    print("The book has been developed and saved in the corresponding folder")
