@@ -91,7 +91,7 @@ The output must be a JSON object, with 19 keys UNIQUELY: "reasoning_step", "refl
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
-It is mandatory to return the completed JSON object, without missing any key in the dictionary.
+It is mandatory to return the completed JSON object, without missing any key in the dictionary. Don't hallucinate keys that are not present in the schema.
 Also, ensure to return the JSON object correctly formatted, without syntax errors.
 
 It is time to start, but before:
@@ -148,7 +148,7 @@ The output must be a JSON object, with 3 keys UNIQUELY: "reasoning_step", "refle
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
-It is mandatory to return the completed JSON object, without missing any key in the dictionary.
+It is mandatory to return the completed JSON object, without missing any key in the dictionary. Don't hallucinate keys that are not present in the schema.
 Also, ensure to return the JSON object correctly formatted, without syntax errors.
 Don't forget exclusively the rule regarding the minimum of five sentences per chapter summary, and ensure that the number of chapters is {n_chapters}.
 
@@ -189,7 +189,7 @@ The output must be a JSON object, with 2 keys UNIQUELY: "grade", "feedback"
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
-It is mandatory to return the completed JSON object, without missing any key in the dictionary.
+It is mandatory to return the completed JSON object, without missing any key in the dictionary. Don't hallucinate keys that are not present in the schema.
 Also, ensure to return the JSON object correctly formmated, without syntaxis error.
 Let's start the critique. Be detailed and strict!
 """
@@ -231,7 +231,7 @@ The output must be a JSON object, with 2 keys UNIQUELY: "grade", "feedback"
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
-It is mandatory to return the completed JSON object, without missing any key in the dictionary.
+It is mandatory to return the completed JSON object, without missing any key in the dictionary. Don't hallucinate keys that are not present in the schema.
 Also, ensure to return the JSON object correctly formmated, without syntaxis error.
 Before starting, take a breath, focus on the idea, and prepare to deliver detailed, constructive feedback.
 Let's begin. Be thorough and precise!
@@ -319,7 +319,7 @@ The output must be a JSON object, with 4 keys UNIQUELY: "reasoning_step", "refle
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
-It is mandatory to return the completed JSON object, without missing any key in the dictionary.
+It is mandatory to return the completed JSON object, without missing any key in the dictionary. Don't hallucinate keys that are not present in the schema.
 Also, ensure to return the JSON object correctly formatted, without syntax errors: for example, when you want to place a citation, ensure to escape the " character with a SINGLE backslash: (\"This is dark\", said Claudio).
 Don't forget that the output must be a JSON object, with 4 keys UNIQUELY: "reasoning_step", "reflection_step, "content" and "chapter_name".
 Follow strictly each rule enumerated in <RULES> tag: exclusively the ones regarding minimum paragraphs, minimum sentences per paragraph and the JSON syntax one.
@@ -367,17 +367,15 @@ The following is the CritiqueWriterChapter tool:
 {critique_schema}
 </CRITIQUE_SCHEMA>
 
-As you can see, the schema provides the structure of the expected output. 
+As you can see, the schemas provide the structure of the expected output. 
 Please pay special attention to the descriptions and data type for each field.
 You should populate the fields with the defined value.
 The description and data type info MUST NOT be returned in your output. Instead, place the value of the particular key.
 
-
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text. Only JSON object is accepted.
-It is mandatory to return the completed JSON object, without missing any key in the dictionary.
-Also, ensure to return the JSON object correctly formmated, without syntaxis error.
+It is mandatory to return the completed JSON object, without missing any key in the dictionary. Don't hallucinate keys that are not present in the schema. 
 Avoid unnecesary verbosity, go directly to the point.
 Let's begin the review process.
 """
@@ -407,6 +405,6 @@ The description and data type info MUST NOT be returned in your output. Instead,
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
-It is mandatory to return the completed JSON object, without missing any key in the dictionary.
+It is mandatory to return the completed JSON object, without missing any key in the dictionary. Don't hallucinate keys that are not present in the schema.
 Also, ensure to return the JSON object correctly formmated, without syntaxis error.
 """
