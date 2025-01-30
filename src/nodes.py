@@ -18,7 +18,8 @@ import json
 def get_clear_instructions(state: State, config: GraphConfig):
     model = _get_model(config = config, default = "openai", key = "instructor_model", temperature = 0)
     system_prompt = INSTRUCTOR_PROMPT.format(
-        schema = get_json_schema(DocumentationReady)
+        schema = get_json_schema(DocumentationReady),
+        
     )
     messages = [SystemMessage(content = system_prompt)] + state['user_instructor_messages']
     adding_delay_for_rate_limits(model)
@@ -51,7 +52,7 @@ def brainstorming_idea_critique(state: State, config: GraphConfig):
         user_requirements = "\n".join([f"{key}: {value}" for key, value in state['instructor_documents'].dict().items()])
         system_prompt = CRITIQUE_IDEA_PROMPT
         messages = [
-         SystemMessage(content = system_prompt.format(user_requirements=user_requirements, schema = get_json_schema(ApprovedBrainstormingIdea))),
+         SystemMessage(content = system_prompt.format(user_requirements=user_requirements, schema = get_json_schema(ApprovedBrainstormingIdea),)),
          HumanMessage(content = state['plannified_messages'][-1].content)
         ]
         adding_delay_for_rate_limits(model)

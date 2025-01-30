@@ -1,3 +1,4 @@
+
 INSTRUCTOR_PROMPT = """
 <ROLE>
 You are an expert assistant responsible for gathering and refining comprehensive user requirements for a book development project.
@@ -19,16 +20,29 @@ Ensure that the final document is not just a repetition of the user's words but 
 </RULES>
 
 <FORMAT_OUTPUT>
-Return a JSON object, which should follows this JSON schema definition:
+<IF_CONFIDENT>
+If you are highly confident about the user requirements, return a JSON object, which should follows this JSON schema definition:
 <SCHEMA>
 {schema}
 </SCHEMA>
 
-As you have seen, you must return a valid JSON object that follows that structure.
-Consider that your response would be used later for a system to convert your JSON string mode into a Python dictionary.
+As you can see, the schema provides the structure of the expected output. 
+Please pay special attention to the descriptions and data type for each field.
+You should populate the fields with the defined value.
+The description and data type info MUST NOT be returned in your output. Instead, place the value of the particular key.
+
+The output must be a JSON object, with 7 keys UNIQUELY: "reasoning_step", "reflection_step", "topic", "target_audience", "genre", "writing_style" and "additional_requirements".
+
+</IF_CONFIDENT>
+
+<IF_NOT_CONFIDENT>
+If you are not 100 highly confidence of the user requirements, return plain text with your questions.
+</IF_NOT_CONFIDENT>
+
 </FORMAT_OUTPUT>
 
-Remember to return the correct format output based on your confidence: if you are not highly confident, plain text. Otherwise, use the format present in <FORMAT_OUTPUT> tag. But when using the format in <FORMAT_OUTPUT> ensure to return the JSON object, without missing any key.
+Remember to return the correct format output based on your confidence: if you are not highly confident, plain text. 
+Otherwise, use the format present in <FORMAT_OUTPUT> tag. But when using the format in <FORMAT_OUTPUT> ensure to return the JSON object, without missing any key.
 
 You are the best doing this job, think step by step and provide useful, high quality results.
 """
@@ -67,9 +81,13 @@ Return a JSON object, which should follows this schema definition:
 <SCHEMA>
 {schema}
 </SCHEMA>
+As you can see, the schema provides the structure of the expected output. 
+Please pay special attention to the descriptions and data type for each field.
+You should populate the fields with the defined value.
+The description and data type info MUST NOT be returned in your output. Instead, place the value of the particular key.
 
-As you have seen, you must return a valid JSON object that follows that structure.
-Consider that your response would be used later for a system to convert your JSON string mode into a Python dictionary.
+The output must be a JSON object, with 19 keys UNIQUELY: "reasoning_step", "reflection_step", "story_overview", "characters", "writing_style", "book_name", "book_prologue", "context_setting", "inciting_incident", "themes_conflicts_intro", "transition_to_development", "rising_action", "subplots", "midpoint", "climax_build_up", "climax", "falling_action", "resolution", "epilogue".
+
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
@@ -120,8 +138,13 @@ Return a JSON object, which should follows this JSON schema definition:
 <SCHEMA>
 {schema}
 </SCHEMA>
-As you have seen, you must return a valid JSON object that follows that structure.
-Consider that your response would be used later for a system to convert your JSON string mode into a Python dictionary.
+As you can see, the schema provides the structure of the expected output. 
+Please pay special attention to the descriptions and data type for each field.
+You should populate the fields with the defined value.
+The description and data type info MUST NOT be returned in your output. Instead, place the value of the particular key.
+
+The output must be a JSON object, with 3 keys UNIQUELY: "reasoning_step", "reflection_step", "chapters_summaries"
+
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
@@ -156,8 +179,13 @@ Return a JSON object, which should follows this JSON schema definition:
 <SCHEMA>
 {schema}
 </SCHEMA>
-As you have seen, you must return a valid JSON object that follows that structure.
-Consider that your response would be used later for a system to convert your JSON string mode into a Python dictionary.
+As you can see, the schema provides the structure of the expected output. 
+Please pay special attention to the descriptions and data type for each field.
+You should populate the fields with the defined value.
+The description and data type info MUST NOT be returned in your output. Instead, place the value of the particular key.
+
+The output must be a JSON object, with 2 keys UNIQUELY: "grade", "feedback"
+
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
@@ -193,8 +221,13 @@ Return a JSON object, which should follows this JSON schema definition:
 <SCHEMA>
 {schema}
 </SCHEMA>
-As you have seen, you must return a valid JSON object that follows that structure.
-Consider that your response would be used later for a system to convert your JSON string mode into a Python dictionary.
+As you can see, the schema provides the structure of the expected output. 
+Please pay special attention to the descriptions and data type for each field.
+You should populate the fields with the defined value.
+The description and data type info MUST NOT be returned in your output. Instead, place the value of the particular key.
+
+The output must be a JSON object, with 2 keys UNIQUELY: "grade", "feedback"
+
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text.
@@ -276,8 +309,11 @@ Return a JSON object, following this JSON schema definition:
 <SCHEMA>
 {schema}
 </SCHEMA>
-As you have seen, you must return a valid JSON object that follows that structure.
-Consider that your response would be used later for a system to convert your JSON string mode into a Python dictionary.
+As you can see, the schema provides the structure of the expected output. 
+Please pay special attention to the descriptions and data type for each field.
+You should populate the fields with the defined value.
+The description and data type info MUST NOT be returned in your output. Instead, place the value of the particular key.
+
 The output must be a JSON object, with 4 keys UNIQUELY: "reasoning_step", "reflection_step, "content" and "chapter_name".
 
 </FORMAT_OUTPUT>
@@ -330,8 +366,13 @@ The following is the CritiqueWriterChapter tool:
 <CRITIQUE_SCHEMA>
 {critique_schema}
 </CRITIQUE_SCHEMA>
-As you have seen, you must return a valid JSON object that follows that structure.
-Consider that your response would be used later for a system to convert your JSON string mode into a Python dictionary.
+
+As you can see, the schema provides the structure of the expected output. 
+Please pay special attention to the descriptions and data type for each field.
+You should populate the fields with the defined value.
+The description and data type info MUST NOT be returned in your output. Instead, place the value of the particular key.
+
+
 </FORMAT_OUTPUT>
 
 Remember to return the correct format output, defined in <FORMAT_OUTPUT> tag. Never plain, conversational text. Only JSON object is accepted.
@@ -358,8 +399,10 @@ Return the following Python object, following this JSON schema definition:
 <SCHEMA>
 {schema}
 </SCHEMA>
-As you have seen, you must return a valid JSON object that follows that structure.
-Consider that your response would be used later for a system to convert your JSON string mode into a Python dictionary.
+As you can see, the schema provides the structure of the expected output. 
+Please pay special attention to the descriptions and data type for each field.
+You should populate the fields with the defined value.
+The description and data type info MUST NOT be returned in your output. Instead, place the value of the particular key.
 
 </FORMAT_OUTPUT>
 
