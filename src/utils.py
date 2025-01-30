@@ -259,9 +259,13 @@ def cleaning_llm_output(llm_output):
     try:
         match = re.search(r"```json\s*([\s\S]*?)\s*```", content)
         if not match:
-            raise NoJson("The output does not contain a JSON code block")
-            
-        json_content = match.group(1)
+            match_inline = re.search(r"({.*?}|\[.*?\])", content, re.DOTALL)
+            if match_inline:
+                json_content = match_inline.group(0).strip()
+            else:
+                raise NoJson("The output does not contain a JSON code block")
+        else: 
+            json_content = match.group(1)
         
     except re.error as e:
         print(f"Regex error during extraction: {str(e)}")
@@ -340,4 +344,8 @@ def get_json_schema(pydantic_class: BaseModel) -> dict:
     return json.dumps(pydantic_class.model_json_schema(), indent = 4)
 
 if __name__ == '__main__':
+    from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+
+    reply = AIMessage(content = "<think>\nOkay, so the user provided a query about a scandalous infidelity in a couple, mentioning drama, embarrassment, but also that it's entertaining and comic. Hmm, I need to figure out what they're looking for. \n\nFirst, the topic seems to be about infidelity, which is a common theme in drama. But they also want it to be entertaining and comic, so it's not just a serious drama. Maybe they're aiming for a dramedy? That makes sense because it combines drama with comedy.\n\nNow, thinking about the target audience. Since it's a mix of drama and comedy, it might appeal to adults who enjoy both genres. Maybe young adults to middle-aged readers who can relate to relationship issues but also appreciate humor. I should consider if it's more for men, women, or both. Perhaps it's broader, so I'll note that.\n\nGenre-wise, dramedy fits, but I should make sure. It's not a pure comedy or drama, so dramedy is the right category. \n\nWriting style: The user wants it entertaining and comic, so the tone should be light-hearted despite the serious theme. Maybe similar to movies or books that handle sensitive topics with humor, like \"Fleabag\" or \"The Rosie Project.\" Those examples use wit and satire, which could work well here.\n\nAdditional requirements: The story should balance the drama of infidelity with comedic elements. Maybe include awkward situations or funny character interactions to keep it entertaining. Also, ensuring the characters are relatable so readers can connect with them despite the embarrassing situations.\n\nI think I have a good grasp now. The topic is a dramedy about infidelity with a light-hearted tone, targeting adults who enjoy both humor and drama. The writing style should be witty, and the story should balance the serious and funny aspects well.\n</think>\n\n{\n    \"reasoning_step\": \"The user provided a query about a scandalous infidelity in a couple, indicating a desire for a story that combines drama, embarrassment, and comedic elements. This suggests a dramedy genre. The target audience is likely adults who enjoy both humor and relationship drama. The writing style should be light-hearted and entertaining, possibly incorporating witty dialogue and comedic situations to balance the serious theme of infidelity.\",\n    \"reflection_step\": \"Upon reflection, I considered the balance between drama and comedy, ensuring the story remains engaging without trivializing the serious nature of infidelity. The target audience was refined to focus on adults who appreciate both genres, and the writing style was adjusted to include examples that effectively blend humor with drama.\",\n    \"topic\": \"A scandalous infidelity in a couple that leads to dramatic and embarrassing situations, yet is presented in an entertaining and comic manner.\",\n    \"target_audience\": \"Adults aged 18-45 who enjoy dramedy and are interested in relationship dynamics with a mix of humor and drama.\",\n    \"genre\": \"Dramedy\",\n    \"writing_style\": \"Light-hearted, witty, and humorous, with a touch of satire. Similar in tone to 'Fleabag' or 'The Rosie Project', where serious themes are handled with comedic elements.\",\n    \"additional_requirements\": \"The story should balance the drama of infidelity with comedic elements, possibly through awkward situations or humorous character interactions. The characters should be relatable to make the embarrassing situations both funny and engaging.\"\n}")
+    cleaning_llm_output(llm_output = reply)
     print('-')
