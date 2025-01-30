@@ -254,7 +254,7 @@ This will be an interactive process, where you will work on each chapter, then y
 - Avoid redundancy in the narrative: ensure that the story flows smoothly without unnecessary repetition.
 - Ensure logical consistency: events in the story must make sense and align with the overall plot.
 - Don't make it as a life lesson, just create an original and creative story for entertainment.
-- Separate each paragraph with a double space like '\\n\\n'
+- Please ensure that each paragraph in the response is separated by two line breaks ('\n\n')
 - If you use " symbols inside the value of a key, ensure to escape them with a single backslash: (\"This is dark\", said Claudio).
 - Use your creativity and imagination to bring the story to life.
 - Consider the voice and tone of the narrative, ensuring it aligns with the overall writing style.

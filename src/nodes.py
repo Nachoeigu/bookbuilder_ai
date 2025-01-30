@@ -882,7 +882,7 @@ def generate_content(state: State, config: GraphConfig):
             adding_delay_for_rate_limits(model)
             messages.append(human_msg)
             messages.append(AIMessage(content=f"```json\n{json.dumps(cleaned_output.dict())}````"))
-            human_msg = HumanMessage(content=f"The chapter should contains at least {min_paragraph_in_chapter} paragraphs and also, each one of the paragraphs must have at least {min_sentences_in_each_paragraph_per_chapter} sentences. Adjust it again: When expanding the text in this chapter by adding more paragraphs / sentences, ensure that every addition meaningfully progresses the story or deepens the characters without resorting to redundant or repetitive content.\nAlso, remember that each paragraph must be separated by double `\\n\\n`")
+            human_msg = HumanMessage(content=f"The chapter should contains at least {min_paragraph_in_chapter} paragraphs and also, each one of the paragraphs must have at least {min_sentences_in_each_paragraph_per_chapter} sentences. Adjust it again: When expanding the text in this chapter by adding more paragraphs / sentences, ensure that every addition meaningfully progresses the story or deepens the characters without resorting to redundant or repetitive content.\nAlso, ensure that each paragraph in the response is separated by two line breaks ('\n\n')")
             output = model.invoke(messages + [human_msg])
             try:
                 cleaned_output = cleaning_llm_output(llm_output = output)
@@ -1008,7 +1008,7 @@ def generate_content(state: State, config: GraphConfig):
         if check_chapter(msg_content = output.content, min_paragraphs = min_paragraph_in_chapter) == False:
             print("The Writer Agent generated a chapter with an incorrect number of paragraphs. It will try again.")
             adding_delay_for_rate_limits(model)
-            output = model.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least {min_paragraph_in_chapter} paragraphs, and also, each one of the paragraphs must have at least {min_sentences_in_each_paragraph_per_chapter} sentences. Adjust it again!  Dont forget any key in your JSON output.\nAlso, remember that each paragraph must be separated by double `\\n\\n`")])
+            output = model.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least {min_paragraph_in_chapter} paragraphs, and also, each one of the paragraphs must have at least {min_sentences_in_each_paragraph_per_chapter} sentences. Adjust it again!  Dont forget any key in your JSON output.\nAlso, ensure that each paragraph in the response is separated by two line breaks ('\n\n')")])
             try:
                 cleaned_output = cleaning_llm_output(llm_output = output)
             except NoJson:
@@ -1041,7 +1041,7 @@ def generate_content(state: State, config: GraphConfig):
                         correction_instruction += f"You place incorrectly the data type of the key `{field_name}`: {error_msg}\n\n"
                         print(f"The Writer Agent populated the key {field_name} in an incorrect data type")
                 correction_instruction += "Check what I have mentioned, thinking step by step, in order to return the correct and expected output format."
-                output = model.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least {min_paragraph_in_chapter} paragraphs, and also, each one of the paragraphs must have at least {min_sentences_in_each_paragraph_per_chapter} sentences. Adjust it again!  Dont forget any key in your JSON output.\nAlso, remember that each paragraph must be separated by double `\\n\\n`")] + [output] + [HumanMessage(content=correction_instruction)])
+                output = model.invoke(new_messages + [HumanMessage(content=f"The chapter should contains at least {min_paragraph_in_chapter} paragraphs, and also, each one of the paragraphs must have at least {min_sentences_in_each_paragraph_per_chapter} sentences. Adjust it again!  Dont forget any key in your JSON output.\Also, ensure that each paragraph in the response is separated by two line breaks ('\n\n')")] + [output] + [HumanMessage(content=correction_instruction)])
                 try:
                     cleaned_output = cleaning_llm_output(llm_output = output)
                 except NoJson:
