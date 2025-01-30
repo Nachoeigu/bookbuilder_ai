@@ -85,8 +85,10 @@ if __name__ == '__main__':
     book_raw_chapter_names = event['chapter_names']
     book_final_content = {k: v for k, v in zip(book_raw_chapter_names, book_raw_content)}
 
+    models_info = 'Used models:'+'\n' + "\n".join(f"- {key}: {app.get_state(config = configuration).values[key]}" for key in ["instructor_model", "brainstorming_writer_model", "brainstorming_critique_model", "writer_model", "reviewer_model", "translator_model"] if key in list(app.get_state(config = configuration).values.keys())) + '\n\n' + '-----------------------------------------' + '\n\n'
 
     with open("developed_books/english/"+re.sub(r'[^\w\s]','', unidecode(book_title_english.replace(" ","_"))).lower()+".txt", "w") as f:
+        f.write(models_info)
         f.write("Title:"+ '\n')
         f.write(book_title_english+'\n\n')
         f.write("Prologue:"+"\n")
@@ -104,6 +106,7 @@ if __name__ == '__main__':
         book_final_content_translation = {k: v for k, v in zip(book_raw_chapter_names_translation, book_raw_content_translation)}
         # The idea is to save in developed_books/{language}
         with open(f"developed_books/{configuration['configurable'].get('language')}/{re.sub(r'[^\w\s]','', unidecode(book_title_translation.replace(" ","_"))).lower()}.txt", "w") as f:
+            f.write(models_info)
             f.write("Title:\n")
             f.write(book_title_translation+'\n\n')
             f.write("Prologue:\n")
