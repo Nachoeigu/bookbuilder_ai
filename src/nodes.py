@@ -826,7 +826,7 @@ def generate_content(state: State, config: GraphConfig):
             ))
         ]
         adding_delay_for_rate_limits(model)
-        human_msg = HumanMessage(content=f"Start with the first chapter. I will provide to you a summary of what should happen on it:\n<SUMMARY_OF_CHAPTER>`{state['plannified_chapters_summaries'][0]}.`</SUMMARY_OF_CHAPTER>\nDon't forget to respect the minimum number of paragraphs {min_paragraph_in_chapter} and also, the minimum number of sentences in each paragraph {min_sentences_in_each_paragraph_per_chapter}.")
+        human_msg = HumanMessage(content=f"Start with the first chapter. I will provide to you a summary of what should happen on it:\n<SUMMARY_OF_CHAPTER>`{state['plannified_chapters_summaries'][0]}.`</SUMMARY_OF_CHAPTER>\nDon't forget to respect the minimum number of paragraphs {min_paragraph_in_chapter} (separating each of them with two line breaks ('\n\n')) and also, the minimum number of sentences in each paragraph {min_sentences_in_each_paragraph_per_chapter}.")
 
         output = model.invoke(messages + [human_msg])
         try:
@@ -844,6 +844,24 @@ def generate_content(state: State, config: GraphConfig):
 
         try:
             cleaned_output = WriterStructuredOutput(**cleaned_output)
+        except TypeError as e:
+            print("The Writer Agent generated incorrectly the data type of the output object. It will try again.")
+            adding_delay_for_rate_limits(model)
+            output = model.invoke(messages + [human_msg] + [output] + [HumanMessage(content=f"You generated a python {type(cleaned_output)} object. Please, return the JSON output in the correct format.")])
+            try:
+                cleaned_output = cleaning_llm_output(llm_output = output)
+            except NoJson:
+                print("The Writer Agent couldn't generate a completed formatted JSON. It will try again.")
+                output = model.invoke(messages + [human_msg] + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format. Don't repeat always the same, avoid hallucinations or endness verbosity")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+                print("Successfully generated the JSON object.")
+            except BadFormattedJson as e:
+                print("The Writer Agent couldn't generate a corrected syntaxis for the JSON output. It will try again.")
+                output = model.invoke(messages + [human_msg] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+                print("Successfully generated the JSON object.")
+            cleaned_output = WriterStructuredOutput(**cleaned_output)
+
         except ValidationError as e:
             print("The Writer Agent generated incorrectly the content inside the JSON object. It will try again.")
             adding_delay_for_rate_limits(model)
@@ -952,11 +970,12 @@ def generate_content(state: State, config: GraphConfig):
             new_message = [HumanMessage(content = 'I will provide to you some feedback. Focus on each of these points, and improve the chapter.\n' + cleaning_llm_output(state['writing_reviewer_memory'][-1])['feedback'] + '\n\n When returning your response, dont forget any key in your JSON output:')]
         else:
             print(f"The Writer Agent will generate the content of the next chapter [Chapter number: {state['current_chapter'] + 1}].")
-            new_message = [HumanMessage(content = f"Continue with the chapter {state['current_chapter'] + 1}, which is about:\n<SUMMARY_OF_CHAPTER>\n`{state['plannified_chapters_summaries'][state['current_chapter']]}.\n</SUMMARY_OF_CHAPTER>`\nBefore start, remember to read again the previous developed chapters before so you make the perfect continuation possible. Dont forget any key in your JSON output. Also don´t forget the chapter should contains at least {min_paragraph_in_chapter} paragraphs and also, each one of the paragraphs must have at least {min_sentences_in_each_paragraph_per_chapter} sentences.")]
+            new_message = [HumanMessage(content = f"Continue with the chapter {state['current_chapter'] + 1}, which is about:\n<SUMMARY_OF_CHAPTER>\n`{state['plannified_chapters_summaries'][state['current_chapter']]}.\n</SUMMARY_OF_CHAPTER>`\nBefore start, remember to read again the previous developed chapters before so you make the perfect continuation possible. Dont forget any key in your JSON output. Also don´t forget the chapter should contains at least {min_paragraph_in_chapter} paragraphs (separating each of them with two line breaks ('\n\n')) and also, each one of the paragraphs must have at least {min_sentences_in_each_paragraph_per_chapter} sentences.")]
         adding_delay_for_rate_limits(model)
         output = model.invoke(state['writer_memory'] + new_message)
         try:
             cleaned_output = cleaning_llm_output(llm_output = output)
+
         except NoJson:
             print("The Writer Agent couldn't generate a completed formatted JSON. It will try again.")
             output = model.invoke(state['writer_memory'] + new_message + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format. Don't repeat always the same, avoid hallucinations or endness verbosity")])
@@ -969,6 +988,24 @@ def generate_content(state: State, config: GraphConfig):
             print("Successfully generated the JSON object.")
         try:
             cleaned_output = WriterStructuredOutput(**cleaned_output)
+        except TypeError as e:
+            print("The Writer Agent generated incorrectly the data type of the output object. It will try again.")
+            adding_delay_for_rate_limits(model)
+            output = model.invoke(state['writer_memory'] + new_message + [output] + [HumanMessage(content=f"You generated a python {type(cleaned_output)} object. Please, return the JSON output in the correct format.")])
+            try:
+                cleaned_output = cleaning_llm_output(llm_output = output)
+            except NoJson:
+                print("The Writer Agent couldn't generate a completed formatted JSON. It will try again.")
+                output = model.invoke(state['writer_memory'] + new_message + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format. Don't repeat always the same, avoid hallucinations or endness verbosity")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+                print("Successfully generated the JSON object.")
+            except BadFormattedJson as e:
+                print("The Writer Agent couldn't generate a corrected syntaxis for the JSON output. It will try again.")
+                output = model.invoke(state['writer_memory'] + new_message + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+                cleaned_output = cleaning_llm_output(llm_output= output)
+                print("Successfully generated the JSON object.")
+            cleaned_output = WriterStructuredOutput(**cleaned_output)
+
         except ValidationError as e:
             print("The Writer Agent generated incorrectly the content inside the JSON object. It will try again.")
             adding_delay_for_rate_limits(model)
@@ -1025,6 +1062,26 @@ def generate_content(state: State, config: GraphConfig):
 
             try:
                 cleaned_output = WriterStructuredOutput(**cleaned_output)
+            except TypeError as e:
+                print("The Writer Agent generated incorrectly the data type of the output object. It will try again.")
+                adding_delay_for_rate_limits(model)
+                output = model.invoke(new_message + [output] + [HumanMessage(content=f"You generated a python {type(cleaned_output)} object. Please, return the JSON output in the correct format.")])
+                try:
+                    cleaned_output = cleaning_llm_output(llm_output = output)
+                except NoJson:
+                    print("The Writer Agent couldn't generate a completed formatted JSON. It will try again.")
+                    output = model.invoke(new_message + [output] + [HumanMessage(content="The output does not contain a complete JSON code block. Please, return the output in the correct format. Don't repeat always the same, avoid hallucinations or endness verbosity")])
+                    cleaned_output = cleaning_llm_output(llm_output= output)   
+                    print("Successfully generated the JSON object.")          
+                except BadFormattedJson as e:
+                    print("The Writer Agent couldn't generate a corrected syntaxis for the JSON output. It will try again.")
+                    output = model.invoke(new_message + [output] + [HumanMessage(content = f"Bad Formatted JSON. Please return the same info but correctly formatted. Here the error: {json.dumps(e.args[0])}")])
+                    cleaned_output = cleaning_llm_output(llm_output= output)
+                    print("Successfully generated the JSON object.")
+
+                cleaned_output = WriterStructuredOutput(**cleaned_output)
+                print("The Writer Agent generated the draft of the chapter with the adjustments for the number of paragraphs and sentences.")
+
             except ValidationError as e:
                 print("The Writer Agent generated incorrectly the content inside the JSON object. It will try again.")
                 adding_delay_for_rate_limits(model)
