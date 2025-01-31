@@ -246,6 +246,7 @@ You have been hired to write a new book based on the following criteria:
 {user_requirements}
 </USER_REQUIREMENTS>
 <CHARACTERS>
+Don't forget to describe and present each of them along the way.
 {characters}
 </CHARACTERS>
 <STRUCTURE>
