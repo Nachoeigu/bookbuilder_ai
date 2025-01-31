@@ -160,7 +160,7 @@ def brainstorming_idea_critique(state: State, config: GraphConfig):
                     print("Succesfully generated the JSON object")
                 cleaned_output = ApprovedBrainstormingIdea(**cleaned_output)
 
-    if int(cleaned_output.grade) <= 9:
+    if int(cleaned_output.grade) <= 6:
         print("The Brainstorming Idea Critique Agent has not approved the idea.")
         feedback = cleaned_output.feedback
         is_general_story_plan_approved = False
